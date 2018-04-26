@@ -26,12 +26,14 @@ import javax.ws.rs.core.UriInfo;
  hubChallange = info.getQueryParameters().getFirst("hub.challenge");
  hubReason = info.getQueryParameters().getFirst("hub.reason");
 
+ //handle denied response
 if (hubMode.equals("denied"))
 {
     status = 200;
     response = Response .status(200).build();
     System.out.println("denied");
 }
+//handle verify response
 else
 {
    response = Response.status(202).entity(hubChallange).build();
@@ -44,7 +46,7 @@ else
 
     }
 
-    
+
 
 }
 

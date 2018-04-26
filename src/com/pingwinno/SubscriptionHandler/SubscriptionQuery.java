@@ -13,7 +13,7 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 
-
+// some comment
 public class SubscriptionQuery  {
 
    private String serverAddress;

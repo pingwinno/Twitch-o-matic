@@ -4,7 +4,7 @@
 package com.pingwinno.SubscriptionHandler;
 
 import com.google.gson.annotations.SerializedName;
-
+//subscription query object
 public class JsonSubObject {
 
     @SerializedName("hub.mode")
@@ -15,7 +15,10 @@ public class JsonSubObject {
     private String hubCallback;
     @SerializedName("hub.lease_seconds")
     private int hubLeaseSeconds;
-   /* @SerializedName("hub.secret")
+
+   /*
+   May used to sign notification payloads
+    @SerializedName("hub.secret")
     private String hubSecret;
 */
 

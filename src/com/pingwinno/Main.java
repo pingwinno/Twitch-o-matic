@@ -20,6 +20,7 @@ import java.net.Socket;
             public static void main(String[] args) throws Throwable {
 
                 Server server = new Server(4856);
+                //subscribe query
                JsonSubObject json = new JsonSubObject("subscribe", "https://api.twitch.tv/helix/users/follows?to_id=104717035","http://31.202.48.159:4856/handler", 0 );
 
                 SubscriptionQuery subscriptionQuery = new SubscriptionQuery("https://api.twitch.tv/helix/webhooks/hub", json);
@@ -35,6 +36,7 @@ import java.net.Socket;
 
                 ServletHolder serHol = ctx.addServlet(ServletContainer.class, "/*");
                 serHol.setInitOrder(1);
+                //Handler package
                 serHol.setInitParameter("jersey.config.server.provider.packages",
                         "com.pingwinno.res");
 
