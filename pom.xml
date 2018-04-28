@@ -67,6 +67,13 @@
             <artifactId>jetty-server</artifactId>
             <version>9.4.0.v20161208</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>2.27</version>
+        </dependency>
+
     </dependencies>
 
 

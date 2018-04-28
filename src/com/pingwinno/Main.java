@@ -6,10 +6,14 @@ import com.pingwinno.subscription_handler.SubscriptionQuery;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
+import javax.ws.rs.core.Application;
 
-        public class Main {
+
+public class Main {
 
             public static void main(String[] args) throws Throwable {
 
@@ -28,6 +32,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 
                 ctx.setContextPath("/");
                 server.setHandler(ctx);
+                final Application application = new ResourceConfig().register(JacksonFeature.class);
 
                 ServletHolder serHol = ctx.addServlet(ServletContainer.class, "/*");
                 serHol.setInitOrder(1);
