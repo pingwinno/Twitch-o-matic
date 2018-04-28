@@ -1,31 +1,26 @@
 package com.pingwinno;
 
 
-import com.pingwinno.SubscriptionHandler.JsonSubObject;
-import com.pingwinno.SubscriptionHandler.SubscriptionQuery;
+import com.pingwinno.subscription_handler.SubscriptionModel;
+import com.pingwinno.subscription_handler.SubscriptionQuery;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.servlet.ServletContainer;
 
-import java.net.ServerSocket;
-import java.net.Socket;
 
-
-/**
- * Created by yar 09.09.2009
- */
         public class Main {
 
             public static void main(String[] args) throws Throwable {
 
                 Server server = new Server(4856);
                 //subscribe query
-               JsonSubObject json = new JsonSubObject("subscribe", "https://api.twitch.tv/helix/users/follows?to_id=104717035","http://31.202.48.159:4856/handler", 0 );
+               SubscriptionModel json = new SubscriptionModel("subscribe", "https://api.twitch.tv/helix/users/follows?to_id=88618654","http://31.202.48.159:4856/handler", 1000);
 
                 SubscriptionQuery subscriptionQuery = new SubscriptionQuery("https://api.twitch.tv/helix/webhooks/hub", json);
 
-
+                System.out.println("starting sub");
+                subscriptionQuery.startSub();
 
 
                 ServletContextHandler ctx =
@@ -40,8 +35,7 @@ import java.net.Socket;
                 serHol.setInitParameter("jersey.config.server.provider.packages",
                         "com.pingwinno.res");
 
-                System.out.println("starting sub");
-                subscriptionQuery.startSub();
+
                 try {
                     server.start();
                     server.join();

@@ -1,4 +1,4 @@
-package com.pingwinno.SubscriptionHandler;
+package com.pingwinno.subscription_handler;
 
 
 import com.google.gson.Gson;
@@ -13,17 +13,17 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 
-// some comment
+
 public class SubscriptionQuery  {
 
    private String serverAddress;
    private String postData;
    private Gson gson = new Gson();
 
-public SubscriptionQuery(String serverAddress, JsonSubObject jsonSubObject)
+public SubscriptionQuery(String serverAddress, SubscriptionModel subscriptionModel)
 {
    this.serverAddress = serverAddress;
-   postData = gson.toJson(jsonSubObject);
+   postData = gson.toJson(subscriptionModel);
    System.out.println(postData);
 }
 
