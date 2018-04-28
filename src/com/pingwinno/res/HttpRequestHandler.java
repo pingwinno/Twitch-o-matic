@@ -5,6 +5,7 @@ import com.pingwinno.notification_handler.NotificationModel;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
@@ -50,7 +51,7 @@ else
 
 
 @POST
-    @Consumes("application/json")
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response createNotificationJSON (DataModel dataModel)
 {
     System.out.println("POST");
