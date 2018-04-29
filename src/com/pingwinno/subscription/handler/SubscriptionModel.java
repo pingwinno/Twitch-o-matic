@@ -1,9 +1,10 @@
 /* JSON object for building subscription query */
 
 
-package com.pingwinno.subscription_handler;
+package com.pingwinno.subscription.handler;
 
 import com.google.gson.annotations.SerializedName;
+
 //subscription query object
 public class SubscriptionModel {
 
@@ -22,15 +23,14 @@ public class SubscriptionModel {
     private String hubSecret;
 */
 
-public SubscriptionModel(String hubMode, String hubTopic, String hubCallback, int hubLeaseSeconds )
-{
-    this.hubTopic = hubTopic;
-    this.hubCallback = hubCallback;
-    this.hubLeaseSeconds = hubLeaseSeconds;
-    this.hubMode = hubMode;
-    //this.hubSecret = hubSecret;
+    public SubscriptionModel(String hubMode, String hubTopic, String hubCallback, int hubLeaseSeconds) {
+        this.hubTopic = hubTopic;
+        this.hubCallback = hubCallback;
+        this.hubLeaseSeconds = hubLeaseSeconds;
+        this.hubMode = hubMode;
+        //this.hubSecret = hubSecret;
 
 
-}
+    }
 
 }
