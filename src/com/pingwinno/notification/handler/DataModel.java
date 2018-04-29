@@ -1,7 +1,8 @@
-package com.pingwinno.notification_handler;
+package com.pingwinno.notification.handler;
+
 
 public class DataModel {
-    private NotificationModel [] data;
+    private NotificationModel[] data;
 
     public NotificationModel[] getData() {
         return data;
