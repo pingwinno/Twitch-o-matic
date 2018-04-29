@@ -54,25 +54,19 @@ else
 
 
 @POST
-@Consumes(MediaType.APPLICATION_JSON)
-public void postClichedMessage(String message) {
-    Gson gson = new Gson();
-    DataModel dataModel = gson.fromJson(message,  DataModel.class);
-
-    NotificationModel [] notificationArray = dataModel.getData();
-    NotificationModel notificationModel = notificationArray[0];
-    String startedAt = notificationModel.getStarted_at();
-    System.out.println(startedAt);
-
-}
-   /* @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response createNotificationJSON (DataModel dataModel)
 {
     System.out.println("POST");
-    System.out.println(dataModel.getData());
+    NotificationModel [] notificationArray = dataModel.getData();
+    if (notificationArray[0] != null) {
+        NotificationModel notificationModel = notificationArray[0];
+        String startedAt = notificationModel.getStarted_at();
+        System.out.println(startedAt);
+    }
     return Response.status(Response.Status.ACCEPTED).build();
 }
-*/
+
 
 }
 
