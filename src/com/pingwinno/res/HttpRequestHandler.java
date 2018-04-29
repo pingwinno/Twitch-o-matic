@@ -1,5 +1,7 @@
 package com.pingwinno.res;
 
+
+import com.google.gson.Gson;
 import com.pingwinno.notification_handler.DataModel;
 import com.pingwinno.notification_handler.NotificationModel;
 
@@ -8,6 +10,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+
 
 
 @Path("/handler")
@@ -51,14 +54,25 @@ else
 
 
 @POST
-    @Consumes(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+public void postClichedMessage(String message) {
+    Gson gson = new Gson();
+    DataModel dataModel = gson.fromJson(message,  DataModel.class);
+
+    NotificationModel [] notificationArray = dataModel.getData();
+    NotificationModel notificationModel = notificationArray[0];
+    String startedAt = notificationModel.getStarted_at();
+    System.out.println(startedAt);
+
+}
+   /* @Consumes(MediaType.APPLICATION_JSON)
     public Response createNotificationJSON (DataModel dataModel)
 {
     System.out.println("POST");
     System.out.println(dataModel.getData());
     return Response.status(Response.Status.ACCEPTED).build();
 }
-
+*/
 
 }
 
