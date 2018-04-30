@@ -42,7 +42,7 @@ public class Main {
         serHol.setInitOrder(1);
         //Handler package
         serHol.setInitParameter("jersey.config.server.provider.packages",
-                "com.pingwinno.handler");
+                "com.pingwinno.controllers");
 
         try {
             server.start();
