@@ -17,7 +17,10 @@ public class SubscriptionModel {
     @SerializedName("hub.lease_seconds")
     private int hubLeaseSeconds;
 
+
+
    /*
+
    May used to sign notification payloads
     @SerializedName("hub.secret")
     private String hubSecret;
@@ -33,4 +36,7 @@ public class SubscriptionModel {
 
     }
 
+    public int getHubLeaseSeconds() {
+        return hubLeaseSeconds;
+    }
 }

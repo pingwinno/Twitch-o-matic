@@ -1,6 +1,7 @@
-package com.pingwinno.res;
+package com.pingwinno.controllers;
 
 
+import com.pingwinno.notification.handler.CliInterface;
 import com.pingwinno.notification.handler.DataModel;
 import com.pingwinno.notification.handler.NotificationModel;
 
@@ -19,6 +20,7 @@ import javax.ws.rs.core.UriInfo;
 public class HttpRequestHandler {
 
     Response response;
+    String lastNotificationId;
 
 
     @GET
@@ -52,8 +54,16 @@ public class HttpRequestHandler {
         NotificationModel[] notificationArray = dataModel.getData();
         if (notificationArray[0] != null) {
             NotificationModel notificationModel = notificationArray[0];
-            String startedAt = notificationModel.getStarted_at();
-            System.out.println(startedAt);
+            //check for notification duplicate
+            if (!(notificationModel.getId().equals(lastNotificationId))) {
+                lastNotificationId = notificationModel.getId();
+                CliInterface cliInterface = new CliInterface();
+
+                new Thread(() -> cliInterface.executeCommand(notificationModel.getTitle(), notificationModel.getStarted_at())).start();
+
+                String startedAt = notificationModel.getStarted_at();
+                System.out.println(startedAt);
+            }
         }
         return Response.status(Response.Status.ACCEPTED).build();
     }

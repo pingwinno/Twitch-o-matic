@@ -27,10 +27,10 @@ public class SubscriptionTask extends TimerTask {
 
     }
 
-    public void startSub() {
+    public void sendRequest() {
 
         Timer timer = new Timer();
-        timer.scheduleAtFixedRate(this, 1000, resubscribingPeriod);
+        timer.scheduleAtFixedRate(this, 5000, resubscribingPeriod);
 
     }
 

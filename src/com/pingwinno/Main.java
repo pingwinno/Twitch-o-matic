@@ -4,7 +4,7 @@ package com.pingwinno;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.subscription.handler.SubscriptionModel;
-import com.pingwinno.subscription.handler.SubscriptionQuery;
+import com.pingwinno.subscription.handler.SubscriptionTask;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -20,13 +20,13 @@ public class Main {
     public static void main(String[] args) throws Throwable {
 
         Server server = new Server(4856);
-        //subscribe query
-        SubscriptionModel json = new SubscriptionModel("subscribe", "https://api.twitch.tv/helix/streams?user_id=88618654", "http://31.202.48.159:4856/handler", 100000);
+        //subscribe request
+        SubscriptionModel json = new SubscriptionModel("subscribe", "https://api.twitch.tv/helix/streams?user_id=88618654", "http://31.202.48.159:4856/handler", 10000);
 
-        SubscriptionQuery subscriptionQuery = new SubscriptionQuery("https://api.twitch.tv/helix/webhooks/hub", json);
+        SubscriptionTask subscriptionQuery = new SubscriptionTask("https://api.twitch.tv/helix/webhooks/hub", json);
 
         System.out.println("starting sub");
-        subscriptionQuery.startSub();
+        subscriptionQuery.sendRequest();
 
 
         ServletContextHandler ctx =
@@ -42,7 +42,7 @@ public class Main {
         serHol.setInitOrder(1);
         //Handler package
         serHol.setInitParameter("jersey.config.server.provider.packages",
-                "com.pingwinno.res");
+                "com.pingwinno.handler");
 
         try {
             server.start();
