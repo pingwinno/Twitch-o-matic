@@ -9,7 +9,7 @@ public class CliInterface {
     public void executeCommand(String name, String time) {
         //command line for run streamlink
         String fileName = name +"_"+ time + ".mp4";
-        String command = String.join(" ","streamlink","https://www.twitch.tv/unknowndevice", "-o", fileName);
+        String command = String.join(" ","streamlink","https://www.twitch.tv/olyashaa", "best",  "-o", fileName);
         StringBuffer output = new StringBuffer();
 
         Process p;

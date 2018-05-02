@@ -21,7 +21,7 @@ public class Main {
 
         Server server = new Server(4856);
         //subscribe request
-        SubscriptionModel json = new SubscriptionModel("subscribe", "https://api.twitch.tv/helix/streams?user_id=88618654", "http://31.202.48.159:4856/handler", 10000);
+        SubscriptionModel json = new SubscriptionModel("subscribe", "https://api.twitch.tv/helix/streams?user_id=104717035", "http://31.202.48.159:4856/handler", 10000);
 
         SubscriptionTask subscriptionQuery = new SubscriptionTask("https://api.twitch.tv/helix/webhooks/hub", json);
 
