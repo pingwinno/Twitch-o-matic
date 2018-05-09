@@ -12,13 +12,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class SubscriptionTask extends TimerTask {
+public class SubscriptionTimer extends TimerTask {
 
     private String serverAddress;
     private String postData;
     private int resubscribingPeriod;
 
-    public SubscriptionTask(String serverAddress, SubscriptionModel subscriptionModel) {
+    public SubscriptionTimer(String serverAddress, SubscriptionModel subscriptionModel) {
         Gson gson = new Gson();
         this.serverAddress = serverAddress;
         postData = gson.toJson(subscriptionModel);
@@ -30,7 +30,7 @@ public class SubscriptionTask extends TimerTask {
     public void sendRequest() {
 
         Timer timer = new Timer();
-        timer.scheduleAtFixedRate(this, 5000, resubscribingPeriod);
+        timer.scheduleAtFixedRate(this, 10000, resubscribingPeriod);
 
     }
 

@@ -4,7 +4,7 @@ package com.pingwinno;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.subscription.handler.SubscriptionModel;
-import com.pingwinno.subscription.handler.SubscriptionTask;
+import com.pingwinno.subscription.handler.SubscriptionTimer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -21,9 +21,9 @@ public class Main {
 
         Server server = new Server(4856);
         //subscribe request
-        SubscriptionModel json = new SubscriptionModel("subscribe", "https://api.twitch.tv/helix/streams?user_id=104717035", "http://31.202.48.159:4856/handler", 10000);
+        SubscriptionModel json = new SubscriptionModel("subscribe", "https://api.twitch.tv/helix/streams?user_id=88618654", "http://31.202.48.159:4856/handler", 864000);
 
-        SubscriptionTask subscriptionQuery = new SubscriptionTask("https://api.twitch.tv/helix/webhooks/hub", json);
+        SubscriptionTimer subscriptionQuery = new SubscriptionTimer("https://api.twitch.tv/helix/webhooks/hub", json);
 
         System.out.println("starting sub");
         subscriptionQuery.sendRequest();
@@ -50,7 +50,7 @@ public class Main {
 
 
         } catch (Exception ex) {
-            System.out.println("Server not running " + ex);
+            System.out.println("Server running failed: " + ex);
 
         } finally {
 
