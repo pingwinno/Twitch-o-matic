@@ -1,7 +1,6 @@
 package com.pingwinno.controllers;
 
 
-import com.pingwinno.notification.handler.CliInterface;
 import com.pingwinno.notification.handler.CommandLineRunner;
 import com.pingwinno.notification.handler.DataModel;
 import com.pingwinno.notification.handler.NotificationModel;
