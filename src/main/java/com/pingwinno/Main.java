@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.subscription.handler.SubscriptionModel;
 import com.pingwinno.subscription.handler.SubscriptionTimer;
+import com.pingwinno.subscription.handler.UserIdGetter;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -21,7 +22,9 @@ public class Main {
 
         Server server = new Server(4856);
         //subscribe request
-        SubscriptionModel json = new SubscriptionModel("subscribe", "https://api.twitch.tv/helix/streams?user_id=88618654", "http://31.202.48.159:4856/handler", 864000);
+        UserIdGetter userIdGetter = new UserIdGetter();
+
+        SubscriptionModel json = new SubscriptionModel("subscribe", "https://api.twitch.tv/helix/streams?user_id="+userIdGetter.getId("olyashaa"), "http://31.202.48.159:4856/handler", 864000);
 
         SubscriptionTimer subscriptionQuery = new SubscriptionTimer("https://api.twitch.tv/helix/webhooks/hub", json);
 

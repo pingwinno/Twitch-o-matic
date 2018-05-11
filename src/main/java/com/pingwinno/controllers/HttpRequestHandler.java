@@ -4,6 +4,7 @@ package com.pingwinno.controllers;
 import com.pingwinno.notification.handler.CommandLineRunner;
 import com.pingwinno.notification.handler.DataModel;
 import com.pingwinno.notification.handler.NotificationModel;
+import com.pingwinno.subscription.handler.UserIdGetter;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -13,6 +14,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
 
 
 @Path("/handler")
@@ -61,10 +63,10 @@ public class HttpRequestHandler {
             NotificationModel notificationModel = notificationArray[0];
             //check for notification duplicate
             if (!(notificationModel.getId().equals(lastNotificationId))) {
-
+                UserIdGetter userIdGetter = new UserIdGetter();
                 CommandLineRunner commandLineRunner = new CommandLineRunner();
 
-                new Thread(() -> commandLineRunner.executeCommand(notificationModel.getTitle(), notificationModel.getStarted_at())).start();
+                new Thread(() -> commandLineRunner.executeCommand(notificationModel.getStarted_at(),"olyashaa") ).start();
 
                 String startedAt = notificationModel.getStarted_at();
                 System.out.println(startedAt);

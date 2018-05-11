@@ -6,10 +6,10 @@ import java.io.InputStreamReader;
 public class CommandLineRunner {
 
 
-    public void executeCommand(String name, String time) {
+    public void executeCommand(String time, String user) {
         //command line for run streamlink
-        String fileName = name +"_"+ time + ".mp4";
-        String command = String.join(" ","streamlink","https://www.twitch.tv/unknowndevice", "best",  "-o", fileName);
+        String fileName = time + ".mp4";
+        String command = String.join(" ","streamlink","https://www.twitch.tv/" + user, "best",  "-o", fileName);
         StringBuffer output = new StringBuffer();
 
         Process p;
