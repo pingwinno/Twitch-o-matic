@@ -20,11 +20,11 @@ public class Main {
 
     public static void main(String[] args) throws Throwable {
 
-        Server server = new Server(4856);
+        Server server = new Server(SettingsProperties.getServerPort());
         //subscribe request
         UserIdGetter userIdGetter = new UserIdGetter();
 
-        SubscriptionModel json = new SubscriptionModel("subscribe", "https://api.twitch.tv/helix/streams?user_id="+userIdGetter.getId("olyashaa"), "http://31.202.48.159:4856/handler", 864000);
+        SubscriptionModel json = new SubscriptionModel("subscribe", "https://api.twitch.tv/helix/streams?user_id="+userIdGetter.getId(SettingsProperties.getUser()), SettingsProperties.getCallbackAddress(), 864000);
 
         SubscriptionTimer subscriptionQuery = new SubscriptionTimer("https://api.twitch.tv/helix/webhooks/hub", json);
 

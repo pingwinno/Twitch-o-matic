@@ -1,6 +1,7 @@
 package com.pingwinno.controllers;
 
 
+import com.pingwinno.SettingsProperties;
 import com.pingwinno.notification.handler.CommandLineRunner;
 import com.pingwinno.notification.handler.DataModel;
 import com.pingwinno.notification.handler.NotificationModel;
@@ -65,9 +66,7 @@ public class HttpRequestHandler {
             if (!(notificationModel.getId().equals(lastNotificationId))) {
                 UserIdGetter userIdGetter = new UserIdGetter();
                 CommandLineRunner commandLineRunner = new CommandLineRunner();
-
-                new Thread(() -> commandLineRunner.executeCommand(notificationModel.getStarted_at(),"olyashaa") ).start();
-
+                    new Thread(() -> commandLineRunner.executeCommand(notificationModel.getStarted_at(), SettingsProperties.getUser())).start();
                 String startedAt = notificationModel.getStarted_at();
                 System.out.println(startedAt);
             }
