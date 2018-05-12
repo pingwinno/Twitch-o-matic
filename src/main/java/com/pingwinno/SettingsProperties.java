@@ -1,7 +1,9 @@
 package com.pingwinno;
 
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Properties;
 
 public class SettingsProperties {
@@ -10,15 +12,14 @@ public class SettingsProperties {
     private static Properties props;
 
     private static Properties getProperties() throws IOException {
-        if(props == null)
-        {
+        if (props == null) {
             props = new Properties();
             props.load(new FileInputStream(new File(PROPSFILE)));
         }
         return props;
     }
 
-    public static String getCallbackAddress()  {
+    public static String getCallbackAddress() {
         String callbackAddress = null;
         try {
             callbackAddress = getProperties().getProperty("CallbackAddress");
@@ -28,7 +29,8 @@ public class SettingsProperties {
         }
         return callbackAddress;
     }
-    public static int getServerPort()  {
+
+    public static int getServerPort() {
         int serverPort = 0;
         try {
             serverPort = Integer.parseInt(getProperties().getProperty("ServerPort"));
@@ -38,7 +40,8 @@ public class SettingsProperties {
         }
         return serverPort;
     }
-    public static String getUser()  {
+
+    public static String getUser() {
         String user = null;
         try {
             user = getProperties().getProperty("User");

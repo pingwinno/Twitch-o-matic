@@ -5,7 +5,6 @@ import com.pingwinno.SettingsProperties;
 import com.pingwinno.notification.handler.CommandLineRunner;
 import com.pingwinno.notification.handler.DataModel;
 import com.pingwinno.notification.handler.NotificationModel;
-import com.pingwinno.subscription.handler.UserIdGetter;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -15,7 +14,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
 
 
 @Path("/handler")
@@ -28,10 +26,8 @@ public class HttpRequestHandler {
 
     @GET
     public Response getQuery(@Context UriInfo info) {
-
         Response response = null;
         if (info != null) {
-
             String hubMode = info.getQueryParameters().getFirst("hub.mode");
             //handle denied response
             if (hubMode.equals("denied")) {
@@ -41,18 +37,15 @@ public class HttpRequestHandler {
                 System.out.println("denied");
                 return response;
             }
-//handle verify response
+            //handle verify response
             else {
                 String hubChallenge = info.getQueryParameters().getFirst("hub.challenge");
                 response = Response.status(Response.Status.OK).entity(hubChallenge).build();
                 System.out.println(hubMode + " " + hubChallenge);
                 System.out.println("accepted");
-
             }
-        }
-        else System.out.println("Response is not correct");
-            return response;
-
+        } else System.out.println("Response is not correct");
+        return response;
     }
 
     @POST
@@ -64,9 +57,8 @@ public class HttpRequestHandler {
             NotificationModel notificationModel = notificationArray[0];
             //check for notification duplicate
             if (!(notificationModel.getId().equals(lastNotificationId))) {
-                UserIdGetter userIdGetter = new UserIdGetter();
                 CommandLineRunner commandLineRunner = new CommandLineRunner();
-                    new Thread(() -> commandLineRunner.executeCommand(notificationModel.getStarted_at(), SettingsProperties.getUser())).start();
+                new Thread(() -> commandLineRunner.executeCommand(notificationModel.getStarted_at(), SettingsProperties.getUser())).start();
                 String startedAt = notificationModel.getStarted_at();
                 System.out.println(startedAt);
             }

@@ -16,15 +16,9 @@ public class SubscriptionModel {
     private String hubCallback;
     @SerializedName("hub.lease_seconds")
     private int hubLeaseSeconds;
-
-
-
-   /*
-
-   May used to sign notification payloads
+    /* May used to sign notification payloads
     @SerializedName("hub.secret")
-    private String hubSecret;
-*/
+     private String hubSecret;*/
 
     public SubscriptionModel(String hubMode, String hubTopic, String hubCallback, int hubLeaseSeconds) {
         this.hubTopic = hubTopic;
@@ -32,8 +26,6 @@ public class SubscriptionModel {
         this.hubLeaseSeconds = hubLeaseSeconds;
         this.hubMode = hubMode;
         //this.hubSecret = hubSecret;
-
-
     }
 
     public int getHubLeaseSeconds() {
