@@ -17,12 +17,9 @@ import javax.ws.rs.core.UriInfo;
 
 
 @Path("/handler")
-
 public class HttpRequestHandler {
 
-
-    String lastNotificationId;
-
+    private String lastNotificationId;
 
     @GET
     public Response getQuery(@Context UriInfo info) {
@@ -34,7 +31,6 @@ public class HttpRequestHandler {
                 String hubReason = info.getQueryParameters().getFirst("hub.reason");
                 response = Response.status(Response.Status.OK).build();
                 System.out.println(hubMode + " " + hubReason);
-                System.out.println("denied");
                 return response;
             }
             //handle verify response
@@ -42,7 +38,6 @@ public class HttpRequestHandler {
                 String hubChallenge = info.getQueryParameters().getFirst("hub.challenge");
                 response = Response.status(Response.Status.OK).entity(hubChallenge).build();
                 System.out.println(hubMode + " " + hubChallenge);
-                System.out.println("accepted");
             }
         } else System.out.println("Response is not correct");
         return response;
@@ -50,13 +45,14 @@ public class HttpRequestHandler {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createNotificationJSON(DataModel dataModel) {
-        System.out.println("POST");
+    public Response handleStreamNotification(DataModel dataModel) {
+        System.out.println("Handle POST request");
         NotificationModel[] notificationArray = dataModel.getData();
         if (notificationArray[0] != null) {
             NotificationModel notificationModel = notificationArray[0];
             //check for notification duplicate
             if (!(notificationModel.getId().equals(lastNotificationId))) {
+                lastNotificationId = notificationModel.getId();
                 CommandLineRunner commandLineRunner = new CommandLineRunner();
                 new Thread(() -> commandLineRunner.executeCommand(notificationModel.getStarted_at(), SettingsProperties.getUser())).start();
                 String startedAt = notificationModel.getStarted_at();
@@ -65,8 +61,6 @@ public class HttpRequestHandler {
         }
         return Response.status(Response.Status.ACCEPTED).build();
     }
-
-
 }
 
 

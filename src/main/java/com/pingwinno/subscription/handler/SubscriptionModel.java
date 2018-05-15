@@ -1,6 +1,3 @@
-/* JSON object for building subscription query */
-
-
 package com.pingwinno.subscription.handler;
 
 import com.google.gson.annotations.SerializedName;

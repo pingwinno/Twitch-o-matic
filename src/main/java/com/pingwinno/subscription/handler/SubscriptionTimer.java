@@ -24,16 +24,12 @@ public class SubscriptionTimer extends TimerTask {
         postData = gson.toJson(subscriptionModel);
         resubscribingPeriod = subscriptionModel.getHubLeaseSeconds() * 1000;
         System.out.println(postData);
-
     }
 
     public void sendRequest() {
-
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(this, 10000, resubscribingPeriod);
-
     }
-
 
     public void run() {
         try {
@@ -53,6 +49,5 @@ public class SubscriptionTimer extends TimerTask {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }
