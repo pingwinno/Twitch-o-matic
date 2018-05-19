@@ -3,7 +3,7 @@ package com.pingwinno.infrastructure;
 import com.google.gson.annotations.SerializedName;
 
 //subscription query object
-public class SubscriptionModel {
+public class SubscriptionQueryModel {
 
     @SerializedName("hub.mode")
     private String hubMode;
@@ -17,7 +17,7 @@ public class SubscriptionModel {
     @SerializedName("hub.secret")
      private String hubSecret;*/
 
-    public SubscriptionModel(String hubMode, String hubTopic, String hubCallback, int hubLeaseSeconds) {
+    public SubscriptionQueryModel(String hubMode, String hubTopic, String hubCallback, int hubLeaseSeconds) {
         this.hubTopic = hubTopic;
         this.hubCallback = hubCallback;
         this.hubLeaseSeconds = hubLeaseSeconds;

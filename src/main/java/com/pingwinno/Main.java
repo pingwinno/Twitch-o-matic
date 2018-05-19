@@ -4,8 +4,8 @@ package com.pingwinno;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.SubscriptionModel;
-import com.pingwinno.application.SubscriptionTimer;
+import com.pingwinno.infrastructure.SubscriptionQueryModel;
+import com.pingwinno.application.SubscriptionRequestTimer;
 import com.pingwinno.application.UserIdGetter;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -25,11 +25,11 @@ public class Main {
         //subscribe request
         UserIdGetter userIdGetter = new UserIdGetter();
 
-        SubscriptionModel json = new SubscriptionModel("subscribe",
+        SubscriptionQueryModel json = new SubscriptionQueryModel("subscribe",
                 "https://api.twitch.tv/helix/streams?user_id=" + userIdGetter.getId(SettingsProperties.getUser()),
                 SettingsProperties.getCallbackAddress(), 864000);
 
-        SubscriptionTimer subscriptionQuery = new SubscriptionTimer("https://api.twitch.tv/helix/webhooks/hub", json);
+        SubscriptionRequestTimer subscriptionQuery = new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
         System.out.println("starting sub");
         subscriptionQuery.sendRequest();
         ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);

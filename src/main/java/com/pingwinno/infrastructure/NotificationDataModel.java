@@ -1,7 +1,7 @@
 package com.pingwinno.infrastructure;
 
 
-public class NotificationModel {
+public class NotificationDataModel {
     private String id;
     private String[] community_ids;
     private String user_id;

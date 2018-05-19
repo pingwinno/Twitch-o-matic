@@ -3,8 +3,8 @@ package com.pingwinno.presentation;
 
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.domain.CommandLineRunner;
-import com.pingwinno.infrastructure.DataModel;
-import com.pingwinno.infrastructure.NotificationModel;
+import com.pingwinno.infrastructure.StreamStatusNotificationModel;
+import com.pingwinno.infrastructure.NotificationDataModel;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -17,7 +17,7 @@ import javax.ws.rs.core.UriInfo;
 
 
 @Path("/handler")
-public class HttpRequestHandler {
+public class TwitchApiHandler {
 
     private String lastNotificationId;
 
@@ -45,11 +45,11 @@ public class HttpRequestHandler {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response handleStreamNotification(DataModel dataModel) {
+    public Response handleStreamNotification(StreamStatusNotificationModel dataModel) {
         System.out.println("Handle POST request");
-        NotificationModel[] notificationArray = dataModel.getData();
+        NotificationDataModel[] notificationArray = dataModel.getData();
         if (notificationArray[0] != null) {
-            NotificationModel notificationModel = notificationArray[0];
+            NotificationDataModel notificationModel = notificationArray[0];
             //check for notification duplicate
             if (!(notificationModel.getId().equals(lastNotificationId))) {
                 lastNotificationId = notificationModel.getId();

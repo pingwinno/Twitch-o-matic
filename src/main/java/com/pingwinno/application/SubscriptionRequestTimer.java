@@ -2,7 +2,7 @@ package com.pingwinno.application;
 
 
 import com.google.gson.Gson;
-import com.pingwinno.infrastructure.SubscriptionModel;
+import com.pingwinno.infrastructure.SubscriptionQueryModel;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
@@ -13,13 +13,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-public class SubscriptionTimer extends TimerTask {
+public class SubscriptionRequestTimer extends TimerTask {
 
     private String serverAddress;
     private String postData;
     private int resubscribingPeriod;
 
-    public SubscriptionTimer(String serverAddress, SubscriptionModel subscriptionModel) {
+    public SubscriptionRequestTimer(String serverAddress, SubscriptionQueryModel subscriptionModel) {
         Gson gson = new Gson();
         this.serverAddress = serverAddress;
         postData = gson.toJson(subscriptionModel);
