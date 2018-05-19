@@ -24,10 +24,9 @@ public class SubscriptionRequestTimer extends TimerTask {
         this.serverAddress = serverAddress;
         postData = gson.toJson(subscriptionModel);
         resubscribingPeriod = subscriptionModel.getHubLeaseSeconds() * 1000;
-        System.out.println(postData);
     }
 
-    public void sendRequest() {
+    public void sendSubscriptionRequest() {
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(this, 10000, resubscribingPeriod);
     }
@@ -37,15 +36,11 @@ public class SubscriptionRequestTimer extends TimerTask {
             CloseableHttpClient client = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(serverAddress);
             StringEntity postBody = new StringEntity(postData);
-
             httpPost.addHeader("Content-Type", "application/json");
             httpPost.addHeader("Client-ID", "4zswqk0crwt2wy4b76aaltk2z02m67");
             httpPost.setEntity(postBody);
-
             CloseableHttpResponse response = client.execute(httpPost);
-
-            System.out.println(response.getStatusLine().getStatusCode());
-            System.out.println(response.getEntity());
+            System.out.println("Response code " + response.getStatusLine().getStatusCode());
             client.close();
         } catch (IOException e) {
             e.printStackTrace();

@@ -22,7 +22,7 @@ public class TwitchApiHandler {
     private String lastNotificationId;
 
     @GET
-    public Response getQuery(@Context UriInfo info) {
+    public Response getSubscriptionQuery(@Context UriInfo info) {
         Response response = null;
         if (info != null) {
             String hubMode = info.getQueryParameters().getFirst("hub.mode");

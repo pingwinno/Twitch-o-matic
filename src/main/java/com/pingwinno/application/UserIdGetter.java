@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class UserIdGetter {
 
-    public String getId(String user) throws IOException {
+    public String getUserId(String user) throws IOException {
 
 
         CloseableHttpClient client = HttpClients.createDefault();

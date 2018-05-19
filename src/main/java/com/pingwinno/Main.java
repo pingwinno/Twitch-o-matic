@@ -26,12 +26,12 @@ public class Main {
         UserIdGetter userIdGetter = new UserIdGetter();
 
         SubscriptionQueryModel json = new SubscriptionQueryModel("subscribe",
-                "https://api.twitch.tv/helix/streams?user_id=" + userIdGetter.getId(SettingsProperties.getUser()),
+                "https://api.twitch.tv/helix/streams?user_id=" + userIdGetter.getUserId(SettingsProperties.getUser()),
                 SettingsProperties.getCallbackAddress(), 864000);
 
         SubscriptionRequestTimer subscriptionQuery = new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
         System.out.println("starting sub");
-        subscriptionQuery.sendRequest();
+        subscriptionQuery.sendSubscriptionRequest();
         ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
         ctx.setContextPath("/");
         server.setHandler(ctx);
