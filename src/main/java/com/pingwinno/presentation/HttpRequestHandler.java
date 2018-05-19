@@ -1,10 +1,10 @@
-package com.pingwinno.controllers;
+package com.pingwinno.presentation;
 
 
-import com.pingwinno.SettingsProperties;
-import com.pingwinno.notification.handler.CommandLineRunner;
-import com.pingwinno.notification.handler.DataModel;
-import com.pingwinno.notification.handler.NotificationModel;
+import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.domain.CommandLineRunner;
+import com.pingwinno.infrastructure.DataModel;
+import com.pingwinno.infrastructure.NotificationModel;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;

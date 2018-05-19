@@ -1,4 +1,4 @@
-package com.pingwinno.notification.handler;
+package com.pingwinno.domain;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

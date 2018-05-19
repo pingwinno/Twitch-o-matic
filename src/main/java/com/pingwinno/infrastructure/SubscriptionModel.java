@@ -1,4 +1,4 @@
-package com.pingwinno.subscription.handler;
+package com.pingwinno.infrastructure;
 
 import com.google.gson.annotations.SerializedName;
 

@@ -1,4 +1,4 @@
-package com.pingwinno.notification.handler;
+package com.pingwinno.infrastructure;
 
 
 public class NotificationModel {

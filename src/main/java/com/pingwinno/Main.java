@@ -3,9 +3,10 @@ package com.pingwinno;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pingwinno.subscription.handler.SubscriptionModel;
-import com.pingwinno.subscription.handler.SubscriptionTimer;
-import com.pingwinno.subscription.handler.UserIdGetter;
+import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.SubscriptionModel;
+import com.pingwinno.application.SubscriptionTimer;
+import com.pingwinno.application.UserIdGetter;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -42,7 +43,7 @@ public class Main {
         serHol.setInitOrder(1);
         //Handler package
         serHol.setInitParameter("jersey.config.server.provider.packages",
-                "com.pingwinno.controllers");
+                "com.pingwinno.presentation");
         try {
             server.start();
             server.join();

@@ -1,4 +1,4 @@
-package com.pingwinno;
+package com.pingwinno.infrastructure;
 
 
 import java.io.File;

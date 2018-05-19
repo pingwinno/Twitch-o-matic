@@ -1,4 +1,4 @@
-package com.pingwinno.subscription.handler;
+package com.pingwinno.application;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
