@@ -51,7 +51,58 @@ public class SettingsProperties {
         }
         return user;
     }
+    public static String getGoogleAccount() {
+        String googleAccount = null;
+        try {
+            googleAccount = getProperties().getProperty("GoogleAccount");
+        } catch (IOException e) {
+            System.err.println("Can't read GoogleAccount");
+            e.printStackTrace();
+        }
+        return googleAccount;
+    }
 
+    public static String getGoogleAccountPassword() {
+        String googleAccountPassword = null;
+        try {
+            googleAccountPassword = getProperties().getProperty("GoogleAccountPassword");
+        } catch (IOException e) {
+            System.err.println("Can't read GoogleAccountPassword");
+            e.printStackTrace();
+        }
+        return googleAccountPassword;
+    }
+    public static String getGooglePhotosAlbumURL() {
+        String googlePhotosAlbumURL = null;
+        try {
+            googlePhotosAlbumURL = getProperties().getProperty("GooglePhotosAlbumURL");
+        } catch (IOException e) {
+            System.err.println("Can't read GooglePhotosAlbumURL");
+            e.printStackTrace();
+        }
+        return googlePhotosAlbumURL;
+    }
+
+    public static String getRecordedStreamPath (){
+        String recordedStreamPath = null;
+        try {
+            recordedStreamPath = getProperties().getProperty("RecordedStreamPath");
+        } catch (IOException e) {
+            System.err.println("Can't read RecordedStreamPath");
+            e.printStackTrace();
+        }
+        return recordedStreamPath;
+    }
+    public static String getRecordMachineName (){
+        String recordMachineName = null;
+        try {
+            recordMachineName = getProperties().getProperty("RecordMachineName");
+        } catch (IOException e) {
+            System.err.println("Can't read RecordMachineName");
+            e.printStackTrace();
+        }
+        return recordMachineName;
+    }
 }
 
 

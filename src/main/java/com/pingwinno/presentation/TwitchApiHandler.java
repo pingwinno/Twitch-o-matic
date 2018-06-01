@@ -1,6 +1,7 @@
 package com.pingwinno.presentation;
 
 
+import com.pingwinno.domain.GooglePhotosUploader;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.domain.CommandLineRunner;
 import com.pingwinno.infrastructure.StreamStatusNotificationModel;
@@ -20,6 +21,7 @@ import javax.ws.rs.core.UriInfo;
 public class TwitchApiHandler {
 
     private String lastNotificationId;
+    private String recordedStreamFileName;
 
     @GET
     public Response getSubscriptionQuery(@Context UriInfo info) {
@@ -53,11 +55,20 @@ public class TwitchApiHandler {
             //check for notification duplicate
             if (!(notificationModel.getId().equals(lastNotificationId))) {
                 lastNotificationId = notificationModel.getId();
+                recordedStreamFileName = notificationModel.getTitle() + notificationModel.getStarted_at() + ".mp4";
                 CommandLineRunner commandLineRunner = new CommandLineRunner();
-                new Thread(() -> commandLineRunner.executeCommand(notificationModel.getStarted_at(), SettingsProperties.getUser())).start();
+                System.out.println("Try to start streamlink");
+                new Thread(() -> commandLineRunner.executeCommand(notificationModel.getStarted_at(), SettingsProperties.getUser(), notificationModel.getTitle())).start();
                 String startedAt = notificationModel.getStarted_at();
                 System.out.println(startedAt);
             }
+
+        }
+        else {
+
+            GooglePhotosUploader googlePhotosUploader = new GooglePhotosUploader();
+            googlePhotosUploader.uploadRecordedStream(recordedStreamFileName);
+            //place for google photo uploader
         }
         return Response.status(Response.Status.ACCEPTED).build();
     }
