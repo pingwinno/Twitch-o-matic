@@ -22,6 +22,7 @@ public class UserIdGetter {
         JSONObject jsonObj = new JSONObject(EntityUtils.toString(response.getEntity()));
         String userId = jsonObj.get("_id").toString();
         client.close();
+        response.close();
 
         return userId;
     }

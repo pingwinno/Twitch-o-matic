@@ -7,14 +7,16 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class SettingsProperties {
-    public final static String PROPSFILE = "config.prop";
+    private final static String PROPSFILE = "config.prop";
 
     private static Properties props;
 
     private static Properties getProperties() throws IOException {
         if (props == null) {
             props = new Properties();
-            props.load(new FileInputStream(new File(PROPSFILE)));
+            try (FileInputStream propsFile = new FileInputStream(new File(PROPSFILE))){
+                props.load(propsFile);
+            }
         }
         return props;
     }

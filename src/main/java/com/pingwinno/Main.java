@@ -30,7 +30,7 @@ public class Main {
                 SettingsProperties.getCallbackAddress(), 864000);
 
         SubscriptionRequestTimer subscriptionQuery = new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
-        System.out.println("starting sub");
+        System.out.println("Sending subscription query");
         subscriptionQuery.sendSubscriptionRequest();
         ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
         ctx.setContextPath("/");
