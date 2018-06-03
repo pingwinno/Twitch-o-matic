@@ -3,9 +3,10 @@ package com.pingwinno.domain;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
-public class CommandLineRunner {
+public class StreamlinkRunner {
 
-    public void executeCommand(String time, String streamTitle, String user) {
+    private boolean isStreamEnded = false;
+    public void runStreamlink(String time, String streamTitle, String user) {
         //command line for run streamlink
         String fileName = streamTitle + time + ".mp4";
         String command = String.join(" ", "streamlink", "https://www.twitch.tv/" + user, "best", "-o", fileName);
@@ -25,5 +26,14 @@ public class CommandLineRunner {
             e.printStackTrace();
         }
         System.out.println(output.toString());
+        if (output.toString().contains("[cli][info] Stream ended")){
+            System.out.println("output contain stream ended");
+            isStreamEnded = true;
+
+        }
+    }
+    public boolean isStreamEnded()
+    {
+        return isStreamEnded;
     }
 }

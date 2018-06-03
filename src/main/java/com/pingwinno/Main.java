@@ -3,6 +3,8 @@ package com.pingwinno;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pingwinno.domain.GoogleDriveUploader;
+import com.pingwinno.infrastructure.GoogleOauth2;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.SubscriptionQueryModel;
 import com.pingwinno.application.SubscriptionRequestTimer;
@@ -20,6 +22,12 @@ import javax.ws.rs.core.Application;
 public class Main {
 
     public static void main(String[] args) throws Throwable {
+        GoogleOauth2 googleOauth2 = new GoogleOauth2();
+        GoogleDriveUploader googleDriveUploader = new GoogleDriveUploader();
+        googleDriveUploader.upload(googleOauth2.startAuth());
+
+
+
 
         Server server = new Server(SettingsProperties.getServerPort());
         //subscribe request

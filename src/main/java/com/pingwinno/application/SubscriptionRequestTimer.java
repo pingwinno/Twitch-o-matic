@@ -42,6 +42,7 @@ public class SubscriptionRequestTimer extends TimerTask {
             CloseableHttpResponse response = client.execute(httpPost);
             System.out.println("Response code " + response.getStatusLine().getStatusCode());
             client.close();
+            response.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

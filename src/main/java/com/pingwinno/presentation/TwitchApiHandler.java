@@ -1,9 +1,8 @@
 package com.pingwinno.presentation;
 
 
-import com.pingwinno.domain.GooglePhotosUploader;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.domain.CommandLineRunner;
+import com.pingwinno.domain.StreamlinkRunner;
 import com.pingwinno.infrastructure.StreamStatusNotificationModel;
 import com.pingwinno.infrastructure.NotificationDataModel;
 
@@ -50,24 +49,24 @@ public class TwitchApiHandler {
     public Response handleStreamNotification(StreamStatusNotificationModel dataModel) {
         System.out.println("Handle POST request");
         NotificationDataModel[] notificationArray = dataModel.getData();
-        if (notificationArray[0] != null) {
+        if (notificationArray.length > 0) {
             NotificationDataModel notificationModel = notificationArray[0];
             //check for notification duplicate
             if (!(notificationModel.getId().equals(lastNotificationId))) {
                 lastNotificationId = notificationModel.getId();
                 recordedStreamFileName = notificationModel.getTitle() + notificationModel.getStarted_at() + ".mp4";
-                CommandLineRunner commandLineRunner = new CommandLineRunner();
+                StreamlinkRunner commandLineRunner = new StreamlinkRunner();
                 System.out.println("Try to start streamlink");
-                new Thread(() -> commandLineRunner.executeCommand(notificationModel.getStarted_at(), SettingsProperties.getUser(), notificationModel.getTitle())).start();
+                new Thread(() -> commandLineRunner.runStreamlink(notificationModel.getStarted_at(), notificationModel.getTitle(),SettingsProperties.getUser())).start();
                 String startedAt = notificationModel.getStarted_at();
                 System.out.println(startedAt);
+
             }
 
         }
-        else {
+        else  {
+            System.out.println("Stream ended. Uploading record");
 
-            GooglePhotosUploader googlePhotosUploader = new GooglePhotosUploader();
-            googlePhotosUploader.uploadRecordedStream(recordedStreamFileName);
             //place for google photo uploader
         }
         return Response.status(Response.Status.ACCEPTED).build();

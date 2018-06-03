@@ -51,36 +51,16 @@ public class SettingsProperties {
         }
         return user;
     }
-    public static String getGoogleAccount() {
-        String googleAccount = null;
-        try {
-            googleAccount = getProperties().getProperty("GoogleAccount");
-        } catch (IOException e) {
-            System.err.println("Can't read GoogleAccount");
-            e.printStackTrace();
-        }
-        return googleAccount;
-    }
 
-    public static String getGoogleAccountPassword() {
-        String googleAccountPassword = null;
+    public static String getGooglePhotosPath() {
+        String googlePhotosPath = null;
         try {
-            googleAccountPassword = getProperties().getProperty("GoogleAccountPassword");
+            googlePhotosPath = getProperties().getProperty("GooglePhotosPath");
         } catch (IOException e) {
-            System.err.println("Can't read GoogleAccountPassword");
+            System.err.println("Can't read GooglePhotosPath");
             e.printStackTrace();
         }
-        return googleAccountPassword;
-    }
-    public static String getGooglePhotosAlbumURL() {
-        String googlePhotosAlbumURL = null;
-        try {
-            googlePhotosAlbumURL = getProperties().getProperty("GooglePhotosAlbumURL");
-        } catch (IOException e) {
-            System.err.println("Can't read GooglePhotosAlbumURL");
-            e.printStackTrace();
-        }
-        return googlePhotosAlbumURL;
+        return googlePhotosPath;
     }
 
     public static String getRecordedStreamPath (){
@@ -103,6 +83,28 @@ public class SettingsProperties {
         }
         return recordMachineName;
     }
+
+    public static String getServiceAccountName(){
+        String serviceAccountName = null;
+        try {
+            serviceAccountName = getProperties().getProperty("ServiceAccountName");
+        } catch (IOException e) {
+            System.err.println("Can't read ServiceAccountName");
+            e.printStackTrace();
+        }
+        return serviceAccountName;
+    }
+    public static String getPrivateKeyFileName(){
+        String privateKeyFileName = null;
+        try {
+            privateKeyFileName = getProperties().getProperty("PrivateKeyFileName");
+        } catch (IOException e) {
+            System.err.println("Can't read PrivateKeyFileName");
+            e.printStackTrace();
+        }
+        return privateKeyFileName;
+    }
+
 }
 
 
