@@ -1,4 +1,4 @@
-package com.pingwinno.infrastructure;
+package com.pingwinno.infrastructure.google.services;
 
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpTransport;
@@ -9,13 +9,13 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
-public class GoogleServiceCore {
+class GoogleServiceCore {
 
-    public static final String APPLICATION_NAME = "Twitch-o-matic_test";
-    public static final java.io.File DATA_STORE_DIR = new java.io.File(System.getProperty("datastore"), ".store/oauth");
-    public static FileDataStoreFactory DATA_STORE_FACTORY;
-    public static HttpTransport HTTP_TRANSPORT;
-    public static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+    static final String APPLICATION_NAME = "Twitch-o-matic_test";
+    static final java.io.File DATA_STORE_DIR = new java.io.File(System.getProperty("datastore"), ".store/oauth");
+    static FileDataStoreFactory DATA_STORE_FACTORY;
+    static HttpTransport HTTP_TRANSPORT;
+    static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
     static {
         try {

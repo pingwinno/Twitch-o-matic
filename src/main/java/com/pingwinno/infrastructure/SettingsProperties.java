@@ -3,6 +3,7 @@ package com.pingwinno.infrastructure;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -12,9 +13,16 @@ public class SettingsProperties {
     private static Properties props;
 
     private static Properties getProperties() throws IOException {
-        if (props == null) {
-            props = new Properties();
-            props.load(new FileInputStream(new File(PROPSFILE)));
+        try {
+
+            if (props == null) {
+                props = new Properties();
+                props.load(new FileInputStream(new File(PROPSFILE)));
+            }
+        }catch (FileNotFoundException e){
+            System.err.println("config.prop not found");
+            System.err.println("Place config.prop in Twitch-o-matic folder and try again");
+            System.exit(1);
         }
         return props;
     }

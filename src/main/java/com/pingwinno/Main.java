@@ -3,8 +3,8 @@ package com.pingwinno;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pingwinno.domain.GoogleDriveUploader;
-import com.pingwinno.infrastructure.GoogleOauth2;
+import com.pingwinno.infrastructure.google.services.GoogleDriveService;
+import com.pingwinno.infrastructure.google.services.GoogleOauth2Service;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.SubscriptionQueryModel;
 import com.pingwinno.application.SubscriptionRequestTimer;
@@ -23,6 +23,8 @@ public class Main {
 
     public static void main(String[] args) throws Throwable {
 
+        GoogleDriveService.createDriveService();
+
         Server server = new Server(SettingsProperties.getServerPort());
         //subscribe request
         UserIdGetter userIdGetter = new UserIdGetter();
@@ -31,9 +33,10 @@ public class Main {
                 "https://api.twitch.tv/helix/streams?user_id=" + userIdGetter.getUserId(SettingsProperties.getUser()),
                 SettingsProperties.getCallbackAddress(), 864000);
 
-        SubscriptionRequestTimer subscriptionQuery = new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
+        SubscriptionRequestTimer subscriptionQuery =
+                new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
         System.out.println("Sending subscription query");
-        subscriptionQuery.sendSubscriptionRequest();
+        subscriptionQuery.sendSubscriptionRequest(server);
         ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
         ctx.setContextPath("/");
         server.setHandler(ctx);
