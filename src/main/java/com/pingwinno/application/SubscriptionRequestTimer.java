@@ -22,8 +22,8 @@ public class SubscriptionRequestTimer extends TimerTask {
     public SubscriptionRequestTimer(String serverAddress, SubscriptionQueryModel subscriptionModel) {
         Gson gson = new Gson();
         this.serverAddress = serverAddress;
-        postData = gson.toJson(subscriptionModel);
-        resubscribingPeriod = subscriptionModel.getHubLeaseSeconds() * 1000;
+        this.postData = gson.toJson(subscriptionModel);
+        this.resubscribingPeriod = subscriptionModel.getHubLeaseSeconds() * 1000;
     }
 
     public void sendSubscriptionRequest() {
@@ -40,7 +40,8 @@ public class SubscriptionRequestTimer extends TimerTask {
             httpPost.addHeader("Client-ID", "4zswqk0crwt2wy4b76aaltk2z02m67");
             httpPost.setEntity(postBody);
             CloseableHttpResponse response = client.execute(httpPost);
-            System.out.println("Response code " + response.getStatusLine().getStatusCode());
+            System.out.println("Subscription query send. Response code " + response.getStatusLine().getStatusCode());
+            System.out.println("Waiting for hub.challenge request");
             client.close();
             response.close();
         } catch (IOException e) {

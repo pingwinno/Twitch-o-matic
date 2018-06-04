@@ -23,6 +23,7 @@ public class UserIdGetter {
         String userId = jsonObj.get("_id").toString();
         client.close();
         response.close();
+
         return userId;
     }
 }
