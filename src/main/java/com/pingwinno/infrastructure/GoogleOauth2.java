@@ -13,71 +13,31 @@ import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.oauth2.Oauth2;
 import com.google.api.services.oauth2.model.Tokeninfo;
-import com.google.api.services.oauth2.model.Userinfoplus;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
 
-    /**
-     * Command-line sample for the Google OAuth2 API described at <a
-     * href="http://code.google.com/apis/accounts/docs/OAuth2Login.html">Using OAuth 2.0 for Login
-     * (Experimental)</a>.
-     *
-     * @author Yaniv Inbar
-     */
+
     public class GoogleOauth2 {
 
-        /**
-         * Be sure to specify the name of your application. If the application name is {@code null} or
-         * blank, the application will log a warning. Suggested format is "MyCompany-ProductName/1.0".
-         */
+
+
         private static final String APPLICATION_NAME = "Twitch-o-matic_test";
-
-        /** Directory to store user credentials. */
         private static final java.io.File DATA_STORE_DIR =
-                new java.io.File(System.getProperty("./datastore"), ".store/oauth2_sample");
-
-        /**
-         * Global instance of the {@link DataStoreFactory}. The best practice is to make it a single
-         * globally shared instance across your application.
-         */
+                new java.io.File(System.getProperty("datastore"), ".store/oauth");
         private static FileDataStoreFactory dataStoreFactory;
-
-        /** Global instance of the HTTP transport. */
         private static HttpTransport httpTransport;
-
-        /** Global instance of the JSON factory. */
         private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-
-        /** OAuth 2.0 scopes. */
         private static final List<String> SCOPES = Arrays.asList(
                 "https://www.googleapis.com/auth/drive");
-
         private static Oauth2 oauth2;
         private static GoogleClientSecrets clientSecrets;
+        private static Credential auhenteficatedCredentials;
 
-        /** Authorizes the installed application to access user's protected data. */
-        private static Credential authorize() throws Exception {
-            // load client secrets
-            clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
-                    new InputStreamReader(GoogleOauth2.class.getResourceAsStream("/client_secrets.json")));
-            if (clientSecrets.getDetails().getClientId().startsWith("Enter")
-                    || clientSecrets.getDetails().getClientSecret().startsWith("Enter ")) {
-                System.out.println("Enter Client ID and Secret from https://code.google.com/apis/console/ "
-                        + "into oauth2-cmdline-sample/src/main/resources/client_secrets.json");
-                System.exit(1);
-            }
-            // set up authorization code flow
-            GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
-                    httpTransport, JSON_FACTORY, clientSecrets, SCOPES).setDataStoreFactory(
-                    dataStoreFactory).build();
-            // authorize
-            return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
-        }
+        private static GoogleOauth2 googleOauth2 = new GoogleOauth2();
 
-        public String startAuth() {
+        private GoogleOauth2 (){
             Credential credential = null;
             try {
                 httpTransport = GoogleNetHttpTransport.newTrustedTransport();
@@ -88,16 +48,29 @@ import java.util.List;
                 oauth2 = new Oauth2.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(
                         APPLICATION_NAME).build();
                 // run commands
+                auhenteficatedCredentials = credential;
                 tokenInfo(credential.getAccessToken());
-
                 // success!
-
             } catch (IOException e) {
                 System.err.println(e.getMessage());
             } catch (Throwable t) {
                 t.printStackTrace();
             }
-            return credential.getAccessToken();
+            }
+
+        private static Credential authorize() throws Exception {
+            // load client secrets
+            clientSecrets = GoogleClientSecrets.load(JSON_FACTORY,
+                    new InputStreamReader(GoogleOauth2.class.getResourceAsStream("/client_secrets.json")));
+            // set up authorization code flow
+            GoogleAuthorizationCodeFlow flow = new GoogleAuthorizationCodeFlow.Builder(
+                    httpTransport, JSON_FACTORY, clientSecrets, SCOPES).setDataStoreFactory(
+                    dataStoreFactory).build();
+            // authorize
+            return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
+        }
+        public static String getToken() {
+          return auhenteficatedCredentials.getAccessToken();
         }
 
         private static void tokenInfo(String accessToken) throws IOException {

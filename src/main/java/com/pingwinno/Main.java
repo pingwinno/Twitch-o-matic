@@ -22,12 +22,6 @@ import javax.ws.rs.core.Application;
 public class Main {
 
     public static void main(String[] args) throws Throwable {
-        GoogleOauth2 googleOauth2 = new GoogleOauth2();
-        GoogleDriveUploader googleDriveUploader = new GoogleDriveUploader();
-        googleDriveUploader.upload(googleOauth2.startAuth());
-
-
-
 
         Server server = new Server(SettingsProperties.getServerPort());
         //subscribe request

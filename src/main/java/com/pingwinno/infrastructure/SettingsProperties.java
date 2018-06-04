@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class SettingsProperties {
-    public final static String PROPSFILE = "config.prop";
+    private final static String PROPSFILE = "config.prop";
 
     private static Properties props;
 
