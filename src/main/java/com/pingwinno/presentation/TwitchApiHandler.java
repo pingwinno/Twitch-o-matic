@@ -59,9 +59,11 @@ public class TwitchApiHandler {
                 recordedStreamFileName = notificationModel.getTitle() + notificationModel.getStarted_at() + ".mp4";
                 StreamlinkRunner commandLineRunner = new StreamlinkRunner();
                 System.out.println("Try to start streamlink");
-                new Thread(() -> commandLineRunner.runStreamlink(notificationModel.getStarted_at(), notificationModel.getTitle(),SettingsProperties.getUser())).start();
+
+                new Thread(() -> commandLineRunner.runStreamlink(recordedStreamFileName, SettingsProperties.getRecordedStreamPath(), SettingsProperties.getUser())).start();
+
                 String startedAt = notificationModel.getStarted_at();
-                System.out.println(startedAt);
+                System.out.println("Record started:" +startedAt);
 
             }
 

@@ -4,7 +4,6 @@ package com.pingwinno;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.infrastructure.google.services.GoogleDriveService;
-import com.pingwinno.infrastructure.google.services.GoogleOauth2Service;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.SubscriptionQueryModel;
 import com.pingwinno.application.SubscriptionRequestTimer;

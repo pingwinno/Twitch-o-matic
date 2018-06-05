@@ -5,11 +5,21 @@ import java.io.InputStreamReader;
 
 public class StreamlinkRunner {
 
-    private boolean isStreamEnded = false;
-    public void runStreamlink(String time, String streamTitle, String user) {
+    private boolean isStreamEnded;
+
+    public StreamlinkRunner()
+    {
+        isStreamEnded = true;
+    }
+
+    public void runStreamlink(String fileName,String filePath, String user) {
         //command line for run streamlink
-        String fileName = streamTitle + time + ".mp4";
-        String command = String.join(" ", "streamlink", "https://www.twitch.tv/" + user, "best", "-o", fileName);
+        isStreamEnded = false;
+        if (fileName.contains(" ")) {
+           fileName = fileName.replaceAll(" ", "\\ ");
+        }
+
+        String command = String.join(" ", "streamlink", "https://www.twitch.tv/" + user, "best", "-o", filePath + fileName);
         StringBuilder output = new StringBuilder();
         Process p;
         try {
@@ -20,6 +30,7 @@ public class StreamlinkRunner {
             String line;
             while ((line = reader.readLine()) != null) {
                 output.append(line + "\n");
+                System.out.println(line);
             }
             reader.close();
         } catch (Exception e) {
