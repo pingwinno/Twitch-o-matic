@@ -1,5 +1,6 @@
 package com.pingwinno.domain;
 
+import com.pingwinno.application.StorageHelper;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.google.services.GoogleDriveService;
 
@@ -12,7 +13,7 @@ public class StreamlinkRunner {
 
     public void runStreamlink(String fileName, String filePath, String user) {
         //command line for run streamlink
-
+        StorageHelper.cleanUpStorage();
         String fileNameGDrive = fileName;
         if (fileName.contains(" ")) {
             fileName = fileName.replaceAll(" ", "\\ ");

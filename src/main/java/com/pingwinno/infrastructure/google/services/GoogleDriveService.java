@@ -18,7 +18,7 @@ public class GoogleDriveService {
      public static void createDriveService()  {
         Credential credential = null;
         // authorization
-         System.out.println("Try start authorize");
+         System.out.println("Try authorize GoogleDriveService");
          try {
              credential = GoogleOauth2Service.authorize();
          } catch (Exception e) {
