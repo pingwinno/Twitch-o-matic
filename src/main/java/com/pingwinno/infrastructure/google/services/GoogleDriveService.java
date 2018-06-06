@@ -38,7 +38,7 @@ public class GoogleDriveService {
         File fileMetadata = new File();
         fileMetadata.setName(fileName);
        java.io.File filePathFile = new java.io.File(filePath+fileName);
-        //fileMetadata.setParents(Collections.singletonList(SettingsProperties.getGooglePhotosPath()));
+        fileMetadata.setParents(Collections.singletonList(SettingsProperties.getGooglePhotosPath()));
         FileContent mediaContent = new FileContent("video/mp4", filePathFile);
         File file = driveService.files().create(fileMetadata, mediaContent)
                 .setFields("id, parents")

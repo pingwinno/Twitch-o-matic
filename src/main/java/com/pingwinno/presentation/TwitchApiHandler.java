@@ -1,10 +1,10 @@
 package com.pingwinno.presentation;
 
 
-import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.domain.StreamlinkRunner;
-import com.pingwinno.infrastructure.StreamStatusNotificationModel;
 import com.pingwinno.infrastructure.NotificationDataModel;
+import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.StreamStatusNotificationModel;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -68,8 +68,7 @@ public class TwitchApiHandler {
 
             }
 
-        }
-        else  {
+        } else {
             System.out.println("Stream ended. Uploading record");
 
             //place for google photo uploader

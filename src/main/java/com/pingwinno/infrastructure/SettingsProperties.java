@@ -19,7 +19,7 @@ public class SettingsProperties {
                 props = new Properties();
                 props.load(new FileInputStream(new File(PROPSFILE)));
             }
-        }catch (FileNotFoundException e){
+        } catch (FileNotFoundException e) {
             System.err.println("config.prop not found");
             System.err.println("Place config.prop in Twitch-o-matic folder and try again");
             System.exit(1);
@@ -71,7 +71,7 @@ public class SettingsProperties {
         return googlePhotosPath;
     }
 
-    public static String getRecordedStreamPath (){
+    public static String getRecordedStreamPath() {
         String recordedStreamPath = null;
         try {
             recordedStreamPath = getProperties().getProperty("RecordedStreamPath");
@@ -81,7 +81,8 @@ public class SettingsProperties {
         }
         return recordedStreamPath;
     }
-    public static String getRecordMachineName (){
+
+    public static String getRecordMachineName() {
         String recordMachineName = null;
         try {
             recordMachineName = getProperties().getProperty("RecordMachineName");
@@ -92,17 +93,7 @@ public class SettingsProperties {
         return recordMachineName;
     }
 
-    public static String getServiceAccountName(){
-        String serviceAccountName = null;
-        try {
-            serviceAccountName = getProperties().getProperty("ServiceAccountName");
-        } catch (IOException e) {
-            System.err.println("Can't read ServiceAccountName");
-            e.printStackTrace();
-        }
-        return serviceAccountName;
-    }
-    public static String getIgnoreStorageCheck(){
+    public static String getIgnoreStorageCheck() {
         String ignoreStorageCheck = null;
         try {
             ignoreStorageCheck = getProperties().getProperty("IgnoreStorageCheck");
@@ -112,7 +103,8 @@ public class SettingsProperties {
         }
         return ignoreStorageCheck;
     }
-    public static String getStreamQuality(){
+
+    public static String getStreamQuality() {
         String streamQuality = null;
         try {
             streamQuality = getProperties().getProperty("StreamQuality");

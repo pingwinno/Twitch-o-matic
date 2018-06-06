@@ -8,7 +8,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.eclipse.jetty.server.Server;
 
 import java.io.IOException;
 import java.util.Timer;
@@ -20,7 +19,7 @@ public class SubscriptionRequestTimer extends TimerTask {
     private String serverAddress;
     private String postData;
     private int resubscribingPeriod;
-    private Server server;
+
 
     public SubscriptionRequestTimer(String serverAddress, SubscriptionQueryModel subscriptionModel) {
         Gson gson = new Gson();
@@ -29,8 +28,7 @@ public class SubscriptionRequestTimer extends TimerTask {
         this.resubscribingPeriod = subscriptionModel.getHubLeaseSeconds() * 1000;
     }
 
-    public void sendSubscriptionRequest(Server server) throws InterruptedException {
-        this.server = server;
+    public void sendSubscriptionRequest() {
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(this, 0, resubscribingPeriod);
 
@@ -38,8 +36,7 @@ public class SubscriptionRequestTimer extends TimerTask {
 
     public void run() {
         try {
-            while(!server.isStarted()){
-                }
+
             CloseableHttpClient client = HttpClients.createDefault();
             HttpPost httpPost = new HttpPost(serverAddress);
             StringEntity postBody = new StringEntity(postData);

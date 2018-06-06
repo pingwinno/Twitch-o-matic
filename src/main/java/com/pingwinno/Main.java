@@ -4,11 +4,9 @@ package com.pingwinno;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.application.StorageChecker;
-import com.pingwinno.infrastructure.google.services.GoogleDriveService;
+import com.pingwinno.infrastructure.JettyInitializationListener;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.SubscriptionQueryModel;
-import com.pingwinno.application.SubscriptionRequestTimer;
-import com.pingwinno.application.UserIdGetter;
+import com.pingwinno.infrastructure.google.services.GoogleDriveService;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -21,7 +19,7 @@ import javax.ws.rs.core.Application;
 
 public class Main {
 
-    public static void main(String[] args) throws Throwable {
+    public static void main(String[] args){
 
         System.out.println("Checking storage...");
 
@@ -31,22 +29,14 @@ public class Main {
         }
         GoogleDriveService.createDriveService();
 
-
         Server server = new Server(SettingsProperties.getServerPort());
-        //subscribe request
-        UserIdGetter userIdGetter = new UserIdGetter();
 
-        SubscriptionQueryModel json = new SubscriptionQueryModel("subscribe",
-                "https://api.twitch.tv/helix/streams?user_id=" + userIdGetter.getUserId(SettingsProperties.getUser()),
-                SettingsProperties.getCallbackAddress(), 864000);
-
-        SubscriptionRequestTimer subscriptionQuery =
-                new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
-        System.out.println("Sending subscription query");
-        subscriptionQuery.sendSubscriptionRequest(server);
         ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
+        JettyInitializationListener jettyInitializationListener = new JettyInitializationListener();
+        ctx.addLifeCycleListener(jettyInitializationListener);
         ctx.setContextPath("/");
         server.setHandler(ctx);
+
         final Application application = new ResourceConfig()
                 .packages("org.glassfish.jersey.examples.jackson").register(JacksonFeature.class);
         ObjectMapper mapper = new ObjectMapper();
