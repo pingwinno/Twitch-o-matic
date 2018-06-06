@@ -3,6 +3,7 @@ package com.pingwinno;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pingwinno.application.StorageChecker;
 import com.pingwinno.infrastructure.google.services.GoogleDriveService;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.SubscriptionQueryModel;
@@ -22,7 +23,14 @@ public class Main {
 
     public static void main(String[] args) throws Throwable {
 
+        System.out.println("Checking storage...");
+
+        if (SettingsProperties.getIgnoreStorageCheck().equals("false")) {
+            StorageChecker.storageCheck();
+            StorageChecker.writeCheck();
+        }
         GoogleDriveService.createDriveService();
+
 
         Server server = new Server(SettingsProperties.getServerPort());
         //subscribe request

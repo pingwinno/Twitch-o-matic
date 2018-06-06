@@ -1,8 +1,10 @@
 CallbackAddress = http://31.202.48.159:4856/handler
 ServerPort = 4856
 User = unknowndevice
-RecordedStreamPath = ./
+RecordedStreamPath = /home/shiro/Downloads/
 RecordMachineName = test1
 ServiceAccountName = test-619@twitch-o-matic-host-1.iam.gserviceaccount.com
 PrivateKeyFileName = Twitch-o-matic-host-1-acfb80d722cd.json
 GooglePhotosPath = 10S4jXIMDSYpjYsJc1iKs6CcO_rP5d6FWZ1gs_YIHbvU
+StreamQuality = best
+IgnoreStorageCheck = false

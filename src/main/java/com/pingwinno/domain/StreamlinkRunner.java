@@ -1,6 +1,11 @@
 package com.pingwinno.domain;
 
+import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.google.services.GoogleDriveService;
+
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class StreamlinkRunner {
@@ -15,14 +20,17 @@ public class StreamlinkRunner {
     public void runStreamlink(String fileName,String filePath, String user) {
         //command line for run streamlink
         isStreamEnded = false;
+        String fileNameGDrive = fileName;
         if (fileName.contains(" ")) {
-           fileName = fileName.replaceAll(" ", "\\ ");
+            fileName = fileName.replaceAll(" ", "\\ ");
         }
 
-        String command = String.join(" ", "streamlink", "https://www.twitch.tv/" + user, "best", "-o", filePath + fileName);
         StringBuilder output = new StringBuilder();
         Process p;
         try {
+
+            String command = String.join(" ", "streamlink", "https://www.twitch.tv/" + user,
+                SettingsProperties.getStreamQuality(), "-o", filePath + fileName);
             p = Runtime.getRuntime().exec(command);
             p.waitFor();
             BufferedReader reader =
@@ -40,6 +48,12 @@ public class StreamlinkRunner {
         if (output.toString().contains("[cli][info] Stream ended")){
             System.out.println("output contain stream ended");
             isStreamEnded = true;
+            try {
+                GoogleDriveService.upload(fileNameGDrive,filePath);
+            } catch (IOException e) {
+                System.err.println("Can't find recorded file"+fileNameGDrive+filePath);
+                e.printStackTrace();
+            }
 
         }
     }

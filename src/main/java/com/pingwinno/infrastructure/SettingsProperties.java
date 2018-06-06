@@ -102,17 +102,26 @@ public class SettingsProperties {
         }
         return serviceAccountName;
     }
-    public static String getPrivateKeyFileName(){
-        String privateKeyFileName = null;
+    public static String getIgnoreStorageCheck(){
+        String ignoreStorageCheck = null;
         try {
-            privateKeyFileName = getProperties().getProperty("PrivateKeyFileName");
+            ignoreStorageCheck = getProperties().getProperty("IgnoreStorageCheck");
         } catch (IOException e) {
-            System.err.println("Can't read PrivateKeyFileName");
+            System.err.println("Can't read IgnoreStorageCheck");
             e.printStackTrace();
         }
-        return privateKeyFileName;
+        return ignoreStorageCheck;
     }
-
+    public static String getStreamQuality(){
+        String streamQuality = null;
+        try {
+            streamQuality = getProperties().getProperty("StreamQuality");
+        } catch (IOException e) {
+            System.err.println("Can't read StreamQuality");
+            e.printStackTrace();
+        }
+        return streamQuality;
+    }
 }
 
 

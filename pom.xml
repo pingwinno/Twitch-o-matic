@@ -146,7 +146,7 @@
 
 
     <build>
-        <finalName>JerseyJettyEx</finalName>
+        <finalName>Twitch-o-matic</finalName>
         <plugins>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

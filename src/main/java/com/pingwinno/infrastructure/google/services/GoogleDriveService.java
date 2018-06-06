@@ -34,11 +34,12 @@ public class GoogleDriveService {
 
 
 
-   static public void upload(String fileName, java.io.File filePath) throws IOException {
+   static public void upload(String fileName, String filePath) throws IOException {
         File fileMetadata = new File();
         fileMetadata.setName(fileName);
-        fileMetadata.setParents(Collections.singletonList(SettingsProperties.getGooglePhotosPath()));
-        FileContent mediaContent = new FileContent("video/mp4", filePath);
+       java.io.File filePathFile = new java.io.File(filePath+fileName);
+        //fileMetadata.setParents(Collections.singletonList(SettingsProperties.getGooglePhotosPath()));
+        FileContent mediaContent = new FileContent("video/mp4", filePathFile);
         File file = driveService.files().create(fileMetadata, mediaContent)
                 .setFields("id, parents")
                 .execute();
