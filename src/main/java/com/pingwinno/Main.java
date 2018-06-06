@@ -1,65 +1,64 @@
 package com.pingwinno;
 
 
-import com.pingwinno.SubscriptionHandler.JsonSubObject;
-import com.pingwinno.SubscriptionHandler.SubscriptionQuery;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pingwinno.application.SubscriptionRequestTimer;
+import com.pingwinno.application.UserIdGetter;
+import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.SubscriptionQueryModel;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
-import java.net.ServerSocket;
-import java.net.Socket;
+import javax.ws.rs.core.Application;
 
 
-/**
- * Created by yar 09.09.2009
- */
-        public class Main {
+public class Main {
 
-            public static void main(String[] args) throws Throwable {
+    public static void main(String[] args) throws Throwable {
 
-                Server server = new Server(4856);
-               JsonSubObject json = new JsonSubObject("subscribe", "https://api.twitch.tv/helix/users/follows?to_id=104717035","http://31.202.48.159:4856/handler", 0 );
+        Server server = new Server(SettingsProperties.getServerPort());
+        //subscribe request
+        //subscribe request
+        UserIdGetter userIdGetter = new UserIdGetter();
+        SubscriptionQueryModel json;
 
-                SubscriptionQuery subscriptionQuery = new SubscriptionQuery("https://api.twitch.tv/helix/webhooks/hub", json);
+        json = new SubscriptionQueryModel("subscribe",
+                "https://api.twitch.tv/helix/streams?user_id=" + userIdGetter.getUserId(SettingsProperties.getUser()),
+                SettingsProperties.getCallbackAddress(), 864000);
+        SubscriptionRequestTimer subscriptionQuery =
+                new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
+        System.out.println("Sending subscription query");
+        subscriptionQuery.sendSubscriptionRequest();
+        ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
+        ctx.setContextPath("/");
+        server.setHandler(ctx);
+        final Application application = new ResourceConfig()
+                .packages("org.glassfish.jersey.examples.jackson").register(JacksonFeature.class);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ServletHolder serHol = ctx.addServlet(ServletContainer.class, "/*");
+        serHol.setInitOrder(1);
+        //Handler package
+        serHol.setInitParameter("jersey.config.server.provider.packages",
+                "com.pingwinno.controllers");
+        try {
+            server.start();
+            server.join();
+        } catch (Exception ex) {
+            System.out.println("Server running failed: " + ex);
 
-
-
-// some comment
-                ServletContextHandler ctx =
-                        new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-
-                ctx.setContextPath("/");
-                server.setHandler(ctx);
-
-                ServletHolder serHol = ctx.addServlet(ServletContainer.class, "/*");
-                serHol.setInitOrder(1);
-                serHol.setInitParameter("jersey.config.server.provider.packages",
-                        "com.pingwinno.res");
-
-                System.out.println("starting sub");
-                subscriptionQuery.startSub();
-                try {
-                    server.start();
-                    server.join();
-
-
-                } catch (Exception ex) {
-
-                } finally {
-
-                    server.destroy();
-                }
-
-
-            }
-
-
-
-
-
+        } finally {
+            server.destroy();
+        }
+    }
 }
+
+
 
 
 

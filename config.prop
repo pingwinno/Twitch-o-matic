@@ -1,0 +1,8 @@
+CallbackAddress = http://31.202.48.159:4856/handler
+ServerPort = 4856
+User = olyashaa
+GoogleAccount = dart.pingwin@gmail.com
+GoogleAccountPassword = benqsiemense71
+GooglePhotosAlbumURL = https://photos.google.com/u/1/search/_tv_Videos
+RecordedStreamPath = ./
+RecordMachineName = test1
