@@ -3,12 +3,20 @@ package com.pingwinno.application;
 import com.pingwinno.infrastructure.SettingsProperties;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Stream;
 
 public class StorageHelper {
 
     private final static File FILE_PATH = new File(SettingsProperties.getRecordedStreamPath());
-    private final static int SPACE_FOR_BEST_QUALITY = 10;
-    private final static int SPACE_FOR_HIGH_QUALITY = 8;
+    private final static int SPACE_FOR_BEST_QUALITY = 1;
+    private final static int SPACE_FOR_HIGH_QUALITY = 1;
     private final static int SPACE_FOR_MEDIUM_QUALITY = 6;
     private final static int SPACE_FOR_LOW_QUALITY = 0; //space require not calculated yet
 
@@ -60,16 +68,29 @@ public class StorageHelper {
     }
 
     public static void cleanUpStorage() {
-        System.out.println("Checking storage...");
-        if (((checkFreeSpace() < SPACE_FOR_BEST_QUALITY) && SettingsProperties.getStreamQuality().equals("best")) ||
-                ((checkFreeSpace() < SPACE_FOR_HIGH_QUALITY) && SettingsProperties.getStreamQuality().equals("high")) ||
-                ((checkFreeSpace() < SPACE_FOR_MEDIUM_QUALITY) && SettingsProperties.getStreamQuality().equals("medium"))) {
-            System.out.println("Space not enough! Try to clean up storage...");
-           if (FILE_PATH.delete()){
-           if (FILE_PATH.mkdir()) System.out.println("Success!");
-           }
-           else  System.err.println("Can't clean up storage! Recording stream may be failed!");
+        if (SettingsProperties.getIgnoreStorageCheck().equals("true")) {
+            System.out.println("Checking storage...");
+            if (((checkFreeSpace() < SPACE_FOR_BEST_QUALITY) && SettingsProperties.getStreamQuality().equals("best")) ||
+                    ((checkFreeSpace() < SPACE_FOR_HIGH_QUALITY) && SettingsProperties.getStreamQuality().equals("high")) ||
+                    ((checkFreeSpace() < SPACE_FOR_MEDIUM_QUALITY) && SettingsProperties.getStreamQuality().equals("medium"))) {
+                System.out.println("Space not enough! Try to clean up storage...");
+                if (FILE_PATH.delete()) {
+                    if (FILE_PATH.mkdir()) System.out.println("Success!");
+                } else System.err.println("Can't clean up storage! Recording stream may be failed!");
+            } else System.out.println("OK. Free space is:" + checkFreeSpace() + "GB");
+        } else System.out.println("Free space is:" + checkFreeSpace() + "GB");
+    }
+
+    public static List<String> listOfChunksInFolder() throws IOException {
+
+        try (Stream<Path> paths = Files.walk(Paths.get(SettingsProperties.getRecordedStreamPath()))) {
+
+            List<String> listOfChunks = new LinkedList<String>() {
+            };
+            paths.filter(Files::isRegularFile).forEach(path -> listOfChunks.add(path.toString()));
+
+            Collections.sort(listOfChunks);
+            return listOfChunks;
         }
-        else System.out.println("OK. Free space is:" + checkFreeSpace() + "GB");
     }
 }

@@ -13,7 +13,8 @@ public class StreamlinkRunner {
 
     public void runStreamlink(String fileName, String filePath, String user) {
         //command line for run streamlink
-        StorageHelper.cleanUpStorage();
+
+       // StorageHelper.cleanUpStorage();
         String fileNameGDrive = fileName;
         if (fileName.contains(" ")) {
             fileName = fileName.replaceAll(" ", "\\ ");

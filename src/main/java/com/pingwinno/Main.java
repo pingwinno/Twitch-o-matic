@@ -3,6 +3,7 @@ package com.pingwinno;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pingwinno.application.PlaylistGetter;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.infrastructure.JettyInitializationListener;
 import com.pingwinno.infrastructure.SettingsProperties;
@@ -15,11 +16,17 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 import javax.ws.rs.core.Application;
+import java.io.IOException;
 
 
 public class Main {
 
-    public static void main(String[] args){
+
+    public static void main(String[] args) throws IOException {
+
+
+
+
 
         System.out.println("Checking storage...");
 
@@ -55,6 +62,7 @@ public class Main {
         }
     }
 }
+
 
 
 
