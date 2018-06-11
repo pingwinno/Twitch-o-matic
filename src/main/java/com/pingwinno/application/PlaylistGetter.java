@@ -16,16 +16,17 @@ public class PlaylistGetter {
     private JSONObject json;
     private String sig;
 
-    public void getPlaylistToken(String user) throws IOException {
+    public static void getPlaylistToken(String user) throws IOException {
 
 
         CloseableHttpClient client = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet("https://api.twitch.tv/api/channels/" + user + "/access_token");
+        HttpGet httpGet = new HttpGet("https://api.twitch.tv/api/videos/a270858714");
         httpGet.addHeader("Client-ID", "4zswqk0crwt2wy4b76aaltk2z02m67");
         System.out.println(httpGet.toString());
         CloseableHttpResponse response = client.execute(httpGet);
-        json = new JSONObject(EntityUtils.toString(response.getEntity()));
-        sig = json.get("sig").toString();
+        System.out.println(response.getStatusLine());
+        JSONObject json = new JSONObject(EntityUtils.toString(response.getEntity()));
+        System.out.println(json.toString());
 
         client.close();
         response.close();

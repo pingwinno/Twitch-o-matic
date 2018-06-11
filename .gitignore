@@ -5,3 +5,4 @@
 target/
 out/
 *.jar
+/src/main/java/com/pingiwnno/Test.java

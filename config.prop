@@ -1,7 +1,7 @@
-CallbackAddress = http://31.202.48.159:4856/handler
-ServerPort = 4856
-User = olyashaa
-RecordedStreamPath = /home/shiro/RecordedStream
+CallbackAddress = http://31.202.48.159:48567/handler
+ServerPort = 48567
+User = unknowndevice
+RecordedStreamPath = /home/shiro/RecordedStream/
 RecordMachineName = test1
 GooglePhotosPath = 10S4jXIMDSYpjYsJc1iKs6CcO_rP5d6FWZ1gs_YIHbvU
 StreamQuality = best
