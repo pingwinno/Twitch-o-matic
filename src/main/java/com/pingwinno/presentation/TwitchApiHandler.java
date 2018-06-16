@@ -1,6 +1,7 @@
 package com.pingwinno.presentation;
 
 
+import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.StreamFileNameHelper;
 import com.pingwinno.domain.StreamlinkRunner;
 import com.pingwinno.infrastructure.NotificationDataModel;
@@ -62,10 +63,9 @@ public class TwitchApiHandler {
                 recordedStreamFileName = StreamFileNameHelper.makeFileName(notificationModel.getTitle(), notificationModel.getStarted_at());
                 StreamlinkRunner commandLineRunner = new StreamlinkRunner();
                 System.out.println("Try to start streamlink");
-
+                StorageHelper.cleanUpStorage();
                 new Thread(() -> commandLineRunner.runStreamlink(recordedStreamFileName,
                         SettingsProperties.getRecordedStreamPath(), SettingsProperties.getUser())).start();
-
                 String startedAt = notificationModel.getStarted_at();
                 System.out.println("Record started:" + startedAt);
 
