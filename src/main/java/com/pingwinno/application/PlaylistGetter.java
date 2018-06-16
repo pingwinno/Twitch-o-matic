@@ -20,7 +20,7 @@ public class PlaylistGetter {
 
 
         CloseableHttpClient client = HttpClients.createDefault();
-        HttpGet httpGet = new HttpGet("https://api.twitch.tv/api/videos/a270858714");
+        HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/videos/vod_id/272439809");
         httpGet.addHeader("Client-ID", "4zswqk0crwt2wy4b76aaltk2z02m67");
         System.out.println(httpGet.toString());
         CloseableHttpResponse response = client.execute(httpGet);

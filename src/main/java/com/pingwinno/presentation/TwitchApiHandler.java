@@ -1,10 +1,12 @@
 package com.pingwinno.presentation;
 
 
+import com.pingwinno.application.StreamFileNameHelper;
 import com.pingwinno.domain.StreamlinkRunner;
 import com.pingwinno.infrastructure.NotificationDataModel;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.StreamStatusNotificationModel;
+import com.pingwinno.infrastructure.google.services.GoogleDriveService;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -14,6 +16,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
 
 
 @Path("/handler")
@@ -54,9 +57,9 @@ public class TwitchApiHandler {
         if (notificationArray.length > 0) {
             NotificationDataModel notificationModel = notificationArray[0];
             //check for notification duplicate
-            if (!(notificationModel.getId().equals(lastNotificationId))) {
+            if ((!(notificationModel.getId().equals(lastNotificationId))) && (notificationModel.getType().equals("live"))) {
                 lastNotificationId = notificationModel.getId();
-                recordedStreamFileName = notificationModel.getTitle() + notificationModel.getStarted_at() + ".mp4";
+                recordedStreamFileName = StreamFileNameHelper.makeFileName(notificationModel.getTitle(), notificationModel.getStarted_at());
                 StreamlinkRunner commandLineRunner = new StreamlinkRunner();
                 System.out.println("Try to start streamlink");
 
@@ -71,7 +74,12 @@ public class TwitchApiHandler {
         } else {
             System.out.println("Stream ended. Uploading record");
 
-            //place for google photo uploader
+            try {
+                GoogleDriveService.upload(recordedStreamFileName, SettingsProperties.getRecordedStreamPath());
+            } catch (IOException e) {
+                System.err.println("Can't find recorded file" + recordedStreamFileName + SettingsProperties.getRecordedStreamPath());
+                e.printStackTrace();
+            }
         }
         return Response.status(Response.Status.ACCEPTED).build();
     }

@@ -16,16 +16,6 @@ public class StreamlinkRunner {
         //command line for run streamlink
 
         // StorageHelper.cleanUpStorage();
-        byte[] byteString = fileName.getBytes();
-        String fileNameGDrive = null;
-        try {
-            fileNameGDrive = new String(byteString, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        if (fileName.contains(" ")) {
-            fileName = fileName.replaceAll(" ", "_");
-        }
 
         try {
 
@@ -35,24 +25,17 @@ public class StreamlinkRunner {
             builder.redirectErrorStream(true);
             Process p = builder.start();
             BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line;
-            while (true) {
+            String line = " ";
+            while (line != null) {
                 line = r.readLine();
-                if (line == null) {
-                    break;
-                }
+
                 System.out.println(line);
             }
-            System.out.println(line);
-            if (line.contains("[cli][info] Stream ended")) {
+
+                if (line.contains("[cli][info] Stream ended")) {
                 System.out.println("output contain stream ended");
 
-                try {
-                    GoogleDriveService.upload(fileNameGDrive, filePath);
-                } catch (IOException e) {
-                    System.err.println("Can't find recorded file" + fileNameGDrive + filePath);
-                    e.printStackTrace();
-                }
+
 
             }
         } catch (IOException e) {
