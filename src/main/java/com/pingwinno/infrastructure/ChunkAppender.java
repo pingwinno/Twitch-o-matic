@@ -2,10 +2,12 @@ package com.pingwinno.infrastructure;
 
 import java.io.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ChunkAppender {
 
-
+    private static Logger log = Logger.getLogger(ChunkAppender.class.getName());
     public static void copyfile(String srFile, String dtFile){
         try{
             File f2 = new File(srFile);
@@ -22,14 +24,14 @@ public class ChunkAppender {
             }
             in.close();
             out.close();
-            System.out.println("File copied.");
+            log.info("File copied.");
         }
         catch(FileNotFoundException ex){
-            System.out.println(ex.getMessage() + " in the specified directory.");
+            log.log(Level.SEVERE,ex.getMessage() + " in the specified directory.");
             System.exit(0);
         }
         catch(IOException e){
-            System.out.println(e.getMessage());
+            log.log(Level.SEVERE, e.getMessage());
         }
     }
 

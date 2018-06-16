@@ -9,37 +9,40 @@ import com.pingwinno.infrastructure.SettingsProperties;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.logging.Logger;
 
 
 public class GoogleDriveService {
 
+    private static Logger log = Logger.getLogger(GoogleDriveService.class.getName());
     private static Drive driveService;
 
      public static void createDriveService()  {
         Credential credential = null;
         // authorization
-         System.out.println("Try authorize GoogleDriveService");
+         log.info("Try authorize GoogleDriveService");
          try {
              credential = GoogleOauth2Service.authorize();
          } catch (Exception e) {
              e.printStackTrace();
          }
-         System.out.println("Authorization complete");
+         log.info("Authorization complete");
          // set up global Drive instance
         driveService = new Drive.Builder(GoogleServiceCore.HTTP_TRANSPORT, GoogleServiceCore.JSON_FACTORY, credential).setApplicationName(
                 GoogleServiceCore.APPLICATION_NAME).build();
-        System.out.println("Credentials saved to " + GoogleServiceCore.DATA_STORE_DIR.getAbsolutePath());
+        log.info("Credentials saved to " + GoogleServiceCore.DATA_STORE_DIR.getAbsolutePath());
         // success!
     }
 
 
 
    static public void upload(String fileName, String filePath) throws IOException {
-        File fileMetadata = new File();
+         File fileMetadata = new File();
         fileMetadata.setName(fileName);
        java.io.File filePathFile = new java.io.File(filePath+fileName);
         fileMetadata.setParents(Collections.singletonList(SettingsProperties.getGooglePhotosPath()));
         FileContent mediaContent = new FileContent("video/mp4", filePathFile);
+        log.info("Uploading file...");
         File file = driveService.files().create(fileMetadata, mediaContent)
                 .setFields("id, parents")
                 .execute();

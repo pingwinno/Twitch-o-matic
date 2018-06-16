@@ -5,9 +5,10 @@ import com.pingwinno.application.UserIdGetter;
 import org.eclipse.jetty.util.component.LifeCycle;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 public class JettyInitializationListener implements LifeCycle.Listener {
-
+    private static Logger log = Logger.getLogger(JettyInitializationListener.class.getName());
     @Override
     public void lifeCycleStarting(LifeCycle lifeCycle) {
 
@@ -17,15 +18,15 @@ public class JettyInitializationListener implements LifeCycle.Listener {
     public void lifeCycleStarted(LifeCycle lifeCycle) {
 
         //subscribe request
-        UserIdGetter userIdGetter = new UserIdGetter();
+
         SubscriptionQueryModel json;
         try {
             json = new SubscriptionQueryModel("subscribe",
-                    "https://api.twitch.tv/helix/streams?user_id=" + userIdGetter.getUserId(SettingsProperties.getUser()),
+                    "https://api.twitch.tv/helix/streams?user_id=" + UserIdGetter.getUserId(SettingsProperties.getUser()),
                     SettingsProperties.getCallbackAddress(), 864000);
             SubscriptionRequestTimer subscriptionQuery =
                     new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
-            System.out.println("Sending subscription query");
+            log.info("Sending subscription query");
             subscriptionQuery.sendSubscriptionRequest();
         } catch (IOException e) {
             e.printStackTrace();

@@ -8,12 +8,12 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets;
 import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.List;
-
+import java.util.logging.Logger;
 
 
 public class GoogleOauth2Service {
 
-
+    private static Logger log = Logger.getLogger(GoogleDriveService.class.getName());
     private static final List<String> SCOPES = Collections.singletonList(
                 "https://www.googleapis.com/auth/drive");
 
@@ -21,7 +21,7 @@ public class GoogleOauth2Service {
             }
 
             static Credential authorize() throws Exception {
-                System.out.println("Authorization start");
+                log.info("Authorization start");
             // load client secrets
                 GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(GoogleServiceCore.JSON_FACTORY,
                         new InputStreamReader(GoogleOauth2Service.class.getResourceAsStream("/client_secrets.json")));

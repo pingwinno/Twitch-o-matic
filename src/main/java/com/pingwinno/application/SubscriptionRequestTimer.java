@@ -12,10 +12,12 @@ import org.apache.http.impl.client.HttpClients;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 
 
 public class SubscriptionRequestTimer extends TimerTask {
 
+    private static Logger log = Logger.getLogger(SubscriptionRequestTimer.class.getName());
     private String serverAddress;
     private String postData;
     private int resubscribingPeriod;
@@ -44,8 +46,8 @@ public class SubscriptionRequestTimer extends TimerTask {
             httpPost.addHeader("Client-ID", "4zswqk0crwt2wy4b76aaltk2z02m67");
             httpPost.setEntity(postBody);
             CloseableHttpResponse response = client.execute(httpPost);
-            System.out.println("Subscription query send. Response code " + response.getStatusLine().getStatusCode());
-            System.out.println("Waiting for hub.challenge request");
+            log.info("Subscription query send. Response code " + response.getStatusLine().getStatusCode());
+            log.info("Waiting for hub.challenge request");
             client.close();
             response.close();
         } catch (IOException e) {

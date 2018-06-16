@@ -6,8 +6,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SettingsProperties {
+    private static Logger log = Logger.getLogger(SettingsProperties.class.getName());
+    
     private final static String PROPSFILE = "config.prop";
 
     private static Properties props;
@@ -20,8 +24,8 @@ public class SettingsProperties {
                 props.load(new FileInputStream(new File(PROPSFILE)));
             }
         } catch (FileNotFoundException e) {
-            System.err.println("config.prop not found");
-            System.err.println("Place config.prop in Twitch-o-matic folder and try again");
+            log.log(Level.SEVERE,"config.prop not found");
+            log.log(Level.SEVERE,"Place config.prop in Twitch-o-matic folder and try again");
             System.exit(1);
         }
         return props;
@@ -32,8 +36,8 @@ public class SettingsProperties {
         try {
             callbackAddress = getProperties().getProperty("CallbackAddress");
         } catch (IOException e) {
-            System.err.println("Can't read CallbackAddress");
-            e.printStackTrace();
+            log.log(Level.SEVERE,"Can't read CallbackAddress");
+            System.exit(1);
         }
         return callbackAddress;
     }
@@ -43,8 +47,8 @@ public class SettingsProperties {
         try {
             serverPort = Integer.parseInt(getProperties().getProperty("ServerPort"));
         } catch (IOException e) {
-            System.err.println("Can't read ServerPort");
-            e.printStackTrace();
+            log.log(Level.SEVERE,"Can't read ServerPort");
+            System.exit(1);
         }
         return serverPort;
     }
@@ -54,8 +58,8 @@ public class SettingsProperties {
         try {
             user = getProperties().getProperty("User");
         } catch (IOException e) {
-            System.err.println("Can't read User");
-            e.printStackTrace();
+            log.log(Level.SEVERE,"Can't read User");
+            System.exit(1);
         }
         return user;
     }
@@ -65,8 +69,8 @@ public class SettingsProperties {
         try {
             googlePhotosPath = getProperties().getProperty("GooglePhotosPath");
         } catch (IOException e) {
-            System.err.println("Can't read GooglePhotosPath");
-            e.printStackTrace();
+            log.log(Level.SEVERE,"Can't read GooglePhotosPath");
+            System.exit(1);
         }
         return googlePhotosPath;
     }
@@ -76,8 +80,8 @@ public class SettingsProperties {
         try {
             recordedStreamPath = getProperties().getProperty("RecordedStreamPath");
         } catch (IOException e) {
-            System.err.println("Can't read RecordedStreamPath");
-            e.printStackTrace();
+            log.log(Level.SEVERE,"Can't read RecordedStreamPath");
+            System.exit(1);
         }
         return recordedStreamPath;
     }
@@ -87,8 +91,8 @@ public class SettingsProperties {
         try {
             recordMachineName = getProperties().getProperty("RecordMachineName");
         } catch (IOException e) {
-            System.err.println("Can't read RecordMachineName");
-            e.printStackTrace();
+            log.log(Level.SEVERE,"Can't read RecordMachineName");
+            System.exit(1);
         }
         return recordMachineName;
     }
@@ -98,8 +102,8 @@ public class SettingsProperties {
         try {
             ignoreStorageCheck = getProperties().getProperty("IgnoreStorageCheck");
         } catch (IOException e) {
-            System.err.println("Can't read IgnoreStorageCheck");
-            e.printStackTrace();
+            log.log(Level.SEVERE,"Can't read IgnoreStorageCheck");
+            System.exit(1);
         }
         return ignoreStorageCheck;
     }
@@ -109,8 +113,8 @@ public class SettingsProperties {
         try {
             streamQuality = getProperties().getProperty("StreamQuality");
         } catch (IOException e) {
-            System.err.println("Can't read StreamQuality");
-            e.printStackTrace();
+            log.log(Level.SEVERE,"Can't read StreamQuality");
+            System.exit(1);
         }
         return streamQuality;
     }

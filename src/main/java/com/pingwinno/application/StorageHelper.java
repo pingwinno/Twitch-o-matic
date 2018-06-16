@@ -10,10 +10,11 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 public class StorageHelper {
-
+    private static Logger log = Logger.getLogger(StorageHelper.class.getName());
     private final static File FILE_PATH = new File(SettingsProperties.getRecordedStreamPath());
     private final static int SPACE_FOR_BEST_QUALITY = 1;
     private final static int SPACE_FOR_HIGH_QUALITY = 1;
@@ -21,8 +22,8 @@ public class StorageHelper {
     private final static int SPACE_FOR_LOW_QUALITY = 0; //space require not calculated yet
 
     {
-        System.out.println("WARNING! Storage check disabled! Free space is:" + checkFreeSpace() + "GB");
-        System.out.println("Storage isWritable:" + FILE_PATH.canWrite());
+        log.warning("WARNING! Storage check disabled! Free space is:" + checkFreeSpace() + "GB");
+        log.info("Storage isWritable:" + FILE_PATH.canWrite());
     }
 
     private static int checkFreeSpace() {
@@ -39,46 +40,46 @@ public class StorageHelper {
     public static void initialStorageCheck() {
         if (SettingsProperties.getIgnoreStorageCheck().equals("false")) {
             if (!FILE_PATH.exists()) {
-                System.err.println("Folder not exist!");
-                System.err.println("Try create folder...");
+                log.warning("Folder not exist!");
+                log.warning("Try create folder...");
                 if (!creatingRecordedPath()) System.exit(1);
-                else System.err.println("Success!");
+                else log.warning("Success!");
             } else if (!FILE_PATH.canWrite()) {
-                System.err.println("Can't write in " + SettingsProperties.getRecordedStreamPath());
-                System.err.println("Check permissions or change RecordedStreamPath in config.prop");
+                log.warning("Can't write in " + SettingsProperties.getRecordedStreamPath());
+                log.warning("Check permissions or change RecordedStreamPath in config.prop");
                 System.exit(1);
 
             } else if ((checkFreeSpace() < SPACE_FOR_BEST_QUALITY) && SettingsProperties.getStreamQuality().equals("best")) {
-                System.err.println("Not enough space in " + SettingsProperties.getRecordedStreamPath());
-                System.err.println("For recording at least 3 hours in best quality streamlink need around 10 GB space ");
-                System.err.println("Free up space or disable free storage checking in config.prop");
+                log.warning("Not enough space in " + SettingsProperties.getRecordedStreamPath());
+                log.warning("For recording at least 3 hours in best quality streamlink need around 10 GB space ");
+                log.warning("Free up space or disable free storage checking in config.prop");
                 System.exit(1);
             } else if ((checkFreeSpace() < SPACE_FOR_HIGH_QUALITY) && SettingsProperties.getStreamQuality().equals("high")) {
-                System.err.println("Not enough space in " + SettingsProperties.getRecordedStreamPath());
-                System.err.println("For recording at least 3 hours in high quality streamlink need around 8 GB space ");
-                System.err.println("Free up space or disable free storage checking in config.prop");
+                log.warning("Not enough space in " + SettingsProperties.getRecordedStreamPath());
+                log.warning("For recording at least 3 hours in high quality streamlink need around 8 GB space ");
+                log.warning("Free up space or disable free storage checking in config.prop");
                 System.exit(1);
             } else if ((checkFreeSpace() < SPACE_FOR_MEDIUM_QUALITY) && SettingsProperties.getStreamQuality().equals("medium")) {
-                System.err.println("Not enough space in " + SettingsProperties.getRecordedStreamPath());
-                System.err.println("For recording at least 3 hours in medium quality streamlink need around 6 GB space ");
-                System.err.println("Free up space or disable free storage checking in config.prop");
+                log.warning("Not enough space in " + SettingsProperties.getRecordedStreamPath());
+                log.warning("For recording at least 3 hours in medium quality streamlink need around 6 GB space ");
+                log.warning("Free up space or disable free storage checking in config.prop");
                 System.exit(1);
-            } else System.out.println("Free space is:" + checkFreeSpace() + "GB");
+            } else log.info("Free space is:" + checkFreeSpace() + "GB");
         }
     }
 
     public static void cleanUpStorage() {
         if (SettingsProperties.getIgnoreStorageCheck().equals("true")) {
-            System.out.println("Checking storage...");
+            log.info("Checking storage...");
             if (((checkFreeSpace() < SPACE_FOR_BEST_QUALITY) && SettingsProperties.getStreamQuality().equals("best")) ||
                     ((checkFreeSpace() < SPACE_FOR_HIGH_QUALITY) && SettingsProperties.getStreamQuality().equals("high")) ||
                     ((checkFreeSpace() < SPACE_FOR_MEDIUM_QUALITY) && SettingsProperties.getStreamQuality().equals("medium"))) {
-                System.out.println("Space not enough! Try to clean up storage...");
+                log.info("Space not enough! Try to clean up storage...");
                 if (FILE_PATH.delete()) {
-                    if (FILE_PATH.mkdir()) System.out.println("Success!");
-                } else System.err.println("Can't clean up storage! Recording stream may be failed!");
-            } else System.out.println("OK. Free space is:" + checkFreeSpace() + "GB");
-        } else System.out.println("Free space is:" + checkFreeSpace() + "GB");
+                    if (FILE_PATH.mkdir()) log.info("Success!");
+                } else log.warning("Can't clean up storage! Recording stream may be failed!");
+            } else log.info("OK. Free space is:" + checkFreeSpace() + "GB");
+        } else log.info("Free space is:" + checkFreeSpace() + "GB");
     }
 
     public static List<String> listOfChunksInFolder() throws IOException {

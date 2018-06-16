@@ -18,34 +18,36 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 @Path("/handler")
 public class TwitchApiHandler {
-
+    private static Logger log = Logger.getLogger(TwitchApiHandler.class.getName());
     private String lastNotificationId;
     private String recordedStreamFileName;
 
     @GET
     public Response getSubscriptionQuery(@Context UriInfo info) {
         Response response = null;
-        System.out.println("Incoming challenge request");
+        log.info("Incoming challenge request");
         if (info != null) {
             String hubMode = info.getQueryParameters().getFirst("hub.mode");
             //handle denied response
             if (hubMode.equals("denied")) {
                 String hubReason = info.getQueryParameters().getFirst("hub.reason");
                 response = Response.status(Response.Status.OK).build();
-                System.out.println("Subscription failed. Reason:" + hubReason);
+                log.warning("Subscription failed. Reason:" + hubReason);
                 return response;
             }
             //handle verify response
             else {
                 String hubChallenge = info.getQueryParameters().getFirst("hub.challenge");
                 response = Response.status(Response.Status.OK).entity(hubChallenge).build();
-                System.out.println("Subscription complete" + hubMode + " hub.challenge is:" + hubChallenge);
+                log.info("Subscription complete" + hubMode + " hub.challenge is:" + hubChallenge);
             }
-        } else System.out.println("Subscription query is not correct. Try restart Twitch-o-matic.");
+        } else log.warning("Subscription query is not correct. Try restart Twitch-o-matic.");
 
         return response;
     }
@@ -53,7 +55,7 @@ public class TwitchApiHandler {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response handleStreamNotification(StreamStatusNotificationModel dataModel) {
-        System.out.println("Incoming stream up/down notification");
+        log.info("Incoming stream up/down notification");
         NotificationDataModel[] notificationArray = dataModel.getData();
         if (notificationArray.length > 0) {
             NotificationDataModel notificationModel = notificationArray[0];
@@ -61,23 +63,24 @@ public class TwitchApiHandler {
             if ((!(notificationModel.getId().equals(lastNotificationId))) && (notificationModel.getType().equals("live"))) {
                 lastNotificationId = notificationModel.getId();
                 recordedStreamFileName = StreamFileNameHelper.makeFileName(notificationModel.getTitle(), notificationModel.getStarted_at());
+                log.info("File name is: "+ recordedStreamFileName);
                 StreamlinkRunner commandLineRunner = new StreamlinkRunner();
-                System.out.println("Try to start streamlink");
+                log.info("Try to start streamlink");
                 StorageHelper.cleanUpStorage();
                 new Thread(() -> commandLineRunner.runStreamlink(recordedStreamFileName,
                         SettingsProperties.getRecordedStreamPath(), SettingsProperties.getUser())).start();
                 String startedAt = notificationModel.getStarted_at();
-                System.out.println("Record started:" + startedAt);
+                log.info("Record started at: " + startedAt);
 
             }
 
         } else {
-            System.out.println("Stream ended. Uploading record");
+            log.info("Stream ended. Uploading record");
 
             try {
                 GoogleDriveService.upload(recordedStreamFileName, SettingsProperties.getRecordedStreamPath());
             } catch (IOException e) {
-                System.err.println("Can't find recorded file" + recordedStreamFileName + SettingsProperties.getRecordedStreamPath());
+                log.log(Level.SEVERE,"Can't find recorded file" + recordedStreamFileName + SettingsProperties.getRecordedStreamPath());
                 e.printStackTrace();
             }
         }
