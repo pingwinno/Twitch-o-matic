@@ -1,4 +1,4 @@
-package com.pingwinno.infrastructure;
+package com.pingwinno.infrastructure.models;
 
 import com.google.gson.annotations.SerializedName;
 

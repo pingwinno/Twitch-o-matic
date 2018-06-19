@@ -4,9 +4,9 @@ package com.pingwinno.presentation;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.StreamFileNameHelper;
 import com.pingwinno.domain.StreamlinkRunner;
-import com.pingwinno.infrastructure.NotificationDataModel;
+import com.pingwinno.infrastructure.models.NotificationDataModel;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.StreamStatusNotificationModel;
+import com.pingwinno.infrastructure.models.StreamStatusNotificationModel;
 import com.pingwinno.infrastructure.google.services.GoogleDriveService;
 
 import javax.ws.rs.Consumes;

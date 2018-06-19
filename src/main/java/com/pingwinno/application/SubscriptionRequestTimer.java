@@ -2,7 +2,7 @@ package com.pingwinno.application;
 
 
 import com.google.gson.Gson;
-import com.pingwinno.infrastructure.SubscriptionQueryModel;
+import com.pingwinno.infrastructure.models.SubscriptionQueryModel;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;

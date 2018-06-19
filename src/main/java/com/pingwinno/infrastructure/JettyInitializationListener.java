@@ -1,7 +1,8 @@
 package com.pingwinno.infrastructure;
 
 import com.pingwinno.application.SubscriptionRequestTimer;
-import com.pingwinno.application.UserIdGetter;
+import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
+import com.pingwinno.infrastructure.models.SubscriptionQueryModel;
 import org.eclipse.jetty.util.component.LifeCycle;
 
 import java.io.IOException;
