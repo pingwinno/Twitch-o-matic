@@ -22,6 +22,7 @@ public class ChunkAppender {
             while ((len = in.read(buf)) > 0) {
                 out.write(buf, 0, len);
             }
+            f2.delete();
             in.close();
             out.close();
             log.info("File copied.");

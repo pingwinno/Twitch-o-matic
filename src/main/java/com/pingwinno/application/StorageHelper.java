@@ -82,15 +82,15 @@ public class StorageHelper {
         } else log.info("Free space is:" + checkFreeSpace() + "GB");
     }
 
-    public static List<String> listOfChunksInFolder() throws IOException {
+    public static LinkedList<String> listOfChunksInFolder() throws IOException {
 
         try (Stream<Path> paths = Files.walk(Paths.get(SettingsProperties.getRecordedStreamPath()))) {
 
-            List<String> listOfChunks = new LinkedList<String>() {
+            LinkedList<String> listOfChunks = new LinkedList<String>() {
             };
             paths.filter(Files::isRegularFile).forEach(path -> listOfChunks.add(path.toString()));
 
-            Collections.sort(listOfChunks);
+           Collections.sort(listOfChunks);
             return listOfChunks;
         }
     }

@@ -13,7 +13,6 @@ public class MediaPlaylistDownloader {
         URL url = new URL(m3u8Link);
          connection = url.openConnection();
          reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
-        System.out.println(reader.readLine());
     return reader;
     }
 

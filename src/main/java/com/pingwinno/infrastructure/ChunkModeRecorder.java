@@ -1,4 +1,4 @@
-package com.pingwinno.domain;
+package com.pingwinno.infrastructure;
 
 public class ChunkModeRecorder {
 

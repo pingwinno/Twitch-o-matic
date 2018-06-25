@@ -1,5 +1,5 @@
 #Console handler
-handlers= java.util.logging.ConsoleHandler.level=INFO
+handlers= java.util.logging.ConsoleHandler.level=FINE
 handlers= java.util.logging.FileHandler
 java.util.logging.FileHandler.pattern = application_log.txt
 java.util.logging.FileHandler.limit = 1000000

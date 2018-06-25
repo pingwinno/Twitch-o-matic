@@ -29,11 +29,11 @@ public class Main {
 
     public static void main(String[] args){
 
-     try {
+    /* try {
             LogManager.getLogManager().readConfiguration((new FileInputStream(new File("log.prop"))));
         } catch (IOException e) {
            System.err.println("Could not setup logger configuration: " + e.toString());
-       }
+       }*/
 
             log.info("Checking storage...");
 

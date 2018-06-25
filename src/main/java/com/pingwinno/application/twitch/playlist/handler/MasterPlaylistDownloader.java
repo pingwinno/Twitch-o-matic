@@ -17,14 +17,14 @@ import java.net.URISyntaxException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
-public class MasterPlaylistDownoader {
+public class MasterPlaylistDownloader {
 
-    private static Logger log = Logger.getLogger(MasterPlaylistDownoader.class.getName());
+    private static Logger log = Logger.getLogger(MasterPlaylistDownloader.class.getName());
     //ignore SSL because on usher.twitch.tv its broken
     CloseableHttpClient client = HttpClients.custom().setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
     CloseableHttpResponse response;
     BufferedReader reader;
-    public BufferedReader getPlaylistToken(String vodId) throws IOException, URISyntaxException {
+    public BufferedReader getPlaylist(String vodId) throws IOException, URISyntaxException {
 
 
 

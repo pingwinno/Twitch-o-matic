@@ -3,7 +3,9 @@ package com.pingwinno.presentation;
 
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.StreamFileNameHelper;
+import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
 import com.pingwinno.domain.StreamlinkRunner;
+import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.models.NotificationDataModel;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.models.StreamStatusNotificationModel;
@@ -27,6 +29,7 @@ public class TwitchApiHandler {
     private static Logger log = Logger.getLogger(TwitchApiHandler.class.getName());
     private String lastNotificationId;
     private String recordedStreamFileName;
+    VodDownloader vodDownloader = new VodDownloader();
 
     @GET
     public Response getSubscriptionQuery(@Context UriInfo info) {
@@ -54,21 +57,25 @@ public class TwitchApiHandler {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response handleStreamNotification(StreamStatusNotificationModel dataModel) {
+    public Response handleStreamNotification(StreamStatusNotificationModel dataModel) throws IOException {
         log.info("Incoming stream up/down notification");
         NotificationDataModel[] notificationArray = dataModel.getData();
         if (notificationArray.length > 0) {
             NotificationDataModel notificationModel = notificationArray[0];
             //check for notification duplicate
-            if ((!(notificationModel.getId().equals(lastNotificationId))) && (notificationModel.getType().equals("live"))) {
+            if ((!(notificationModel.getId().equals(lastNotificationId))) &&
+                    (notificationModel.getType().equals("live")) &&
+                    (notificationModel.getUser_id().equals(UserIdGetter.getUserId(SettingsProperties.getUser())))) {
                 lastNotificationId = notificationModel.getId();
                 recordedStreamFileName = StreamFileNameHelper.makeFileName(notificationModel.getTitle(), notificationModel.getStarted_at());
                 log.info("File name is: "+ recordedStreamFileName);
                 StreamlinkRunner commandLineRunner = new StreamlinkRunner();
                 log.info("Try to start streamlink");
                 StorageHelper.cleanUpStorage();
-                new Thread(() -> commandLineRunner.runStreamlink(recordedStreamFileName,
-                        SettingsProperties.getRecordedStreamPath(), SettingsProperties.getUser())).start();
+                /*new Thread(() -> commandLineRunner.runStreamlink(recordedStreamFileName,
+                        SettingsProperties.getRecordedStreamPath(), SettingsProperties.getUser())).start();*/
+                new Thread(() ->vodDownloader.initializeDownload()).start();
+
                 String startedAt = notificationModel.getStarted_at();
                 log.info("Record started at: " + startedAt);
 
@@ -76,7 +83,7 @@ public class TwitchApiHandler {
 
         } else {
             log.info("Stream ended. Uploading record");
-
+            vodDownloader.stopRecord();
             try {
                 GoogleDriveService.upload(recordedStreamFileName, SettingsProperties.getRecordedStreamPath());
             } catch (IOException e) {
