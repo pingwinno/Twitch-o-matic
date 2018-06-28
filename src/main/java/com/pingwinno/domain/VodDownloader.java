@@ -4,15 +4,15 @@ import com.pingwinno.application.twitch.playlist.handler.*;
 import com.pingwinno.infrastructure.ChunkAppender;
 import com.pingwinno.infrastructure.SettingsProperties;
 
-import java.io.*;
-import java.net.MalformedURLException;
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.function.LongFunction;
 import java.util.logging.Logger;
 
 public class VodDownloader {
@@ -28,7 +28,7 @@ public class VodDownloader {
 
     public void initializeDownload() {
         try {
-           String m3u8Link = MasterPlaylistParser.parse(
+            String m3u8Link = MasterPlaylistParser.parse(
                     masterPlaylistDownloader.getPlaylist(VodIdGetter.getVodId()));
             String streamPath = StreamPathExtractor.extract(m3u8Link);
             System.out.println(streamPath);
@@ -42,6 +42,7 @@ public class VodDownloader {
                 log.info(chunkName + " complete");
 
             }
+            downloadedChunks.poll();
             this.compileChunks();
             System.out.println(chunks);
             this.recordCycle();
@@ -53,43 +54,40 @@ public class VodDownloader {
 
     private void refreshDownload() throws IOException {
         try {
-                String m3u8Link = MasterPlaylistParser.parse(
-                        masterPlaylistDownloader.getPlaylist(VodIdGetter.getVodId()));
-                String streamPath = StreamPathExtractor.extract(m3u8Link);
-                System.out.println(streamPath);
-                BufferedReader reader = mediaPlaylistDownloader.getMediaPlaylist(m3u8Link);
-                LinkedHashSet<String> refreshedPlaylist = MediaPlaylistParser.parse(reader);
+            String m3u8Link = MasterPlaylistParser.parse(
+                    masterPlaylistDownloader.getPlaylist(VodIdGetter.getVodId()));
+            String streamPath = StreamPathExtractor.extract(m3u8Link);
+            System.out.println(streamPath);
+            BufferedReader reader = mediaPlaylistDownloader.getMediaPlaylist(m3u8Link);
+            LinkedHashSet<String> refreshedPlaylist = MediaPlaylistParser.parse(reader);
 
-                for (String chunkName : refreshedPlaylist) {
-                    if (chunks.add(chunkName)) {
-                        website = new URL(streamPath + "/" + chunkName);
-                        rbc = Channels.newChannel(website.openStream());
-                        fos = new FileOutputStream(SettingsProperties.getRecordedStreamPath() + chunkName);
-                        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-                        downloadedChunks.add(SettingsProperties.getRecordedStreamPath() + chunkName);
-                        log.info(chunkName + " complete");
-                    }
+            for (String chunkName : refreshedPlaylist) {
+                if (chunks.add(chunkName)) {
+                    website = new URL(streamPath + "/" + chunkName);
+                    rbc = Channels.newChannel(website.openStream());
+                    fos = new FileOutputStream(SettingsProperties.getRecordedStreamPath() + chunkName);
+                    fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+                    downloadedChunks.add(SettingsProperties.getRecordedStreamPath() + chunkName);
+                    log.info(chunkName + " complete");
                 }
-                System.out.println(chunks);
-                Thread.sleep(20 * 1000);
-                this.compileChunks();
-            } catch (IOException | InterruptedException | URISyntaxException e) {
-                e.printStackTrace();
             }
-            }
-
-
-    public void compileChunks() {
-        String firstChunk = SettingsProperties.getRecordedStreamPath() + "0.ts";
-        while (downloadedChunks.iterator().hasNext()) {
-            if (!downloadedChunks.peek().equals(firstChunk)) {
-                ChunkAppender.copyfile(firstChunk, downloadedChunks.peek());
-                new File(downloadedChunks.poll()).delete();
-            } else {
-                downloadedChunks.poll();
-            }
+            System.out.println(chunks);
+            Thread.sleep(20 * 1000);
+            this.compileChunks();
+        } catch (IOException | InterruptedException | URISyntaxException e) {
+            e.printStackTrace();
         }
     }
+
+
+    private void compileChunks() {
+        String firstChunk = SettingsProperties.getRecordedStreamPath() + "0.ts";
+        while (downloadedChunks.iterator().hasNext()) {
+
+            ChunkAppender.copyfile(firstChunk, downloadedChunks.poll());
+        }
+    }
+
 
     public void stopRecord() {
         try {
@@ -103,13 +101,15 @@ public class VodDownloader {
         }
 
     }
-public void recordCycle() throws IOException {
+
+    private void recordCycle() throws IOException {
         int counter = 0;
-        while (VodIdGetter.getRecordStatus()){
+        while (VodIdGetter.getRecordStatus()) {
             this.refreshDownload();
             log.info("Cycle: " + counter);
             counter++;
         }
+        this.refreshDownload();
         stopRecord();
-}
+    }
 }
