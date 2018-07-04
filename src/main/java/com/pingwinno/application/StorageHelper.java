@@ -33,8 +33,10 @@ public class StorageHelper {
     }
 
     public static boolean creatingRecordedPath() {
-
         return FILE_PATH.mkdir();
+    }
+    public static boolean createChunksFolder(String streamName){
+        return new File(StreamFileNameHelper.makeStreamFolderPath(streamName)).mkdir();
     }
 
     public static void initialStorageCheck() {
@@ -82,16 +84,4 @@ public class StorageHelper {
         } else log.info("Free space is:" + checkFreeSpace() + "GB");
     }
 
-    public static LinkedList<String> listOfChunksInFolder() throws IOException {
-
-        try (Stream<Path> paths = Files.walk(Paths.get(SettingsProperties.getRecordedStreamPath()))) {
-
-            LinkedList<String> listOfChunks = new LinkedList<String>() {
-            };
-            paths.filter(Files::isRegularFile).forEach(path -> listOfChunks.add(path.toString()));
-
-           Collections.sort(listOfChunks);
-            return listOfChunks;
-        }
-    }
 }

@@ -1,10 +1,10 @@
 package com.pingwinno.presentation;
 
 
+import com.pingwinno.application.DownloaderSelector;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.StreamFileNameHelper;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
-import com.pingwinno.domain.StreamlinkRunner;
 import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.models.NotificationDataModel;
 import com.pingwinno.infrastructure.SettingsProperties;
@@ -28,8 +28,9 @@ import java.util.logging.Logger;
 public class TwitchApiHandler {
     private static Logger log = Logger.getLogger(TwitchApiHandler.class.getName());
     private String lastNotificationId;
-    private String recordedStreamFileName;
-    VodDownloader vodDownloader = new VodDownloader();
+    private String recordedStreamFilePath;
+    private VodDownloader vodDownloader = new VodDownloader();
+    private String streamName;
 
     @GET
     public Response getSubscriptionQuery(@Context UriInfo info) {
@@ -67,29 +68,20 @@ public class TwitchApiHandler {
                     (notificationModel.getType().equals("live")) &&
                     (notificationModel.getUser_id().equals(UserIdGetter.getUserId(SettingsProperties.getUser())))) {
                 lastNotificationId = notificationModel.getId();
-                recordedStreamFileName = StreamFileNameHelper.makeFileName(notificationModel.getTitle(), notificationModel.getStarted_at());
-                log.info("File name is: "+ recordedStreamFileName);
-                StreamlinkRunner commandLineRunner = new StreamlinkRunner();
+                streamName = StreamFileNameHelper.makeStreamName(notificationModel.getTitle(),
+                        notificationModel.getStarted_at());
+                log.info("File name is: "+ recordedStreamFilePath);
                 log.info("Try to start streamlink");
                 StorageHelper.cleanUpStorage();
-                /*new Thread(() -> commandLineRunner.runStreamlink(recordedStreamFileName,
-                        SettingsProperties.getRecordedStreamPath(), SettingsProperties.getUser())).start();*/
-                new Thread(() ->vodDownloader.initializeDownload()).start();
+                new Thread(() -> DownloaderSelector.runDownloader(streamName)).start();
 
                 String startedAt = notificationModel.getStarted_at();
                 log.info("Record started at: " + startedAt);
-
-            }
+                log.info(recordedStreamFilePath);
+                }
 
         } else {
-            log.info("Stream ended. Uploading record");
-            vodDownloader.stopRecord();
-            try {
-                GoogleDriveService.upload(recordedStreamFileName, SettingsProperties.getRecordedStreamPath());
-            } catch (IOException e) {
-                log.log(Level.SEVERE,"Can't find recorded file" + recordedStreamFileName + SettingsProperties.getRecordedStreamPath());
-                e.printStackTrace();
-            }
+
         }
         return Response.status(Response.Status.ACCEPTED).build();
     }

@@ -118,6 +118,16 @@ public class SettingsProperties {
         }
         return streamQuality;
     }
+    public static String getDownloadMode() {
+        String downloadMode = null;
+        try {
+            downloadMode = getProperties().getProperty("DownloadMode");
+        } catch (IOException e) {
+            log.log(Level.SEVERE,"Can't read DownloadMode");
+            System.exit(1);
+        }
+        return downloadMode;
+    }
 }
 
 

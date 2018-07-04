@@ -3,7 +3,8 @@ ServerPort = 48567
 User = unknowndevice
 RecordedStreamPath = /home/shiro/RecordedStream/
 RecordMachineName = test1
-GooglePhotosPath = 10S4jXIMDSYpjYsJc1iKs6CcO_rP5d6FWZ1gs_YIHbvU
+GooglePhotosPath = 1hI654I69ZURj5qmyPQjrEWsLbqmDuYx9_wMyLPWSfLM
 StreamQuality = best
 IgnoreStorageCheck = false
+DownloadMode = vod
 
