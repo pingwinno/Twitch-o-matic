@@ -31,7 +31,7 @@ public class StreamlinkRunner {
             GoogleDriveService.upload(SettingsProperties.getRecordedStreamPath(), streamFileName);
             StorageHelper.deleteUploadedFile(streamFileName);
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Exception: ", e);
+            log.log(Level.SEVERE, "Can't run streamlink. Exception: ", e);
         }
     }
 }

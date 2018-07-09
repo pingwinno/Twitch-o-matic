@@ -43,7 +43,6 @@ public class VodDownloader {
             String m3u8Link = MasterPlaylistParser.parse(
                     masterPlaylistDownloader.getPlaylist(VodIdGetter.getVodId()));
             String streamPath = StreamPathExtractor.extract(m3u8Link);
-            System.out.println(streamPath);
             chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link));
             StorageHelper.createChunksFolder(recordingStreamName);
             for (String chunkName : chunks) {
@@ -53,7 +52,7 @@ public class VodDownloader {
             this.recordCycle();
 
         } catch (IOException | URISyntaxException | InterruptedException e) {
-            e.printStackTrace();
+           log.severe("Vod downloader initialization failed" + e);
         }
     }
 
@@ -63,27 +62,23 @@ public class VodDownloader {
             String m3u8Link = MasterPlaylistParser.parse(
                     masterPlaylistDownloader.getPlaylist(VodIdGetter.getVodId()));
             String streamPath = StreamPathExtractor.extract(m3u8Link);
-            System.out.println(streamPath);
             BufferedReader reader = mediaPlaylistDownloader.getMediaPlaylist(m3u8Link);
             LinkedHashSet<String> refreshedPlaylist = MediaPlaylistParser.parse(reader);
-
             for (String chunkName : refreshedPlaylist) {
                 status = chunks.add(chunkName);
                 if (status) {
                     this.downloadChunks(streamPath, chunkName);
                 }
             }
-            System.out.println(chunks);
             this.compileChunks();
         } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
+           log.severe("Vod downloader refresh failed." + e);
         }
         return status;
     }
 
     private void compileChunks() {
         while (downloadedChunks.iterator().hasNext()) {
-
             ChunkAppender.copyfile(streamFileName, downloadedChunks.poll());
         }
     }
@@ -99,7 +94,7 @@ public class VodDownloader {
             log.info("Closed");
             StorageHelper.deleteUploadedFile(streamFileName);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.severe("VoD downloader record stop or uploading to GDrive failed" + e);
         }
     }
 

@@ -26,11 +26,11 @@ public class ChunkAppender {
             in.close();
             out.close();
             log.info("File copied.");
-        } catch (FileNotFoundException ex) {
-            log.log(Level.SEVERE, ex.getMessage() + " in the specified directory.");
+        } catch (FileNotFoundException e) {
+            log.severe(e.getMessage() + " in the specified directory.");
             System.exit(0);
         } catch (IOException e) {
-            log.log(Level.SEVERE, e.getMessage());
+            log.severe(e.getMessage());
         }
     }
 
