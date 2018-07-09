@@ -6,13 +6,14 @@ import java.util.LinkedHashSet;
 
 public class MediaPlaylistParser {
     public static LinkedHashSet<String> parse(BufferedReader reader) throws IOException {
-        String string;
+        String header;
+        String chunk;
         LinkedHashSet<String> chunks = new LinkedHashSet<>();
-        while ((string = reader.readLine()) != null) {
-            if (string.contains("#EXTINF")) {
-                string = reader.readLine();
-                if (!string.contains("muted")) {
-                    chunks.add(reader.readLine());
+        while ((header = reader.readLine()) != null) {
+            if (header.contains("#EXTINF")) {
+                chunk = reader.readLine();
+                if (!chunk.contains("muted")) {
+                    chunks.add(chunk);
                 }
             }
         }
