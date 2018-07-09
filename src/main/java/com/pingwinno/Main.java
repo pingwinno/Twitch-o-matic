@@ -3,10 +3,9 @@ package com.pingwinno;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pingwinno.application.StorageHelper;
+import com.pingwinno.domain.GDriveUploaderInitialization;
 import com.pingwinno.infrastructure.JettyInitializationListener;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.google.services.GoogleDriveService;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -27,48 +26,44 @@ public class Main {
 
     private static Logger log = Logger.getLogger(Main.class.getName());
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
-    /* try {
+        try {
             LogManager.getLogManager().readConfiguration((new FileInputStream(new File("log.prop"))));
         } catch (IOException e) {
-           System.err.println("Could not setup logger configuration: " + e.toString());
-       }*/
+            System.err.println("Could not setup logger configuration: " + e.toString());
+        }
 
-            log.info("Checking storage...");
+        log.info("Checking storage...");
+        GDriveUploaderInitialization.initialize();
+        Server server = new Server(SettingsProperties.getServerPort());
 
-            StorageHelper.initialStorageCheck();
-            log.info("Initialize GDrive service");
-            GoogleDriveService.createDriveService();
+        ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
+        JettyInitializationListener jettyInitializationListener = new JettyInitializationListener();
+        ctx.addLifeCycleListener(jettyInitializationListener);
+        ctx.setContextPath("/");
+        server.setHandler(ctx);
 
-            Server server = new Server(SettingsProperties.getServerPort());
+        final Application application = new ResourceConfig()
+                .packages("org.glassfish.jersey.examples.jackson").register(JacksonFeature.class);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        ServletHolder serHol = ctx.addServlet(ServletContainer.class, "/*");
+        serHol.setInitOrder(1);
+        //Handler package
+        serHol.setInitParameter("jersey.config.server.provider.packages",
+                "com.pingwinno.presentation");
+        try {
+            server.start();
+            server.join();
+        } catch (Exception ex) {
+            log.log(Level.SEVERE, "Server running failed: " + ex);
 
-            ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-            JettyInitializationListener jettyInitializationListener = new JettyInitializationListener();
-            ctx.addLifeCycleListener(jettyInitializationListener);
-            ctx.setContextPath("/");
-            server.setHandler(ctx);
-
-            final Application application = new ResourceConfig()
-                    .packages("org.glassfish.jersey.examples.jackson").register(JacksonFeature.class);
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            ServletHolder serHol = ctx.addServlet(ServletContainer.class, "/*");
-            serHol.setInitOrder(1);
-            //Handler package
-            serHol.setInitParameter("jersey.config.server.provider.packages",
-                    "com.pingwinno.presentation");
-            try {
-                server.start();
-                server.join();
-            } catch (Exception ex) {
-                log.log(Level.SEVERE, "Server running failed: " + ex);
-
-            } finally {
-                server.destroy();
-            }
+        } finally {
+            server.destroy();
         }
     }
+}
 
 
 

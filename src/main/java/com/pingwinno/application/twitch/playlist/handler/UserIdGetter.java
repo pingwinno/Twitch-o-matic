@@ -1,29 +1,25 @@
 package com.pingwinno.application.twitch.playlist.handler;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
+import com.pingwinno.infrastructure.HttpSeviceHelper;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.logging.Logger;
 
 public class UserIdGetter {
 
     private static Logger log = Logger.getLogger(UserIdGetter.class.getName());
+
     public static String getUserId(String user) throws IOException {
 
-        CloseableHttpClient client = HttpClients.createDefault();
+        HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/users/" + user);
         httpGet.addHeader("Client-ID", "4zswqk0crwt2wy4b76aaltk2z02m67");
         log.info(httpGet.toString());
-        CloseableHttpResponse response = client.execute(httpGet);
-        JSONObject jsonObj = new JSONObject(EntityUtils.toString(response.getEntity()));
-        String userId = jsonObj.get("_id").toString();
-        client.close();
-        response.close();
-
-        return userId;
+        JSONObject jsonObj =
+                new JSONObject(EntityUtils.toString(httpSeviceHelper.getService(httpGet, true)));
+        return jsonObj.get("_id").toString();
     }
 }

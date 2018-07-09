@@ -2,14 +2,12 @@ package com.pingwinno.presentation;
 
 
 import com.pingwinno.application.DownloaderSelector;
-import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.StreamFileNameHelper;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
 import com.pingwinno.domain.VodDownloader;
-import com.pingwinno.infrastructure.models.NotificationDataModel;
 import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.models.NotificationDataModel;
 import com.pingwinno.infrastructure.models.StreamStatusNotificationModel;
-import com.pingwinno.infrastructure.google.services.GoogleDriveService;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -20,7 +18,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -28,8 +25,6 @@ import java.util.logging.Logger;
 public class TwitchApiHandler {
     private static Logger log = Logger.getLogger(TwitchApiHandler.class.getName());
     private String lastNotificationId;
-    private String recordedStreamFilePath;
-    private VodDownloader vodDownloader = new VodDownloader();
     private String streamName;
 
     @GET
@@ -65,23 +60,18 @@ public class TwitchApiHandler {
             NotificationDataModel notificationModel = notificationArray[0];
             //check for notification duplicate
             if ((!(notificationModel.getId().equals(lastNotificationId))) &&
+                    //filter for live streams
                     (notificationModel.getType().equals("live")) &&
                     (notificationModel.getUser_id().equals(UserIdGetter.getUserId(SettingsProperties.getUser())))) {
                 lastNotificationId = notificationModel.getId();
                 streamName = StreamFileNameHelper.makeStreamName(notificationModel.getTitle(),
                         notificationModel.getStarted_at());
-                log.info("File name is: "+ recordedStreamFilePath);
                 log.info("Try to start streamlink");
-                StorageHelper.cleanUpStorage();
                 new Thread(() -> DownloaderSelector.runDownloader(streamName)).start();
 
                 String startedAt = notificationModel.getStarted_at();
                 log.info("Record started at: " + startedAt);
-                log.info(recordedStreamFilePath);
-                }
-
-        } else {
-
+            }
         }
         return Response.status(Response.Status.ACCEPTED).build();
     }

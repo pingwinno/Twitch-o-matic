@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 public class JettyInitializationListener implements LifeCycle.Listener {
     private static Logger log = Logger.getLogger(JettyInitializationListener.class.getName());
+
     @Override
     public void lifeCycleStarting(LifeCycle lifeCycle) {
 

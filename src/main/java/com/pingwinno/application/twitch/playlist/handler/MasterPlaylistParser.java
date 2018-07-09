@@ -6,7 +6,7 @@ import java.io.IOException;
 
 
 public class MasterPlaylistParser {
-    public static String parse (BufferedReader reader) throws IOException {
+    public static String parse(BufferedReader reader) throws IOException {
         String string;
         String m3u8Link = null;
         while ((string = reader.readLine()) != null) {

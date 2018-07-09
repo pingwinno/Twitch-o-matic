@@ -10,10 +10,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SettingsProperties {
-    private static Logger log = Logger.getLogger(SettingsProperties.class.getName());
-    
     private final static String PROPSFILE = "config.prop";
-
+    private static Logger log = Logger.getLogger(SettingsProperties.class.getName());
     private static Properties props;
 
     private static Properties getProperties() throws IOException {
@@ -24,8 +22,8 @@ public class SettingsProperties {
                 props.load(new FileInputStream(new File(PROPSFILE)));
             }
         } catch (FileNotFoundException e) {
-            log.log(Level.SEVERE,"config.prop not found");
-            log.log(Level.SEVERE,"Place config.prop in Twitch-o-matic folder and try again");
+            log.log(Level.SEVERE, "config.prop not found");
+            log.log(Level.SEVERE, "Place config.prop in Twitch-o-matic folder and try again");
             System.exit(1);
         }
         return props;
@@ -36,7 +34,7 @@ public class SettingsProperties {
         try {
             callbackAddress = getProperties().getProperty("CallbackAddress");
         } catch (IOException e) {
-            log.log(Level.SEVERE,"Can't read CallbackAddress");
+            log.log(Level.SEVERE, "Can't read CallbackAddress");
             System.exit(1);
         }
         return callbackAddress;
@@ -47,7 +45,7 @@ public class SettingsProperties {
         try {
             serverPort = Integer.parseInt(getProperties().getProperty("ServerPort"));
         } catch (IOException e) {
-            log.log(Level.SEVERE,"Can't read ServerPort");
+            log.log(Level.SEVERE, "Can't read ServerPort");
             System.exit(1);
         }
         return serverPort;
@@ -58,21 +56,21 @@ public class SettingsProperties {
         try {
             user = getProperties().getProperty("User");
         } catch (IOException e) {
-            log.log(Level.SEVERE,"Can't read User");
+            log.log(Level.SEVERE, "Can't read User");
             System.exit(1);
         }
         return user;
     }
 
-    public static String getGooglePhotosPath() {
-        String googlePhotosPath = null;
+    public static String getGoogleDrivePath() {
+        String googleDrivePath = null;
         try {
-            googlePhotosPath = getProperties().getProperty("GooglePhotosPath");
+            googleDrivePath = getProperties().getProperty("GoogleDrivePath");
         } catch (IOException e) {
-            log.log(Level.SEVERE,"Can't read GooglePhotosPath");
+            log.log(Level.SEVERE, "Can't read GoogleDrivePath");
             System.exit(1);
         }
-        return googlePhotosPath;
+        return googleDrivePath;
     }
 
     public static String getRecordedStreamPath() {
@@ -80,7 +78,7 @@ public class SettingsProperties {
         try {
             recordedStreamPath = getProperties().getProperty("RecordedStreamPath");
         } catch (IOException e) {
-            log.log(Level.SEVERE,"Can't read RecordedStreamPath");
+            log.log(Level.SEVERE, "Can't read RecordedStreamPath");
             System.exit(1);
         }
         return recordedStreamPath;
@@ -91,21 +89,21 @@ public class SettingsProperties {
         try {
             recordMachineName = getProperties().getProperty("RecordMachineName");
         } catch (IOException e) {
-            log.log(Level.SEVERE,"Can't read RecordMachineName");
+            log.log(Level.SEVERE, "Can't read RecordMachineName");
             System.exit(1);
         }
         return recordMachineName;
     }
 
-    public static String getIgnoreStorageCheck() {
-        String ignoreStorageCheck = null;
+    public static String getDeleteFileAfterUpload() {
+        String deleteFileAfterUpload = null;
         try {
-            ignoreStorageCheck = getProperties().getProperty("IgnoreStorageCheck");
+            deleteFileAfterUpload = getProperties().getProperty("DeleteFileAfterUpload");
         } catch (IOException e) {
-            log.log(Level.SEVERE,"Can't read IgnoreStorageCheck");
+            log.log(Level.SEVERE, "Can't read DeleteFileAfterUpload");
             System.exit(1);
         }
-        return ignoreStorageCheck;
+        return deleteFileAfterUpload;
     }
 
     public static String getStreamQuality() {
@@ -113,20 +111,32 @@ public class SettingsProperties {
         try {
             streamQuality = getProperties().getProperty("StreamQuality");
         } catch (IOException e) {
-            log.log(Level.SEVERE,"Can't read StreamQuality");
+            log.log(Level.SEVERE, "Can't read StreamQuality");
             System.exit(1);
         }
         return streamQuality;
     }
+
     public static String getDownloadMode() {
         String downloadMode = null;
         try {
             downloadMode = getProperties().getProperty("DownloadMode");
         } catch (IOException e) {
-            log.log(Level.SEVERE,"Can't read DownloadMode");
+            log.log(Level.SEVERE, "Can't read DownloadMode");
             System.exit(1);
         }
         return downloadMode;
+    }
+
+    public static String getUploadToGDrive() {
+        String uploadToGDrive = null;
+        try {
+            uploadToGDrive = getProperties().getProperty("UploadToGDrive");
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "Can't read UploadToGDrive");
+            System.exit(1);
+        }
+        return uploadToGDrive;
     }
 }
 

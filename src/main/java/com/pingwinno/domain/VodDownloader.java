@@ -33,7 +33,7 @@ public class VodDownloader {
     private String streamFileName;
 
     public void initializeDownload(String recordingStreamName) {
-            this.recordingStreamName = recordingStreamName;
+        this.recordingStreamName = recordingStreamName;
         try {
             streamFileName = SettingsProperties.getRecordedStreamPath()
                     + StreamFileNameHelper.makeFileName(recordingStreamName);
@@ -47,18 +47,17 @@ public class VodDownloader {
             chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link));
             StorageHelper.createChunksFolder(recordingStreamName);
             for (String chunkName : chunks) {
-              this.downloadChunks(streamPath,chunkName);
-              }
+                this.downloadChunks(streamPath, chunkName);
+            }
             this.compileChunks();
             this.recordCycle();
 
         } catch (IOException | URISyntaxException | InterruptedException e) {
             e.printStackTrace();
         }
-
     }
 
-    private boolean refreshDownload(){
+    private boolean refreshDownload() {
         boolean status = false;
         try {
             String m3u8Link = MasterPlaylistParser.parse(
@@ -71,7 +70,7 @@ public class VodDownloader {
             for (String chunkName : refreshedPlaylist) {
                 status = chunks.add(chunkName);
                 if (status) {
-                    this.downloadChunks(streamPath,chunkName);
+                    this.downloadChunks(streamPath, chunkName);
                 }
             }
             System.out.println(chunks);
@@ -82,7 +81,6 @@ public class VodDownloader {
         return status;
     }
 
-
     private void compileChunks() {
         while (downloadedChunks.iterator().hasNext()) {
 
@@ -90,8 +88,7 @@ public class VodDownloader {
         }
     }
 
-
-    public void stopRecord() {
+    private void stopRecord() {
         try {
             log.info("Closing vod downloader...");
             fos.close();
@@ -100,10 +97,10 @@ public class VodDownloader {
             mediaPlaylistDownloader.close();
             GoogleDriveService.upload(streamFileName, StreamFileNameHelper.makeFileName(recordingStreamName));
             log.info("Closed");
+            StorageHelper.deleteUploadedFile(streamFileName);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     private void recordCycle() throws IOException, InterruptedException {

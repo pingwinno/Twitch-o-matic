@@ -1,6 +1,6 @@
 package com.pingwinno.domain;
 
-import com.pingwinno.application.StreamFileNameHelper;
+import com.pingwinno.application.StorageHelper;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.google.services.GoogleDriveService;
 
@@ -16,11 +16,7 @@ public class StreamlinkRunner {
 
     public static void runStreamlink(String streamFileName) {
         //command line for run streamlink
-
-        //
-
         try {
-
             ProcessBuilder builder = new ProcessBuilder("streamlink", "https://www.twitch.tv/" + SettingsProperties.getUser(),
                     SettingsProperties.getStreamQuality(), "-o", streamFileName);
             System.out.println(builder.toString());
@@ -28,15 +24,14 @@ public class StreamlinkRunner {
             Process p = builder.start();
             BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String line = " ";
-                 while (line != null){
+            while (line != null) {
                 line = r.readLine();
                 log.info(line);
-                }
+            }
             GoogleDriveService.upload(SettingsProperties.getRecordedStreamPath(), streamFileName);
-            } catch (IOException e) {
+            StorageHelper.deleteUploadedFile(streamFileName);
+        } catch (IOException e) {
             log.log(Level.SEVERE, "Exception: ", e);
         }
-
-
     }
 }

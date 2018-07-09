@@ -8,21 +8,21 @@ public class ChunkAppender {
 
     private static Logger log = Logger.getLogger(ChunkAppender.class.getName());
 
-    public static void copyfile(String srFile, String dtFile) {
+    public static void copyfile(String destinationFile, String chunkFile) {
         try {
-            File f1 = new File(srFile);
-            File f2 = new File(dtFile);
-            InputStream in = new FileInputStream(f2);
+            File file1 = new File(destinationFile);
+            File file2 = new File(chunkFile);
+            InputStream in = new FileInputStream(file2);
 
             //For Append the file.
-            OutputStream out = new FileOutputStream(f1, true);
+            OutputStream out = new FileOutputStream(file1, true);
 
             byte[] buf = new byte[1024];
             int len;
             while ((len = in.read(buf)) > 0) {
                 out.write(buf, 0, len);
             }
-            f2.delete();
+            file2.delete();
             in.close();
             out.close();
             log.info("File copied.");
