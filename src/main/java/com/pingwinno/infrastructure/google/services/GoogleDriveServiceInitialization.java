@@ -1,12 +1,11 @@
-package com.pingwinno.domain;
+package com.pingwinno.infrastructure.google.services;
 
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.google.services.GoogleDriveService;
 
 import java.util.logging.Logger;
 
-public class GDriveUploaderInitialization {
+public class GoogleDriveServiceInitialization {
     private static Logger log = Logger.getLogger(GoogleDriveService.class.getName());
 
     public static void initialize() {

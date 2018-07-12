@@ -15,8 +15,8 @@ public class UserIdGetter {
     public static String getUserId(String user) throws IOException {
 
         HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
-        HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/users/" + user);
-        httpGet.addHeader("Client-ID", "4zswqk0crwt2wy4b76aaltk2z02m67");
+        HttpGet httpGet = new HttpGet("https://api.twitch.tv/helix/users/" + user);
+        httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
         log.info(httpGet.toString());
         JSONObject jsonObj =
                 new JSONObject(EntityUtils.toString(httpSeviceHelper.getService(httpGet, true)));

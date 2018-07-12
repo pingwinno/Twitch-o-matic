@@ -138,6 +138,17 @@ public class SettingsProperties {
         }
         return uploadToGDrive;
     }
+
+    public static String getUploadToCloudStorage() {
+        String uploadToCloudStorage = null;
+        try {
+            uploadToCloudStorage = getProperties().getProperty("UploadToCloudStorage");
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "Can't read UploadToCloudStorage");
+            System.exit(1);
+        }
+        return uploadToCloudStorage;
+    }
 }
 
 

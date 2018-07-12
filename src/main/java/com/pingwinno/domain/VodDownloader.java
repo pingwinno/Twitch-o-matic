@@ -4,6 +4,7 @@ import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.StreamFileNameHelper;
 import com.pingwinno.application.twitch.playlist.handler.*;
 import com.pingwinno.infrastructure.ChunkAppender;
+import com.pingwinno.infrastructure.google.services.GoogleCloudStorageService;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.google.services.GoogleDriveService;
 
@@ -52,7 +53,7 @@ public class VodDownloader {
             this.recordCycle();
 
         } catch (IOException | URISyntaxException | InterruptedException e) {
-           log.severe("Vod downloader initialization failed" + e);
+            log.severe("Vod downloader initialization failed" + e);
         }
     }
 
@@ -72,7 +73,7 @@ public class VodDownloader {
             }
             this.compileChunks();
         } catch (IOException | URISyntaxException e) {
-           log.severe("Vod downloader refresh failed." + e);
+            log.severe("Vod downloader refresh failed." + e);
         }
         return status;
     }
@@ -91,6 +92,7 @@ public class VodDownloader {
             masterPlaylistDownloader.close();
             mediaPlaylistDownloader.close();
             GoogleDriveService.upload(streamFileName, StreamFileNameHelper.makeFileName(recordingStreamName));
+            GoogleCloudStorageService.upload(streamFileName, StreamFileNameHelper.makeFileName(recordingStreamName));
             log.info("Closed");
             StorageHelper.deleteUploadedFile(streamFileName);
         } catch (IOException e) {

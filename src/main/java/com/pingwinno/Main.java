@@ -3,7 +3,7 @@ package com.pingwinno;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pingwinno.domain.GDriveUploaderInitialization;
+import com.pingwinno.infrastructure.google.services.GoogleDriveServiceInitialization;
 import com.pingwinno.infrastructure.JettyInitializationListener;
 import com.pingwinno.infrastructure.SettingsProperties;
 import org.eclipse.jetty.server.Server;
@@ -28,14 +28,14 @@ public class Main {
 
     public static void main(String[] args) {
 
-        try {
+        /*try {
             LogManager.getLogManager().readConfiguration((new FileInputStream(new File("log.prop"))));
         } catch (IOException e) {
             System.err.println("Could not setup logger configuration: " + e.toString());
-        }
+        }*/
 
         log.info("Checking storage...");
-        GDriveUploaderInitialization.initialize();
+        GoogleDriveServiceInitialization.initialize();
         Server server = new Server(SettingsProperties.getServerPort());
 
         ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
