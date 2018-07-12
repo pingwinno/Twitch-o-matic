@@ -1,6 +1,7 @@
 package com.pingwinno.domain;
 
 import com.pingwinno.application.StorageHelper;
+import com.pingwinno.infrastructure.google.services.GoogleCloudStorageService;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.google.services.GoogleDriveService;
 
@@ -29,6 +30,7 @@ public class StreamlinkRunner {
                 log.info(line);
             }
             GoogleDriveService.upload(SettingsProperties.getRecordedStreamPath(), streamFileName);
+            GoogleCloudStorageService.upload(SettingsProperties.getRecordedStreamPath(),streamFileName);
             StorageHelper.deleteUploadedFile(streamFileName);
         } catch (IOException e) {
             log.log(Level.SEVERE, "Can't run streamlink. Exception: ", e);

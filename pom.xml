@@ -15,6 +15,12 @@
             <groupId>com.google.api-client</groupId>
             <artifactId>google-api-client</artifactId>
             <version>1.23.0</version>
+            <exclusions>
+            <exclusion>
+                <artifactId>com.google</artifactId>
+                <groupId>guava</groupId>
+            </exclusion>
+        </exclusions>
         </dependency>
 
         <dependency>
@@ -72,6 +78,12 @@
             <groupId>com.google.gdata</groupId>
             <artifactId>core</artifactId>
             <version>1.47.1</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>com.google</artifactId>
+                    <groupId>guava</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -117,6 +129,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-storage</artifactId>
+            <version>1.35.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20180130</version>
@@ -132,6 +150,12 @@
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-jackson</artifactId>
             <version>2.27</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>23.0</version>
         </dependency>
 
     </dependencies>

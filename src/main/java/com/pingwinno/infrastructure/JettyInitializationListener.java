@@ -24,7 +24,8 @@ public class JettyInitializationListener implements LifeCycle.Listener {
         SubscriptionQueryModel json;
         try {
             json = new SubscriptionQueryModel("subscribe",
-                    "https://api.twitch.tv/helix/streams?user_id=" + UserIdGetter.getUserId(SettingsProperties.getUser()),
+                    "https://api.twitch.tv/helix/streams?user_id=" +
+                            UserIdGetter.getUserId(SettingsProperties.getUser()),
                     SettingsProperties.getCallbackAddress(), 864000);
             SubscriptionRequestTimer subscriptionQuery =
                     new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);

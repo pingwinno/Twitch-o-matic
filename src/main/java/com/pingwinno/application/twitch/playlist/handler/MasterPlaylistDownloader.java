@@ -22,7 +22,7 @@ public class MasterPlaylistDownloader {
 
         //make token request
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/api/vods/" + vodId + "/access_token");
-        httpGet.addHeader("Client-ID", "4zswqk0crwt2wy4b76aaltk2z02m67");
+        httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
         JSONObject json = new JSONObject(EntityUtils.toString(httpSeviceHelper.getService(httpGet, true)));
         //make playlist request with received token
         URIBuilder builder = new URIBuilder("https://usher.twitch.tv/vod/" + vodId);
