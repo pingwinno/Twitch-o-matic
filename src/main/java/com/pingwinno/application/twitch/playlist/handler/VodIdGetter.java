@@ -14,7 +14,7 @@ public class VodIdGetter {
     public static String getVodId() throws IOException {
 
         HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
-        HttpGet httpGet = new HttpGet("https://api.twitch.tv/helix/channels/" + SettingsProperties.getUser() +
+        HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/channels/" + SettingsProperties.getUser() +
                 "/videos?limit=1&broadcast_type=archive&sort=time");
         httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
         JSONObject jsonObj =
@@ -30,7 +30,7 @@ public class VodIdGetter {
     public static boolean getRecordStatus() throws IOException {
 
         HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
-        HttpGet httpGet = new HttpGet("https://api.twitch.tv/helix/channels/" + SettingsProperties.getUser() +
+        HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/channels/" + SettingsProperties.getUser() +
                 "/videos?limit=1&broadcast_type=archive&sort=time");
         httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
         JSONObject jsonObj =
