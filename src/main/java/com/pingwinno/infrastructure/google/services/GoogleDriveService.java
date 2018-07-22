@@ -34,17 +34,19 @@ public class GoogleDriveService {
     }
 
     static public void upload(String filePath, String fileName) throws IOException {
-        File fileMetadata = new File();
-        fileMetadata.setName(fileName);
+        if (SettingsProperties.getUploadToGDrive().equals("true")) {
+            File fileMetadata = new File();
+            fileMetadata.setName(fileName);
 
-        java.io.File filePathFile = new java.io.File(filePath);
-        fileMetadata.setParents(Collections.singletonList(SettingsProperties.getGoogleDrivePath()));
-        FileContent mediaContent = new FileContent("video/mp4", filePathFile);
-        log.info("Uploading file...");
-        File file = driveService.files().create(fileMetadata, mediaContent)
-                .setFields("id, parents")
-                .execute();
-        System.out.println("File ID: " + file.getId());
+            java.io.File filePathFile = new java.io.File(filePath);
+            fileMetadata.setParents(Collections.singletonList(SettingsProperties.getGoogleDrivePath()));
+            FileContent mediaContent = new FileContent("video/mp4", filePathFile);
+            log.info("Uploading file...");
+            File file = driveService.files().create(fileMetadata, mediaContent)
+                    .setFields("id, parents")
+                    .execute();
+            System.out.println("File ID: " + file.getId());
+        }
     }
 
 

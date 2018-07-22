@@ -16,11 +16,11 @@
             <artifactId>google-api-client</artifactId>
             <version>1.23.0</version>
             <exclusions>
-            <exclusion>
-                <artifactId>com.google</artifactId>
-                <groupId>guava</groupId>
-            </exclusion>
-        </exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava-jdk5</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -46,16 +46,19 @@
             <artifactId>httpmime</artifactId>
             <version>4.5.3</version>
         </dependency>
+
         <dependency>
             <groupId>com.google.apis</groupId>
             <artifactId>google-api-services-oauth2</artifactId>
             <version>v2-rev131-1.23.0</version>
         </dependency>
+
         <dependency>
             <groupId>com.google.http-client</groupId>
             <artifactId>google-http-client-jackson2</artifactId>
             <version>1.23.0</version>
         </dependency>
+
         <dependency>
             <groupId>com.google.oauth-client</groupId>
             <artifactId>google-oauth-client-jetty</artifactId>
@@ -72,18 +75,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.9.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.gdata</groupId>
-            <artifactId>core</artifactId>
-            <version>1.47.1</version>
-            <exclusions>
-                <exclusion>
-                    <artifactId>com.google</artifactId>
-                    <groupId>guava</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -131,7 +122,7 @@
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-storage</artifactId>
-            <version>1.35.0</version>
+            <version>1.37.1</version>
         </dependency>
 
         <dependency>

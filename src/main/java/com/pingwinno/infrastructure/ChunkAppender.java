@@ -1,18 +1,16 @@
 package com.pingwinno.infrastructure;
 
 import java.io.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ChunkAppender {
 
     private static Logger log = Logger.getLogger(ChunkAppender.class.getName());
 
-    public static void copyfile(String destinationFile, String chunkFile) {
+    public static void copyfile(String destinationFile, InputStream in) {
         try {
             File file1 = new File(destinationFile);
-            File file2 = new File(chunkFile);
-            InputStream in = new FileInputStream(file2);
+
 
             //For Append the file.
             OutputStream out = new FileOutputStream(file1, true);
@@ -22,8 +20,6 @@ public class ChunkAppender {
             while ((len = in.read(buf)) > 0) {
                 out.write(buf, 0, len);
             }
-            file2.delete();
-            in.close();
             out.close();
             log.info("File copied.");
         } catch (FileNotFoundException e) {

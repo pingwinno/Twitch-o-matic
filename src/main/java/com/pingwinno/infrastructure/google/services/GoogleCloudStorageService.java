@@ -15,7 +15,7 @@ public class GoogleCloudStorageService {
         if (SettingsProperties.getUploadToCloudStorage().equals("true")) {
             Storage storage = StorageOptions.getDefaultInstance().getService();
             String bucketName = "olyashaa_streams_storage";
-            Path path = Paths.get(filePath );
+            Path path = Paths.get(filePath);
             BlobId blobId = BlobId.of(bucketName, fileName);
             BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("video/mp4").build();
             Blob blob = storage.create(blobInfo, Files.readAllBytes(path));

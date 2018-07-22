@@ -4,7 +4,6 @@ package com.pingwinno.presentation;
 import com.pingwinno.application.DownloaderSelector;
 import com.pingwinno.application.StreamFileNameHelper;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
-import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.models.NotificationDataModel;
 import com.pingwinno.infrastructure.models.StreamStatusNotificationModel;

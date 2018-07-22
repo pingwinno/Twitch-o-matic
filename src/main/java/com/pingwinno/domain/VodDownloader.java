@@ -4,13 +4,13 @@ import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.StreamFileNameHelper;
 import com.pingwinno.application.twitch.playlist.handler.*;
 import com.pingwinno.infrastructure.ChunkAppender;
-import com.pingwinno.infrastructure.google.services.GoogleCloudStorageService;
 import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.google.services.GoogleCloudStorageService;
 import com.pingwinno.infrastructure.google.services.GoogleDriveService;
 
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -19,17 +19,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.logging.Logger;
 
 public class VodDownloader {
     private static Logger log = Logger.getLogger(VodDownloader.class.getName());
     private MasterPlaylistDownloader masterPlaylistDownloader = new MasterPlaylistDownloader();
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
-    private ReadableByteChannel rbc;
-    private FileOutputStream fos;
+    private ReadableByteChannel readableByteChannel;
     private LinkedHashSet<String> chunks = new LinkedHashSet<>();
-    private LinkedList<String> downloadedChunks = new LinkedList<>();
     private String recordingStreamName;
     private String streamFileName;
 
@@ -49,7 +46,6 @@ public class VodDownloader {
             for (String chunkName : chunks) {
                 this.downloadChunks(streamPath, chunkName);
             }
-            this.compileChunks();
             this.recordCycle();
 
         } catch (IOException | URISyntaxException | InterruptedException e) {
@@ -71,24 +67,17 @@ public class VodDownloader {
                     this.downloadChunks(streamPath, chunkName);
                 }
             }
-            this.compileChunks();
         } catch (IOException | URISyntaxException e) {
             log.severe("Vod downloader refresh failed." + e);
         }
         return status;
     }
 
-    private void compileChunks() {
-        while (downloadedChunks.iterator().hasNext()) {
-            ChunkAppender.copyfile(streamFileName, downloadedChunks.poll());
-        }
-    }
 
     private void stopRecord() {
         try {
             log.info("Closing vod downloader...");
-            fos.close();
-            rbc.close();
+            readableByteChannel.close();
             masterPlaylistDownloader.close();
             mediaPlaylistDownloader.close();
             GoogleDriveService.upload(streamFileName, StreamFileNameHelper.makeFileName(recordingStreamName));
@@ -121,12 +110,11 @@ public class VodDownloader {
     }
 
     private void downloadChunks(String streamPath, String chunkName) throws IOException {
-        String chunkFile = StreamFileNameHelper.makeStreamFolderPath(recordingStreamName) + "/" + chunkName;
         URL website = new URL(streamPath + "/" + chunkName);
-        rbc = Channels.newChannel(website.openStream());
-        fos = new FileOutputStream(chunkFile);
-        fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-        downloadedChunks.add(chunkFile);
+        readableByteChannel = Channels.newChannel(website.openStream());
+        InputStream inputStream = Channels.newInputStream(readableByteChannel);
+        ChunkAppender.copyfile(streamFileName, inputStream);
+        inputStream.close();
         log.info(chunkName + " complete");
     }
 }
