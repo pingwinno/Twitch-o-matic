@@ -47,9 +47,7 @@ public class StorageHelper {
     //storage cleaner for low capacity servers
     public static void deleteUploadedFile(String file) {
         File recordedStream = new File(file);
-        if (SettingsProperties.getDeleteFileAfterUpload().equals("true")) {
-            recordedStream.delete();
-            log.info("Free space is:" + checkFreeSpace() + "GB");
-        }
+        recordedStream.delete();
+        log.info("Free space is:" + checkFreeSpace() + "GB");
     }
 }

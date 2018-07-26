@@ -28,14 +28,14 @@ public class VodDownloader {
     private ReadableByteChannel readableByteChannel;
     private LinkedHashSet<String> chunks = new LinkedHashSet<>();
     private String recordingStreamName;
-    private String streamFileName;
+    private String streamFilePath;
 
     public void initializeDownload(String recordingStreamName) {
         this.recordingStreamName = recordingStreamName;
         try {
-            streamFileName = SettingsProperties.getRecordedStreamPath()
+            streamFilePath = SettingsProperties.getRecordedStreamPath()
                     + StreamFileNameHelper.makeFileName(recordingStreamName);
-            Path streamFile = Paths.get(streamFileName);
+            Path streamFile = Paths.get(streamFilePath);
             Files.createDirectories(streamFile.getParent());
             Files.createFile(streamFile);
             String m3u8Link = MasterPlaylistParser.parse(
@@ -80,10 +80,7 @@ public class VodDownloader {
             readableByteChannel.close();
             masterPlaylistDownloader.close();
             mediaPlaylistDownloader.close();
-            GoogleDriveService.upload(streamFileName, StreamFileNameHelper.makeFileName(recordingStreamName));
-            GoogleCloudStorageService.upload(streamFileName, StreamFileNameHelper.makeFileName(recordingStreamName));
-            log.info("Closed");
-            StorageHelper.deleteUploadedFile(streamFileName);
+            PostDownloadHandler.handleDownloadedStream(recordingStreamName);
         } catch (IOException e) {
             log.severe("VoD downloader record stop or uploading to GDrive failed" + e);
         }
@@ -113,7 +110,7 @@ public class VodDownloader {
         URL website = new URL(streamPath + "/" + chunkName);
         readableByteChannel = Channels.newChannel(website.openStream());
         InputStream inputStream = Channels.newInputStream(readableByteChannel);
-        ChunkAppender.copyfile(streamFileName, inputStream);
+        ChunkAppender.copyfile(streamFilePath, inputStream);
         inputStream.close();
         log.info(chunkName + " complete");
     }

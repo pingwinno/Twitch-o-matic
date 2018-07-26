@@ -18,7 +18,7 @@ public class DownloaderSelector {
             vodDownloader.initializeDownload(streamName);
         } else if (SettingsProperties.getDownloadMode().equals("streamlink")) {
             log.info("Running streamlink downloader");
-            StreamlinkRunner.runStreamlink(StreamFileNameHelper.makeFileName(streamName));
+            StreamlinkRunner.runStreamlink(streamName);
         }
     }
 }
