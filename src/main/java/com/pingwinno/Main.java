@@ -3,9 +3,10 @@ package com.pingwinno;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pingwinno.infrastructure.google.services.GoogleDriveServiceInitialization;
+import com.pingwinno.application.StorageHelper;
 import com.pingwinno.infrastructure.JettyInitializationListener;
 import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.google.services.GoogleDriveServiceInitialization;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -14,7 +15,6 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 import javax.ws.rs.core.Application;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -28,13 +28,18 @@ public class Main {
 
     public static void main(String[] args) {
 
-        /*try {
-            LogManager.getLogManager().readConfiguration((new FileInputStream(new File("log.prop"))));
+        try {
+            LogManager.getLogManager().readConfiguration(new FileInputStream("log.prop"));
+
         } catch (IOException e) {
-            System.err.println("Could not setup logger configuration: " + e.toString());
-        }*/
+            e.printStackTrace();
+        }
+
 
         log.info("Checking storage...");
+        if (!StorageHelper.initialStorageCheck()) {
+            System.exit(1);
+        }
         GoogleDriveServiceInitialization.initialize();
         Server server = new Server(SettingsProperties.getServerPort());
 
@@ -57,7 +62,7 @@ public class Main {
             server.start();
             server.join();
         } catch (Exception ex) {
-            log.log(Level.SEVERE, "Server running failed: " + ex);
+            log.log(Level.SEVERE, "Server running failed: " + ex.toString(), ex);
 
         } finally {
             server.destroy();

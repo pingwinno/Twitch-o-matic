@@ -27,21 +27,23 @@ public class StorageHelper {
         new File(StreamFileNameHelper.makeStreamFolderPath(streamName)).mkdir();
     }
 
-    public static void initialStorageCheck() {
+    public static boolean initialStorageCheck() {
+        boolean pass = true;
         if (!FILE_PATH.exists()) {
             log.warning("Folder not exist!");
             log.warning("Try create folder...");
             if (!creatingRecordedPath()) {
-                System.exit(1);
+                pass = false;
             } else {
                 log.warning("Success!");
             }
         } else if (!FILE_PATH.canWrite()) {
             log.warning("Can't write in " + SettingsProperties.getRecordedStreamPath());
             log.warning("Check permissions or change RecordedStreamPath in config.prop");
-            System.exit(1);
+            pass = false;
         }
         log.info("Free space is:" + checkFreeSpace() + "GB");
+        return pass;
     }
 
     //storage cleaner for low capacity servers
