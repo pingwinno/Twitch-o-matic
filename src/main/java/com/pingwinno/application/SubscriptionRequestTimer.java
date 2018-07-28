@@ -42,9 +42,9 @@ public class SubscriptionRequestTimer extends TimerTask {
             httpPost.addHeader("Content-Type", "application/json");
             httpPost.addHeader("Client-ID", "4zswqk0crwt2wy4b76aaltk2z02m67");
             httpPost.setEntity(postBody);
-            log.info("Subscription query send.");
+            log.fine("Subscription query send.");
             httpSeviceHelper.getService(httpPost, true);
-            log.info("Waiting for hub.challenge request");
+            log.fine("Waiting for hub.challenge request");
             httpSeviceHelper.close();
         } catch (IOException e) {
             log.severe("Subscription timer request failed. " + e);

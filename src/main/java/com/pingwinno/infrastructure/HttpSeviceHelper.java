@@ -26,7 +26,7 @@ public class HttpSeviceHelper {
             client = HttpClients.custom().setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
         }
         response = client.execute(httpGet);
-        log.info("Request response: " + response.getStatusLine());
+        log.fine("Request response: " + response.getStatusLine());
         return response.getEntity();
     }
     public HttpEntity getService(HttpPost httpPost, boolean sslVerifyEnable) throws IOException {
@@ -38,7 +38,7 @@ public class HttpSeviceHelper {
             client = HttpClients.custom().setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
         }
         response = client.execute(httpPost);
-        log.info("Request response: " + response.getStatusLine());
+        log.fine("Request response: " + response.getStatusLine());
         return response.getEntity();
     }
 

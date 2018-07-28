@@ -21,7 +21,7 @@ public class ChunkAppender {
                 out.write(buf, 0, len);
             }
             out.close();
-            log.info("File copied.");
+            log.fine("File copied.");
         } catch (FileNotFoundException e) {
             log.severe(e.getMessage() + " in the specified directory.");
             System.exit(0);

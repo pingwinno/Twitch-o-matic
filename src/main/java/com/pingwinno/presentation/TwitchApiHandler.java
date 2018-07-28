@@ -29,7 +29,7 @@ public class TwitchApiHandler {
     @GET
     public Response getSubscriptionQuery(@Context UriInfo info) {
         Response response = null;
-        log.info("Incoming challenge request");
+        log.fine("Incoming challenge request");
         if (info != null) {
             String hubMode = info.getQueryParameters().getFirst("hub.mode");
             //handle denied response
@@ -43,7 +43,8 @@ public class TwitchApiHandler {
             else {
                 String hubChallenge = info.getQueryParameters().getFirst("hub.challenge");
                 response = Response.status(Response.Status.OK).entity(hubChallenge).build();
-                log.info("Subscription complete" + hubMode + " hub.challenge is:" + hubChallenge);
+                log.fine("Subscription complete" + hubMode + " hub.challenge is:" + hubChallenge);
+                log.info( " Twith-o-matic started. Waiting for stream up");
             }
         } else log.warning("Subscription query is not correct. Try restart Twitch-o-matic.");
 
@@ -53,9 +54,10 @@ public class TwitchApiHandler {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response handleStreamNotification(StreamStatusNotificationModel dataModel) throws IOException {
-        log.info("Incoming stream up/down notification");
+        log.fine("Incoming stream up/down notification");
         NotificationDataModel[] notificationArray = dataModel.getData();
         if (notificationArray.length > 0) {
+            log.info("Stream is up");
             NotificationDataModel notificationModel = notificationArray[0];
             //check for notification duplicate
             if ((!(notificationModel.getId().equals(lastNotificationId))) &&
@@ -65,7 +67,7 @@ public class TwitchApiHandler {
                 lastNotificationId = notificationModel.getId();
                 streamName = StreamFileNameHelper.makeStreamName(notificationModel.getTitle(),
                         notificationModel.getStarted_at());
-                log.info("Try to start streamlink");
+                log.info("Try to start record");
                 new Thread(() -> DownloaderSelector.runDownloader(streamName)).start();
 
                 String startedAt = notificationModel.getStarted_at();

@@ -11,13 +11,13 @@ public class DownloaderSelector {
 
     public static void runDownloader(String streamName) {
 
-        log.info("initialize downloader");
+        log.fine("initialize downloader");
         if (SettingsProperties.getDownloadMode().equals("vod")) {
-            log.info("Running vod downloader");
+            log.fine("Running vod downloader");
             VodDownloader vodDownloader = new VodDownloader();
             vodDownloader.initializeDownload(streamName);
         } else if (SettingsProperties.getDownloadMode().equals("streamlink")) {
-            log.info("Running streamlink downloader");
+            log.fine("Running streamlink downloader");
             StreamlinkRunner.runStreamlink(streamName);
         }
     }

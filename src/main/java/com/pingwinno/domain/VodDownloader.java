@@ -74,13 +74,13 @@ public class VodDownloader {
             this.refreshDownload();
             Thread.sleep(20 * 1000);
         }
-        log.info("Finalize record...");
+        log.fine("Finalize record...");
         while (!this.refreshDownload()) {
-            log.info("Wait for renewing playlist");
+            log.fine("Wait for renewing playlist");
             Thread.sleep(60 * 1000);
-            log.info("Try refresh playlist");
+            log.fine("Try refresh playlist");
         }
-        log.info("End of list. Downloading last chunks");
+        log.fine("End of list. Downloading last chunks");
         this.refreshDownload();
         log.info("Stop record");
         stopRecord();
@@ -92,7 +92,7 @@ public class VodDownloader {
         InputStream inputStream = Channels.newInputStream(readableByteChannel);
         ChunkAppender.copyfile(streamFilePath, inputStream);
         inputStream.close();
-        log.info(chunkName + " complete");
+        log.fine(chunkName + " complete");
     }
 
     private void stopRecord() {
