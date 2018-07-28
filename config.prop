@@ -1,0 +1,14 @@
+CallbackAddress = http://yourcallbackaddress:yourport/handler
+ServerPort = yourport
+
+User = twitchUser
+
+RecordedStreamPath = pathForRecording
+
+ExecutePostDownloadCommand = true
+CommandAgrs = ["example", "of", "command", "array"]
+
+StreamQuality = best
+
+DownloadMode = vod
+
