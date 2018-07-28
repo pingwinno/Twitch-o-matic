@@ -1,23 +1,36 @@
 package com.pingwinno.domain;
 
-import com.pingwinno.application.StorageHelper;
+import com.google.gson.Gson;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.google.services.GoogleCloudStorageService;
-import com.pingwinno.infrastructure.google.services.GoogleDriveService;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PostDownloadHandler {
-    public static void handleDownloadedStream(String streamFileName) throws IOException {
-        String streamFilePath = SettingsProperties.getRecordedStreamPath() + streamFileName;
-        if (SettingsProperties.getUploadToCloudStorage().equals("true")) {
-            GoogleDriveService.upload(streamFilePath, streamFileName);
-        }
-        if (SettingsProperties.getUploadToGDrive().equals("true")) {
-            GoogleCloudStorageService.upload(streamFilePath, streamFileName);
-        }
-        if (SettingsProperties.getDeleteFileAfterUpload().equals("true")) {
-            StorageHelper.deleteUploadedFile(streamFilePath);
+
+    private static Logger log = Logger.getLogger(PostDownloadHandler.class.getName());
+
+    public static void handleDownloadedStream(){
+
+        Gson gson = new Gson();
+        String[] command = gson.fromJson(SettingsProperties.getCommandArgs(), String[].class);
+
+        try {
+            ProcessBuilder builder = new ProcessBuilder(command);
+
+            builder.redirectErrorStream(true);
+            Process p = builder.start();
+            BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            String line = " ";
+            while (line != null) {
+                line = r.readLine();
+                log.info(line);
+            }
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "Can't run command. Exception: " + e.toString(), e);
         }
     }
 }

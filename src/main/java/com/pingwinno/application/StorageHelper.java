@@ -46,10 +46,4 @@ public class StorageHelper {
         return pass;
     }
 
-    //storage cleaner for low capacity servers
-    public static void deleteUploadedFile(String file) {
-        File recordedStream = new File(file);
-        recordedStream.delete();
-        log.info("Free space is:" + checkFreeSpace() + "GB");
-    }
 }

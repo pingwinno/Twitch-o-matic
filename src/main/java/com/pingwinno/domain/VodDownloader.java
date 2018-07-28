@@ -5,8 +5,6 @@ import com.pingwinno.application.StreamFileNameHelper;
 import com.pingwinno.application.twitch.playlist.handler.*;
 import com.pingwinno.infrastructure.ChunkAppender;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.google.services.GoogleCloudStorageService;
-import com.pingwinno.infrastructure.google.services.GoogleDriveService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,11 +25,9 @@ public class VodDownloader {
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
     private ReadableByteChannel readableByteChannel;
     private LinkedHashSet<String> chunks = new LinkedHashSet<>();
-    private String recordingStreamName;
     private String streamFilePath;
 
     public void initializeDownload(String recordingStreamName) {
-        this.recordingStreamName = recordingStreamName;
         try {
             streamFilePath = SettingsProperties.getRecordedStreamPath()
                     + StreamFileNameHelper.makeFileName(recordingStreamName);
@@ -73,25 +69,9 @@ public class VodDownloader {
         return status;
     }
 
-
-    private void stopRecord() {
-        try {
-            log.info("Closing vod downloader...");
-            readableByteChannel.close();
-            masterPlaylistDownloader.close();
-            mediaPlaylistDownloader.close();
-            PostDownloadHandler.handleDownloadedStream(recordingStreamName);
-        } catch (IOException e) {
-            log.severe("VoD downloader record stop or uploading to GDrive failed" + e);
-        }
-    }
-
     private void recordCycle() throws IOException, InterruptedException {
-        int counter = 0;
         while (VodIdGetter.getRecordStatus()) {
             this.refreshDownload();
-            log.info("Cycle: " + counter);
-            counter++;
             Thread.sleep(20 * 1000);
         }
         log.info("Finalize record...");
@@ -113,5 +93,19 @@ public class VodDownloader {
         ChunkAppender.copyfile(streamFilePath, inputStream);
         inputStream.close();
         log.info(chunkName + " complete");
+    }
+
+    private void stopRecord() {
+        try {
+            log.info("Closing vod downloader...");
+            readableByteChannel.close();
+            masterPlaylistDownloader.close();
+            mediaPlaylistDownloader.close();
+            if (SettingsProperties.getExecutePostDownloadCommand()) {
+                PostDownloadHandler.handleDownloadedStream();
+            }
+        } catch (IOException e) {
+            log.severe("VoD downloader record stop or uploading to GDrive failed" + e);
+        }
     }
 }

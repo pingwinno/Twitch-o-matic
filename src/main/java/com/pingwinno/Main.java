@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.infrastructure.JettyInitializationListener;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.google.services.GoogleDriveServiceInitialization;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -35,12 +34,10 @@ public class Main {
             e.printStackTrace();
         }
 
-
         log.info("Checking storage...");
         if (!StorageHelper.initialStorageCheck()) {
             System.exit(1);
         }
-        GoogleDriveServiceInitialization.initialize();
         Server server = new Server(SettingsProperties.getServerPort());
 
         ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);

@@ -19,7 +19,6 @@ public class StreamlinkRunner {
             ProcessBuilder builder = new ProcessBuilder("streamlink", "https://www.twitch.tv/"
                     + SettingsProperties.getUser(), SettingsProperties.getStreamQuality(),
                     "-o", StreamFileNameHelper.makeFileName(streamFileName));
-            System.out.println(builder.toString());
             builder.redirectErrorStream(true);
             Process p = builder.start();
             BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -28,9 +27,11 @@ public class StreamlinkRunner {
                 line = r.readLine();
                 log.info(line);
             }
-            PostDownloadHandler.handleDownloadedStream(streamFileName);
+            if(SettingsProperties.getExecutePostDownloadCommand()) {
+                PostDownloadHandler.handleDownloadedStream();
+            }
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Can't run streamlink. Exception: ", e);
+            log.log(Level.SEVERE, "Can't run streamlink. Exception: " + e.toString(), e);
         }
     }
 }

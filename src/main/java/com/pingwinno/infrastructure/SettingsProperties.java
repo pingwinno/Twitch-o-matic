@@ -62,17 +62,6 @@ public class SettingsProperties {
         return user;
     }
 
-    public static String getGoogleDrivePath() {
-        String googleDrivePath = null;
-        try {
-            googleDrivePath = getProperties().getProperty("GoogleDrivePath");
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Can't read GoogleDrivePath");
-            System.exit(1);
-        }
-        return googleDrivePath;
-    }
-
     public static String getRecordedStreamPath() {
         String recordedStreamPath = null;
         try {
@@ -84,26 +73,28 @@ public class SettingsProperties {
         return recordedStreamPath;
     }
 
-    public static String getRecordMachineName() {
-        String recordMachineName = null;
+    public static boolean getExecutePostDownloadCommand() {
+        boolean executePostDownloadCommand = false;
         try {
-            recordMachineName = getProperties().getProperty("RecordMachineName");
+            if (getProperties().getProperty("ExecutePostDownloadCommand").equals(true)){
+                executePostDownloadCommand = true;
+            }
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Can't read RecordMachineName");
+            log.log(Level.SEVERE, "Can't read ExecutePostDownloadCommand");
             System.exit(1);
         }
-        return recordMachineName;
+        return executePostDownloadCommand;
     }
 
-    public static String getDeleteFileAfterUpload() {
-        String deleteFileAfterUpload = null;
+    public static String getCommandArgs() {
+        String commandArgs = null;
         try {
-            deleteFileAfterUpload = getProperties().getProperty("DeleteFileAfterUpload");
+            commandArgs = getProperties().getProperty("CommandAgrs");
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Can't read DeleteFileAfterUpload");
+            log.log(Level.SEVERE, "Can't read CommandAgrs");
             System.exit(1);
         }
-        return deleteFileAfterUpload;
+        return commandArgs;
     }
 
     public static String getStreamQuality() {
@@ -126,28 +117,6 @@ public class SettingsProperties {
             System.exit(1);
         }
         return downloadMode;
-    }
-
-    public static String getUploadToGDrive() {
-        String uploadToGDrive = null;
-        try {
-            uploadToGDrive = getProperties().getProperty("UploadToGDrive");
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Can't read UploadToGDrive");
-            System.exit(1);
-        }
-        return uploadToGDrive;
-    }
-
-    public static String getUploadToCloudStorage() {
-        String uploadToCloudStorage = null;
-        try {
-            uploadToCloudStorage = getProperties().getProperty("UploadToCloudStorage");
-        } catch (IOException e) {
-            log.log(Level.SEVERE, "Can't read UploadToCloudStorage");
-            System.exit(1);
-        }
-        return uploadToCloudStorage;
     }
 }
 
