@@ -1,11 +1,15 @@
 package com.pingwinno.presentation;
 
 
-import com.pingwinno.application.DownloaderSelector;
-import com.pingwinno.application.StreamFileNameHelper;
+import com.pingwinno.application.DateParser;
+import com.pingwinno.application.StorageHelper;
+import com.pingwinno.application.twitch.playlist.handler.GameGetter;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
+import com.pingwinno.domain.DataBaseHandler;
+import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.models.NotificationDataModel;
+import com.pingwinno.infrastructure.models.StreamMetadataModel;
 import com.pingwinno.infrastructure.models.StreamStatusNotificationModel;
 
 import javax.ws.rs.Consumes;
@@ -17,6 +21,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 
@@ -24,7 +29,7 @@ import java.util.logging.Logger;
 public class TwitchApiHandler {
     private static Logger log = Logger.getLogger(TwitchApiHandler.class.getName());
     private String lastNotificationId;
-    private String streamName;
+
 
     @GET
     public Response getSubscriptionQuery(@Context UriInfo info) {
@@ -44,7 +49,7 @@ public class TwitchApiHandler {
                 String hubChallenge = info.getQueryParameters().getFirst("hub.challenge");
                 response = Response.status(Response.Status.OK).entity(hubChallenge).build();
                 log.fine("Subscription complete" + hubMode + " hub.challenge is:" + hubChallenge);
-                log.info( " Twith-o-matic started. Waiting for stream up");
+                log.info(" Twith-o-matic started. Waiting for stream up");
             }
         } else log.warning("Subscription query is not correct. Try restart Twitch-o-matic.");
 
@@ -65,10 +70,14 @@ public class TwitchApiHandler {
                     (notificationModel.getType().equals("live")) &&
                     (notificationModel.getUser_id().equals(UserIdGetter.getUserId(SettingsProperties.getUser())))) {
                 lastNotificationId = notificationModel.getId();
-                streamName = StreamFileNameHelper.makeStreamName(notificationModel.getTitle(),
-                        notificationModel.getStarted_at());
+                UUID uuid = StorageHelper.getUuidName();
+                StreamMetadataModel streamMetadataModel = new StreamMetadataModel(uuid, notificationModel.getTitle(),
+                        DateParser.getFormattedDate(DateParser.parse(notificationModel.getStarted_at())),
+                        GameGetter.getUserId(notificationModel.getGame_id()));
+                //DataBaseHandler.writeToLocalDB();
                 log.info("Try to start record");
-                new Thread(() -> DownloaderSelector.runDownloader(streamName)).start();
+                VodDownloader vodDownloader = new VodDownloader();
+                new Thread(() -> vodDownloader.initializeDownload(uuid)).start();
 
                 String startedAt = notificationModel.getStarted_at();
                 log.info("Record started at: " + startedAt);

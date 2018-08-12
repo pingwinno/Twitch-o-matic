@@ -1,14 +1,11 @@
 package com.pingwinno.domain;
 
-import com.pingwinno.application.StorageHelper;
-import com.pingwinno.application.StreamFileNameHelper;
 import com.pingwinno.application.twitch.playlist.handler.*;
-import com.pingwinno.infrastructure.ChunkAppender;
 import com.pingwinno.infrastructure.SettingsProperties;
 
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -17,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashSet;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public class VodDownloader {
@@ -25,22 +23,26 @@ public class VodDownloader {
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
     private ReadableByteChannel readableByteChannel;
     private LinkedHashSet<String> chunks = new LinkedHashSet<>();
-    private String streamFilePath;
+    private String stringPath;
 
-    public void initializeDownload(String recordingStreamName) {
+    public void initializeDownload(UUID uuid) {
+        stringPath = SettingsProperties.getRecordedStreamPath() + uuid.toString();
         try {
-            streamFilePath = SettingsProperties.getRecordedStreamPath()
-                    + StreamFileNameHelper.makeFileName(recordingStreamName);
-            Path streamFile = Paths.get(streamFilePath);
-            Files.createDirectories(streamFile.getParent());
-            Files.createFile(streamFile);
+
+            try {
+                Path streamPath = Paths.get(stringPath);
+                Files.createDirectories(streamPath);
+
+            } catch (IOException e) {
+                log.severe("Can't create file or folder for VoD downloader" + e.toString());
+            }
             String m3u8Link = MasterPlaylistParser.parse(
                     masterPlaylistDownloader.getPlaylist(VodIdGetter.getVodId()));
             String streamPath = StreamPathExtractor.extract(m3u8Link);
             chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link));
-            StorageHelper.createChunksFolder(recordingStreamName);
+
             for (String chunkName : chunks) {
-                this.downloadChunks(streamPath, chunkName);
+                this.downloadFile(streamPath, chunkName);
             }
             this.recordCycle();
 
@@ -60,7 +62,7 @@ public class VodDownloader {
             for (String chunkName : refreshedPlaylist) {
                 status = chunks.add(chunkName);
                 if (status) {
-                    this.downloadChunks(streamPath, chunkName);
+                    this.downloadFile(streamPath, chunkName);
                 }
             }
         } catch (IOException | URISyntaxException e) {
@@ -69,7 +71,7 @@ public class VodDownloader {
         return status;
     }
 
-    private void recordCycle() throws IOException, InterruptedException {
+    private void recordCycle() throws IOException, InterruptedException, URISyntaxException {
         while (VodIdGetter.getRecordStatus()) {
             this.refreshDownload();
             Thread.sleep(20 * 1000);
@@ -82,17 +84,20 @@ public class VodDownloader {
         }
         log.fine("End of list. Downloading last chunks");
         this.refreshDownload();
+        this.downloadFile(StreamPathExtractor.extract(MasterPlaylistParser.parse(
+                masterPlaylistDownloader.getPlaylist(VodIdGetter.getVodId()))), "index-dvr.m3u8");
+
         log.info("Stop record");
         stopRecord();
     }
 
-    private void downloadChunks(String streamPath, String chunkName) throws IOException {
-        URL website = new URL(streamPath + "/" + chunkName);
+    private void downloadFile(String streamPath, String fileName) throws IOException {
+        URL website = new URL(streamPath + "/" + fileName);
         readableByteChannel = Channels.newChannel(website.openStream());
-        InputStream inputStream = Channels.newInputStream(readableByteChannel);
-        ChunkAppender.copyfile(streamFilePath, inputStream);
-        inputStream.close();
-        log.fine(chunkName + " complete");
+        FileOutputStream fos = new FileOutputStream(stringPath + "/" + fileName);
+        fos.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+        fos.close();
+        log.fine(fileName + " complete");
     }
 
     private void stopRecord() {
@@ -105,7 +110,9 @@ public class VodDownloader {
                 PostDownloadHandler.handleDownloadedStream();
             }
         } catch (IOException e) {
-            log.severe("VoD downloader record stop or uploading to GDrive failed" + e);
+            log.severe("VoD downloader record stop " + e);
         }
     }
+
+
 }

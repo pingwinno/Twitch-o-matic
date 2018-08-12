@@ -3,6 +3,11 @@ package com.pingwinno.application;
 import com.pingwinno.infrastructure.SettingsProperties;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public class StorageHelper {
@@ -18,9 +23,7 @@ public class StorageHelper {
         return FILE_PATH.mkdir();
     }
 
-    public static void createChunksFolder(String streamName) {
-        new File(StreamFileNameHelper.makeStreamFolderPath(streamName)).mkdir();
-    }
+
 
     public static boolean initialStorageCheck() {
         boolean pass = true;
@@ -42,5 +45,17 @@ public class StorageHelper {
         log.info("Free space is:" + checkFreeSpace() + "GB");
         return pass;
     }
+
+    public static UUID getUuidName(){
+        UUID uuid = UUID.randomUUID();
+        String uuidString = uuid.toString();
+       String streamFilePath = SettingsProperties.getRecordedStreamPath()
+                + uuidString;
+        File f = new File(streamFilePath);
+        if(f.exists() && f.isDirectory()){
+         uuid = getUuidName();
+        }
+            return uuid;
+        }
 
 }

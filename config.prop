@@ -1,14 +1,14 @@
-CallbackAddress = http://yourcallbackaddress:yourport/handler
-ServerPort = yourport
+CallbackAddress = http://31.202.48.159:48567/handler
+ServerPort = 48567
 
-User = twitchUser
+User = unknowndevice
 
-RecordedStreamPath = pathForRecording
+RecordedStreamPath = /home/shiro/recordFolder/
 
 ExecutePostDownloadCommand = true
 CommandAgrs = ["example", "of", "command", "array"]
 
 StreamQuality = best
 
-DownloadMode = vod
+RedisPutEndpoint = http://192.168.1.59:8080/api/add_stream/
 

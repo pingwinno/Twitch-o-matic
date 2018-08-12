@@ -108,15 +108,15 @@ public class SettingsProperties {
         return streamQuality;
     }
 
-    public static String getDownloadMode() {
-        String downloadMode = null;
+    public static String getRedisPutEndpoint() {
+        String redisPutEndpoint = null;
         try {
-            downloadMode = getProperties().getProperty("DownloadMode");
+            redisPutEndpoint = getProperties().getProperty("RedisPutEndpoint");
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Can't read DownloadMode");
+            log.log(Level.SEVERE, "Can't read RedisPutEndpoint");
             System.exit(1);
         }
-        return downloadMode;
+        return redisPutEndpoint;
     }
 }
 

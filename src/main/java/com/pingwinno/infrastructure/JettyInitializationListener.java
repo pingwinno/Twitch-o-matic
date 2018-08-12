@@ -29,7 +29,7 @@ public class JettyInitializationListener implements LifeCycle.Listener {
                     SettingsProperties.getCallbackAddress(), 864000);
             SubscriptionRequestTimer subscriptionQuery =
                     new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
-            log.fine("Sending subscription query");
+            log.info("Sending subscription query");
             subscriptionQuery.sendSubscriptionRequest();
         } catch (IOException e) {
             e.printStackTrace();
