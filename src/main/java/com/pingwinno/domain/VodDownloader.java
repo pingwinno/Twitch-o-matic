@@ -51,7 +51,7 @@ public class VodDownloader {
         }
     }
 
-    private boolean refreshDownload() {
+    private boolean refreshDownload() throws InterruptedException {
         boolean status = false;
         try {
             String m3u8Link = MasterPlaylistParser.parse(
@@ -72,23 +72,29 @@ public class VodDownloader {
     }
 
     private void recordCycle() throws IOException, InterruptedException, URISyntaxException {
-        while (VodIdGetter.getRecordStatus()) {
+        if (!RecordStatusGetter.getRecordStatus().equals("")) {
+            while (RecordStatusGetter.getRecordStatus().equals("recording")) {
+                this.refreshDownload();
+                Thread.sleep(20 * 1000);
+            }
+            log.fine("Finalize record...");
+            while (!this.refreshDownload()) {
+                log.fine("Wait for renewing playlist");
+                Thread.sleep(60 * 1000);
+                log.fine("Try refresh playlist");
+            }
+            log.fine("End of list. Downloading last chunks");
             this.refreshDownload();
-            Thread.sleep(20 * 1000);
-        }
-        log.fine("Finalize record...");
-        while (!this.refreshDownload()) {
-            log.fine("Wait for renewing playlist");
-            Thread.sleep(60 * 1000);
-            log.fine("Try refresh playlist");
-        }
-        log.fine("End of list. Downloading last chunks");
-        this.refreshDownload();
-        this.downloadFile(StreamPathExtractor.extract(MasterPlaylistParser.parse(
-                masterPlaylistDownloader.getPlaylist(VodIdGetter.getVodId()))), "index-dvr.m3u8");
+            this.downloadFile(StreamPathExtractor.extract(MasterPlaylistParser.parse(
+                    masterPlaylistDownloader.getPlaylist(VodIdGetter.getVodId()))), "index-dvr.m3u8");
 
-        log.info("Stop record");
-        stopRecord();
+            log.info("Stop record");
+            stopRecord();
+        }
+        else {
+            log.severe("Getting status failed. Stoping cycle...");
+            stopRecord();
+        }
     }
 
     private void downloadFile(String streamPath, String fileName) throws IOException {

@@ -8,11 +8,10 @@ import java.net.URLConnection;
 
 public class MediaPlaylistDownloader {
     private BufferedReader reader;
-    private URLConnection connection;
 
     public BufferedReader getMediaPlaylist(String m3u8Link) throws IOException {
         URL url = new URL(m3u8Link);
-        connection = url.openConnection();
+        URLConnection connection = url.openConnection();
         reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
         return reader;
     }

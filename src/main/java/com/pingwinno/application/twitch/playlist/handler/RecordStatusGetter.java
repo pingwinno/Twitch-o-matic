@@ -9,9 +9,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class VodIdGetter {
-
-    public static String getVodId() throws IOException, InterruptedException {
+public class RecordStatusGetter {
+    public static String getRecordStatus() throws IOException, InterruptedException {
 
         HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/channels/" + SettingsProperties.getUser() +
@@ -19,17 +18,13 @@ public class VodIdGetter {
         httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
         JSONObject jsonObj =
                 new JSONObject(EntityUtils.toString(httpSeviceHelper.getService(httpGet, true)));
-        String vodIdString = null;
+        String recordStatusString = "";
         if (jsonObj.getJSONArray("videos") != null) {
             JSONArray params = jsonObj.getJSONArray("videos");
             JSONObject videoObj = params.getJSONObject(0);
-            String str = videoObj.get("_id").toString();
-            //delete "v" from id field
+            recordStatusString = videoObj.get("status").toString();
             httpSeviceHelper.close();
-            vodIdString = str.substring(0, 0) + str.substring(1);
         }
-        return vodIdString;
+        return recordStatusString;
         }
-
-
 }

@@ -18,7 +18,7 @@ public class MasterPlaylistDownloader {
     private BufferedReader reader;
     private HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
 
-    public BufferedReader getPlaylist(String vodId) throws IOException, URISyntaxException {
+    public BufferedReader getPlaylist(String vodId) throws IOException, URISyntaxException, InterruptedException {
 
         //make token request
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/api/vods/" + vodId + "/access_token");

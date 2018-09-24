@@ -14,7 +14,7 @@ public class GameGetter {
 
     private static Logger log = Logger.getLogger(GameGetter.class.getName());
 
-    public static String getUserId(String gameID) throws IOException {
+    public static String getUserId(String gameID) throws IOException, InterruptedException {
 
         HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/helix/games?id=" + gameID);
@@ -24,6 +24,7 @@ public class GameGetter {
                 new JSONObject(EntityUtils.toString(httpSeviceHelper.getService(httpGet, true)));
         String gameName;
         try {
+
             JSONArray params = jsonObj.getJSONArray("data");
             JSONObject dataObj = params.getJSONObject(0);
             gameName = dataObj.get("name").toString();

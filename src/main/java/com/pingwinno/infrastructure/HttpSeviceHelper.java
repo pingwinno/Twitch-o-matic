@@ -1,6 +1,7 @@
 package com.pingwinno.infrastructure;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -17,7 +18,7 @@ public class HttpSeviceHelper {
     private CloseableHttpClient client;
     private CloseableHttpResponse response;
 
-    public HttpEntity getService(HttpGet httpGet, boolean sslVerifyEnable) throws IOException {
+    public HttpEntity getService(HttpGet httpGet, boolean sslVerifyEnable) throws IOException, InterruptedException {
 
         if (sslVerifyEnable) {
             client = HttpClients.createDefault();
@@ -27,20 +28,18 @@ public class HttpSeviceHelper {
         }
         response = client.execute(httpGet);
         log.fine("Request response: " + response.getStatusLine());
-        return response.getEntity();
-    }
-    public HttpEntity getService(HttpPost httpPost, boolean sslVerifyEnable) throws IOException {
-
-        if (sslVerifyEnable) {
-            client = HttpClients.createDefault();
-        } else {
-            //ignore SSL because on usher.twitch.tv its broken
-            client = HttpClients.custom().setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+        if (response.getStatusLine().getStatusCode() != HttpStatus.SC_NOT_FOUND) {
+            while (response.getStatusLine().getStatusCode() == HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+                response = client.execute(httpGet);
+                Thread.sleep(10000);
+            }
         }
-        response = client.execute(httpPost);
-        log.fine("Request response: " + response.getStatusLine());
+        else {
+            response = null;
+        }
         return response.getEntity();
     }
+
 
     public void close() throws IOException {
         client.close();
