@@ -40,6 +40,27 @@ public class HttpSeviceHelper {
         return response.getEntity();
     }
 
+    public HttpEntity getService(HttpPost httpPost, boolean sslVerifyEnable) throws IOException, InterruptedException {
+
+        if (sslVerifyEnable) {
+            client = HttpClients.createDefault();
+        } else {
+            //ignore SSL because on usher.twitch.tv its broken
+            client = HttpClients.custom().setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
+        }
+        response = client.execute(httpPost);
+        log.fine("Request response: " + response.getStatusLine());
+        if (response.getStatusLine().getStatusCode() != HttpStatus.SC_NOT_FOUND) {
+            while (response.getStatusLine().getStatusCode() == HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+                response = client.execute(httpPost);
+                Thread.sleep(10000);
+            }
+        }
+        else {
+            response = null;
+        }
+        return response.getEntity();
+    }
 
     public void close() throws IOException {
         client.close();

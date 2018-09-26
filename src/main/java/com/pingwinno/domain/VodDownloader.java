@@ -24,9 +24,11 @@ public class VodDownloader {
     private ReadableByteChannel readableByteChannel;
     private LinkedHashSet<String> chunks = new LinkedHashSet<>();
     private String stringPath;
+    private String vodId;
 
     public void initializeDownload(UUID uuid) {
         stringPath = SettingsProperties.getRecordedStreamPath() + uuid.toString();
+
         try {
 
             try {
@@ -36,18 +38,32 @@ public class VodDownloader {
             } catch (IOException e) {
                 log.severe("Can't create file or folder for VoD downloader" + e.toString());
             }
-            String m3u8Link = MasterPlaylistParser.parse(
-                    masterPlaylistDownloader.getPlaylist(VodIdGetter.getVodId()));
-            String streamPath = StreamPathExtractor.extract(m3u8Link);
-            chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link));
+            vodId = VodIdGetter.getVodId();
+            //if stream exist
+            if (vodId != null) {
+                String m3u8Link = MasterPlaylistParser.parse(
+                        masterPlaylistDownloader.getPlaylist(vodId));
+                //if stream still exist =_=
+                if (m3u8Link != null) {
+                    String streamPath = StreamPathExtractor.extract(m3u8Link);
+                    chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link));
 
-            for (String chunkName : chunks) {
-                this.downloadFile(streamPath, chunkName);
+                    for (String chunkName : chunks) {
+                        this.downloadFile(streamPath, chunkName);
+                    }
+                    this.recordCycle();
+                } else {
+                    log.severe("m3u8 not found. Close downloader thread...");
+                    stopRecord();
+                }
             }
-            this.recordCycle();
-
+            else {
+                log.severe("vod id with id "+vodId+" not found. Close downloader thread...");
+            stopRecord();
+            }
         } catch (IOException | URISyntaxException | InterruptedException e) {
             log.severe("Vod downloader initialization failed" + e);
+            stopRecord();
         }
     }
 
@@ -55,7 +71,7 @@ public class VodDownloader {
         boolean status = false;
         try {
             String m3u8Link = MasterPlaylistParser.parse(
-                    masterPlaylistDownloader.getPlaylist(VodIdGetter.getVodId()));
+                    masterPlaylistDownloader.getPlaylist(vodId));
             String streamPath = StreamPathExtractor.extract(m3u8Link);
             BufferedReader reader = mediaPlaylistDownloader.getMediaPlaylist(m3u8Link);
             LinkedHashSet<String> refreshedPlaylist = MediaPlaylistParser.parse(reader);
@@ -67,6 +83,7 @@ public class VodDownloader {
             }
         } catch (IOException | URISyntaxException e) {
             log.severe("Vod downloader refresh failed." + e);
+            stopRecord();
         }
         return status;
     }
@@ -86,12 +103,11 @@ public class VodDownloader {
             log.fine("End of list. Downloading last chunks");
             this.refreshDownload();
             this.downloadFile(StreamPathExtractor.extract(MasterPlaylistParser.parse(
-                    masterPlaylistDownloader.getPlaylist(VodIdGetter.getVodId()))), "index-dvr.m3u8");
+                    masterPlaylistDownloader.getPlaylist(vodId))), "index-dvr.m3u8");
 
             log.info("Stop record");
             stopRecord();
-        }
-        else {
+        } else {
             log.severe("Getting status failed. Stoping cycle...");
             stopRecord();
         }

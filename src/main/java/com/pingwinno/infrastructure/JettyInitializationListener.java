@@ -31,7 +31,7 @@ public class JettyInitializationListener implements LifeCycle.Listener {
                     new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
             log.info("Sending subscription query");
             subscriptionQuery.sendSubscriptionRequest();
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
 

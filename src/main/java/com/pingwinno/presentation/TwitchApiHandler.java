@@ -58,7 +58,7 @@ public class TwitchApiHandler {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response handleStreamNotification(StreamStatusNotificationModel dataModel) throws IOException {
+    public Response handleStreamNotification(StreamStatusNotificationModel dataModel) throws IOException, InterruptedException {
         log.fine("Incoming stream up/down notification");
         NotificationDataModel[] notificationArray = dataModel.getData();
         if (notificationArray.length > 0) {
