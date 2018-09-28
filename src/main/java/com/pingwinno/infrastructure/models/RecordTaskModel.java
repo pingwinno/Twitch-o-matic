@@ -2,11 +2,11 @@ package com.pingwinno.infrastructure.models;
 
 import java.util.UUID;
 
-public class StreamRecordRecoveryListModel {
+public class RecordTaskModel {
     private UUID uuid;
     private String vodId;
 
-    StreamRecordRecoveryListModel (UUID uuid, String vodId){
+    public RecordTaskModel(UUID uuid, String vodId){
         this.uuid = uuid;
         this.vodId = vodId;
     }

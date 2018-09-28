@@ -5,10 +5,12 @@ import com.pingwinno.application.DateParser;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.GameGetter;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
+import com.pingwinno.application.twitch.playlist.handler.VodIdGetter;
 import com.pingwinno.domain.DataBaseHandler;
 import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.models.NotificationDataModel;
+import com.pingwinno.infrastructure.models.RecordTaskModel;
 import com.pingwinno.infrastructure.models.StreamMetadataModel;
 import com.pingwinno.infrastructure.models.StreamStatusNotificationModel;
 
@@ -74,13 +76,21 @@ public class TwitchApiHandler {
                 StreamMetadataModel streamMetadataModel = new StreamMetadataModel(uuid, notificationModel.getTitle(),
                         DateParser.getFormattedDate(DateParser.parse(notificationModel.getStarted_at())),
                         GameGetter.getUserId(notificationModel.getGame_id()));
-                //DataBaseHandler.writeToLocalDB();
+                DataBaseHandler dataBaseHandler = new DataBaseHandler(streamMetadataModel);
+                dataBaseHandler.writeToLocalDB();
                 log.info("Try to start record");
                 VodDownloader vodDownloader = new VodDownloader();
-                new Thread(() -> vodDownloader.initializeDownload(uuid)).start();
+                String vodId = VodIdGetter.getVodId();
+                if (vodId != null) {
+                    RecordTaskModel recordTask = new RecordTaskModel(uuid, vodId);
+                    new Thread(() -> vodDownloader.initializeDownload(recordTask)).start();
 
-                String startedAt = notificationModel.getStarted_at();
-                log.info("Record started at: " + startedAt);
+                    String startedAt = notificationModel.getStarted_at();
+                    log.info("Record started at: " + startedAt);
+                }
+                else {
+                    log.severe("vodId is null. Stream not found");
+                }
             }
         }
         return Response.status(Response.Status.ACCEPTED).build();

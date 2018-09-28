@@ -1,7 +1,9 @@
 package com.pingwinno.domain;
 
+import com.pingwinno.application.RecordTaskHandler;
 import com.pingwinno.application.twitch.playlist.handler.*;
 import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.models.RecordTaskModel;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -25,12 +27,15 @@ public class VodDownloader {
     private LinkedHashSet<String> chunks = new LinkedHashSet<>();
     private String stringPath;
     private String vodId;
+    private RecordTaskModel recordTask;
 
-    public void initializeDownload(UUID uuid) {
+    public void initializeDownload(RecordTaskModel recordTask) {
+        this.recordTask = recordTask;
+        UUID uuid = recordTask.getUuid();
         stringPath = SettingsProperties.getRecordedStreamPath() + uuid.toString();
 
         try {
-
+            RecordTaskHandler.saveTask(recordTask);
             try {
                 Path streamPath = Paths.get(stringPath);
                 Files.createDirectories(streamPath);
@@ -38,12 +43,11 @@ public class VodDownloader {
             } catch (IOException e) {
                 log.severe("Can't create file or folder for VoD downloader" + e.toString());
             }
-            vodId = VodIdGetter.getVodId();
-            //if stream exist
-            if (vodId != null) {
+            vodId = recordTask.getVodId();
+
                 String m3u8Link = MasterPlaylistParser.parse(
                         masterPlaylistDownloader.getPlaylist(vodId));
-                //if stream still exist =_=
+                //if stream  exist
                 if (m3u8Link != null) {
                     String streamPath = StreamPathExtractor.extract(m3u8Link);
                     chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link));
@@ -53,14 +57,10 @@ public class VodDownloader {
                     }
                     this.recordCycle();
                 } else {
-                    log.severe("m3u8 not found. Close downloader thread...");
+                    log.severe("vod id with id "+vodId+" not found. Close downloader thread...");
                     stopRecord();
                 }
-            }
-            else {
-                log.severe("vod id with id "+vodId+" not found. Close downloader thread...");
-            stopRecord();
-            }
+
         } catch (IOException | URISyntaxException | InterruptedException e) {
             log.severe("Vod downloader initialization failed" + e);
             stopRecord();
@@ -131,8 +131,9 @@ public class VodDownloader {
             if (SettingsProperties.getExecutePostDownloadCommand()) {
                 PostDownloadHandler.handleDownloadedStream();
             }
+            RecordTaskHandler.removeTask(recordTask);
         } catch (IOException e) {
-            log.severe("VoD downloader record stop " + e);
+            log.severe("VoD downloader unexpectedly stop " + e);
         }
     }
 

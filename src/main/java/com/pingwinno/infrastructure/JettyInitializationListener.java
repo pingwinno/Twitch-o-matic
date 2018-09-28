@@ -1,10 +1,12 @@
 package com.pingwinno.infrastructure;
 
+import com.pingwinno.application.RecordTaskHandler;
 import com.pingwinno.application.SubscriptionRequestTimer;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
 import com.pingwinno.infrastructure.models.SubscriptionQueryModel;
 import org.eclipse.jetty.util.component.LifeCycle;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -21,6 +23,11 @@ public class JettyInitializationListener implements LifeCycle.Listener {
 
         //subscribe request
 
+        try {
+            RecordTaskHandler.loadTaskList();
+        } catch (FileNotFoundException e) {
+            log.warning("Task file not found");
+        }
         SubscriptionQueryModel json;
         try {
             json = new SubscriptionQueryModel("subscribe",

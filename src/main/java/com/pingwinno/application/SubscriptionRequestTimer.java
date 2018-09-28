@@ -48,6 +48,8 @@ public class SubscriptionRequestTimer extends TimerTask {
             httpSeviceHelper.close();
         } catch (IOException e) {
             log.severe("Subscription timer request failed. " + e);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }
