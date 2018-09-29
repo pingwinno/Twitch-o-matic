@@ -25,21 +25,27 @@ public class VodDownloader {
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
     private ReadableByteChannel readableByteChannel;
     private LinkedHashSet<String> chunks = new LinkedHashSet<>();
-    private String stringPath;
+    private String streamFolderPath;
     private String vodId;
     private RecordTaskModel recordTask;
 
     public void initializeDownload(RecordTaskModel recordTask) {
         this.recordTask = recordTask;
         UUID uuid = recordTask.getUuid();
-        stringPath = SettingsProperties.getRecordedStreamPath() + uuid.toString();
+        streamFolderPath = SettingsProperties.getRecordedStreamPath() + uuid.toString();
 
         try {
             RecordTaskHandler.saveTask(recordTask);
             try {
-                Path streamPath = Paths.get(stringPath);
-                Files.createDirectories(streamPath);
-
+                Path streamPath = Paths.get(streamFolderPath);
+                if (!Files.exists(streamPath)) {
+                    Files.createDirectories(streamPath);
+                }
+                else {
+                    log.warning("Stream folder exist. Maybe it's unfinished task. " +
+                            "If task can't be complete, it will be remove from task list.");
+                    log.info("Trying finish download...");
+                }
             } catch (IOException e) {
                 log.severe("Can't create file or folder for VoD downloader" + e.toString());
             }
@@ -108,19 +114,24 @@ public class VodDownloader {
             log.info("Stop record");
             stopRecord();
         } else {
-            log.severe("Getting status failed. Stoping cycle...");
+            log.severe("Getting status failed. Stop cycle...");
             stopRecord();
         }
     }
 
     private void downloadFile(String streamPath, String fileName) throws IOException {
-        URL website = new URL(streamPath + "/" + fileName);
-        readableByteChannel = Channels.newChannel(website.openStream());
-        FileOutputStream fos = new FileOutputStream(stringPath + "/" + fileName);
-        fos.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-        fos.close();
-        log.fine(fileName + " complete");
-    }
+        if(!Files.exists(Paths.get(streamFolderPath + "/" + fileName))) {
+            URL website = new URL(streamPath + "/" + fileName);
+            readableByteChannel = Channels.newChannel(website.openStream());
+            FileOutputStream fos = new FileOutputStream(streamFolderPath + "/" + fileName);
+            fos.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+            fos.close();
+            log.fine(fileName + " complete");
+        }
+        else {
+            log.info("Chunk exist. Skipping...");
+        }
+        }
 
     private void stopRecord() {
         try {
