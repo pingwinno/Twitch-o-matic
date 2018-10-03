@@ -25,6 +25,7 @@ public class RecordStatusGetter {
             recordStatusString = videoObj.get("status").toString();
             httpSeviceHelper.close();
         }
+        System.out.println(recordStatusString);
         return recordStatusString;
         }
 }

@@ -6,7 +6,7 @@ import java.util.LinkedList;
 
 public class RecordTaskList {
     private static final int LIST_SIZE = 10;
-    private static LinkedList<RecordTaskModel> taskList;
+    private static LinkedList<RecordTaskModel> taskList = new LinkedList<>();
 
     public RecordTaskList() {
     }
@@ -16,7 +16,7 @@ public class RecordTaskList {
     }
 
     synchronized public void addTask(RecordTaskModel RecordTaskModel) {
-        if (taskList.size() > LIST_SIZE) taskList.removeFirst();
+        if ((taskList.size() != 0) && (taskList.size() > LIST_SIZE)) taskList.removeFirst();
         taskList.add(RecordTaskModel);
     }
 

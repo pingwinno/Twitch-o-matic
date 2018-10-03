@@ -17,6 +17,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 public class VodDownloader {
@@ -40,8 +42,7 @@ public class VodDownloader {
                 Path streamPath = Paths.get(streamFolderPath);
                 if (!Files.exists(streamPath)) {
                     Files.createDirectories(streamPath);
-                }
-                else {
+                } else {
                     log.warning("Stream folder exist. Maybe it's unfinished task. " +
                             "If task can't be complete, it will be remove from task list.");
                     log.info("Trying finish download...");
@@ -51,21 +52,30 @@ public class VodDownloader {
             }
             vodId = recordTask.getVodId();
 
-                String m3u8Link = MasterPlaylistParser.parse(
-                        masterPlaylistDownloader.getPlaylist(vodId));
-                //if stream  exist
-                if (m3u8Link != null) {
-                    String streamPath = StreamPathExtractor.extract(m3u8Link);
-                    chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link));
+            String m3u8Link = MasterPlaylistParser.parse(
+                    masterPlaylistDownloader.getPlaylist(vodId));
+            //if stream  exist
+            if (m3u8Link != null) {
+                String streamPath = StreamPathExtractor.extract(m3u8Link);
+                chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link));
+                ExecutorService executorService = Executors.newFixedThreadPool(20);
 
-                    for (String chunkName : chunks) {
-                        this.downloadFile(streamPath, chunkName);
-                    }
-                    this.recordCycle();
-                } else {
-                    log.severe("vod id with id "+vodId+" not found. Close downloader thread...");
-                    stopRecord();
+                for (String chunkName : chunks) {
+                    Runnable runnable = () -> {
+                        try {
+                            downloadFile(streamPath, chunkName);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    };
+                    executorService.execute(runnable);
                 }
+                executorService.shutdown();
+                this.recordCycle();
+            } else {
+                log.severe("vod id with id " + vodId + " not found. Close downloader thread...");
+                stopRecord();
+            }
 
         } catch (IOException | URISyntaxException | InterruptedException e) {
             log.severe("Vod downloader initialization failed" + e);
@@ -81,12 +91,24 @@ public class VodDownloader {
             String streamPath = StreamPathExtractor.extract(m3u8Link);
             BufferedReader reader = mediaPlaylistDownloader.getMediaPlaylist(m3u8Link);
             LinkedHashSet<String> refreshedPlaylist = MediaPlaylistParser.parse(reader);
+            ExecutorService executorService = Executors.newFixedThreadPool(20);
             for (String chunkName : refreshedPlaylist) {
+
                 status = chunks.add(chunkName);
+                System.out.println(chunkName + " " + status);
                 if (status) {
-                    this.downloadFile(streamPath, chunkName);
+                    Runnable runnable = () -> {
+                        try {
+                            downloadFile(streamPath, chunkName);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    };
+                    executorService.execute(runnable);
                 }
+
             }
+            executorService.shutdown();
         } catch (IOException | URISyntaxException e) {
             log.severe("Vod downloader refresh failed." + e);
             stopRecord();
@@ -95,13 +117,16 @@ public class VodDownloader {
     }
 
     private void recordCycle() throws IOException, InterruptedException, URISyntaxException {
+        int cyclecount = 0;
         if (!RecordStatusGetter.getRecordStatus().equals("")) {
             while (RecordStatusGetter.getRecordStatus().equals("recording")) {
-                this.refreshDownload();
+                refreshDownload();
+                cyclecount++;
+                System.out.println(cyclecount);
                 Thread.sleep(20 * 1000);
             }
             log.fine("Finalize record...");
-            while (!this.refreshDownload()) {
+            while (refreshDownload()) {
                 log.fine("Wait for renewing playlist");
                 Thread.sleep(60 * 1000);
                 log.fine("Try refresh playlist");
@@ -120,18 +145,17 @@ public class VodDownloader {
     }
 
     private void downloadFile(String streamPath, String fileName) throws IOException {
-        if(!Files.exists(Paths.get(streamFolderPath + "/" + fileName))) {
+        if (!Files.exists(Paths.get(streamFolderPath + "/" + fileName))) {
             URL website = new URL(streamPath + "/" + fileName);
             readableByteChannel = Channels.newChannel(website.openStream());
             FileOutputStream fos = new FileOutputStream(streamFolderPath + "/" + fileName);
             fos.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             fos.close();
-            log.fine(fileName + " complete");
-        }
-        else {
+            log.info(fileName + " complete");
+        } else {
             log.info("Chunk exist. Skipping...");
         }
-        }
+    }
 
     private void stopRecord() {
         try {

@@ -27,13 +27,15 @@ public class JettyInitializationListener implements LifeCycle.Listener {
             RecordTaskHandler.loadTaskList();
         } catch (FileNotFoundException e) {
             log.warning("Task file not found");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         SubscriptionQueryModel json;
         try {
             json = new SubscriptionQueryModel("subscribe",
                     "https://api.twitch.tv/helix/streams?user_id=" +
                             UserIdGetter.getUserId(SettingsProperties.getUser()),
-                    SettingsProperties.getCallbackAddress(), 864000);
+                    SettingsProperties.getCallbackAddress(), 8640);
             SubscriptionRequestTimer subscriptionQuery =
                     new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
             log.info("Sending subscription query");

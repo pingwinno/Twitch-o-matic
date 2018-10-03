@@ -10,5 +10,5 @@ CommandAgrs = ["example", "of", "command", "array"]
 
 StreamQuality = best
 
-RedisPutEndpoint = http://http://18.217.205.7/api/add_stream/
+RedisPutEndpoint = http://18.217.205.7:80/api/add_stream
 
