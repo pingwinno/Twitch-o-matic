@@ -2,7 +2,7 @@ package com.pingwinno.domain;
 
 import com.google.gson.Gson;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.models.StreamMetadataModel;
+import com.pingwinno.infrastructure.models.StreamDataDBModel;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -15,9 +15,9 @@ import java.io.*;
 public class DataBaseHandler {
     private String metadataString;
 
-    public DataBaseHandler(StreamMetadataModel streamMetadataModel) {
+    public DataBaseHandler(StreamDataDBModel streamDataDBModel) {
         Gson gson = new Gson();
-        metadataString = gson.toJson(streamMetadataModel);
+        metadataString = gson.toJson(streamDataDBModel);
         System.out.println(metadataString);
     }
 

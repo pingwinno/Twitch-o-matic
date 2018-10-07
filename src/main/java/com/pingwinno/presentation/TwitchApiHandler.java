@@ -1,18 +1,14 @@
 package com.pingwinno.presentation;
 
 
-import com.pingwinno.application.DateParser;
+import com.pingwinno.application.DateConverter;
 import com.pingwinno.application.StorageHelper;
-import com.pingwinno.application.twitch.playlist.handler.GameGetter;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
-import com.pingwinno.application.twitch.playlist.handler.VodIdGetter;
+import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.DataBaseHandler;
 import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.models.NotificationDataModel;
-import com.pingwinno.infrastructure.models.RecordTaskModel;
-import com.pingwinno.infrastructure.models.StreamMetadataModel;
-import com.pingwinno.infrastructure.models.StreamStatusNotificationModel;
+import com.pingwinno.infrastructure.models.*;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -73,16 +69,16 @@ public class TwitchApiHandler {
                     (notificationModel.getUser_id().equals(UserIdGetter.getUserId(SettingsProperties.getUser())))) {
                 lastNotificationId = notificationModel.getId();
                 UUID uuid = StorageHelper.getUuidName();
-                StreamMetadataModel streamMetadataModel = new StreamMetadataModel(uuid, notificationModel.getTitle(),
-                        DateParser.getFormattedDate(DateParser.parse(notificationModel.getStarted_at())),
-                        GameGetter.getUserId(notificationModel.getGame_id()));
-                DataBaseHandler dataBaseHandler = new DataBaseHandler(streamMetadataModel);
+                StreamMetadataModel streamMetadata = VodMetadataHelper.getLastVod();
+
+                StreamDataDBModel streamDataDBModel = new StreamDataDBModel(uuid, DateConverter.convert(streamMetadata.getDate()),
+                        streamMetadata.getTitle(),streamMetadata.getGame());
+                DataBaseHandler dataBaseHandler = new DataBaseHandler(streamDataDBModel);
                 dataBaseHandler.writeToLocalDB();
                 log.info("Try to start record");
                 VodDownloader vodDownloader = new VodDownloader();
-                String vodId = VodIdGetter.getVodId();
-                if (vodId != null) {
-                    RecordTaskModel recordTask = new RecordTaskModel(uuid, vodId);
+                if (streamMetadata.getVodId() != null) {
+                    RecordTaskModel recordTask = new RecordTaskModel(uuid, streamMetadata.getVodId());
                     new Thread(() -> vodDownloader.initializeDownload(recordTask)).start();
 
                     String startedAt = notificationModel.getStarted_at();
