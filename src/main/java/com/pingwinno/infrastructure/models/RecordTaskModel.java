@@ -10,6 +10,7 @@ public class RecordTaskModel {
         this.uuid = uuid;
         this.vodId = vodId;
     }
+    public RecordTaskModel(){}
 
     public UUID getUuid() {
         return uuid;

@@ -1,6 +1,7 @@
 package com.pingwinno.domain;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.models.StreamDataDBModel;
 import org.apache.http.HttpHeaders;
@@ -15,9 +16,9 @@ import java.io.*;
 public class DataBaseHandler {
     private String metadataString;
 
-    public DataBaseHandler(StreamDataDBModel streamDataDBModel) {
-        Gson gson = new Gson();
-        metadataString = gson.toJson(streamDataDBModel);
+    public DataBaseHandler(StreamDataDBModel streamDataDBModel) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
+        metadataString = mapper.writeValueAsString(streamDataDBModel);
         System.out.println(metadataString);
     }
 

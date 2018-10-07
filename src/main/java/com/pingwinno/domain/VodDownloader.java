@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
@@ -30,12 +31,19 @@ public class VodDownloader {
     private String streamFolderPath;
     private String vodId;
     private RecordTaskModel recordTask;
-
+    private int threadsNumber = 1;
     public void initializeDownload(RecordTaskModel recordTask) {
         this.recordTask = recordTask;
         UUID uuid = recordTask.getUuid();
         streamFolderPath = SettingsProperties.getRecordedStreamPath() + uuid.toString();
 
+        try {
+            if (RecordStatusGetter.getRecordStatus(vodId).equals("recording")){
+
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
         try {
             RecordTaskHandler.saveTask(recordTask);
             try {
@@ -91,7 +99,8 @@ public class VodDownloader {
             String streamPath = StreamPathExtractor.extract(m3u8Link);
             BufferedReader reader = mediaPlaylistDownloader.getMediaPlaylist(m3u8Link);
             LinkedHashSet<String> refreshedPlaylist = MediaPlaylistParser.parse(reader);
-            ExecutorService executorService = Executors.newFixedThreadPool(20);
+
+            ExecutorService executorService = Executors.newFixedThreadPool(threadsNumber);
             for (String chunkName : refreshedPlaylist) {
 
                 status = chunks.add(chunkName);
@@ -117,12 +126,9 @@ public class VodDownloader {
     }
 
     private void recordCycle() throws IOException, InterruptedException, URISyntaxException {
-        int cyclecount = 0;
-        if (!RecordStatusGetter.getRecordStatus().equals("")) {
-            while (RecordStatusGetter.getRecordStatus().equals("recording")) {
+        if (!RecordStatusGetter.getRecordStatus(vodId).equals("")) {
+            while (RecordStatusGetter.getRecordStatus(vodId).equals("recording")) {
                 refreshDownload();
-                cyclecount++;
-                System.out.println(cyclecount);
                 Thread.sleep(20 * 1000);
             }
             log.fine("Finalize record...");
@@ -145,14 +151,17 @@ public class VodDownloader {
     }
 
     private void downloadFile(String streamPath, String fileName) throws IOException {
-        if (!Files.exists(Paths.get(streamFolderPath + "/" + fileName))) {
-            URL website = new URL(streamPath + "/" + fileName);
+        URL website = new URL(streamPath + "/" + fileName);
+        URLConnection connection = website.openConnection();
+        if ((!Files.exists(Paths.get(streamFolderPath + "/" + fileName))) ||
+        (connection.getContentLengthLong() != Files.size((Paths.get(streamFolderPath + "/" + fileName))))){
+
             readableByteChannel = Channels.newChannel(website.openStream());
             FileOutputStream fos = new FileOutputStream(streamFolderPath + "/" + fileName);
             fos.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             fos.close();
             log.info(fileName + " complete");
-        } else {
+        }else {
             log.info("Chunk exist. Skipping...");
         }
     }

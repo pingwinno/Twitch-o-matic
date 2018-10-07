@@ -1,6 +1,6 @@
 package com.pingwinno.infrastructure;
 
-import com.pingwinno.application.RecordTaskHandler;
+import com.pingwinno.application.RecoveryRecordHandler;
 import com.pingwinno.application.SubscriptionRequestTimer;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
 import com.pingwinno.infrastructure.models.SubscriptionQueryModel;
@@ -24,7 +24,7 @@ public class JettyInitializationListener implements LifeCycle.Listener {
         //subscribe request
 
         try {
-            RecordTaskHandler.loadTaskList();
+            RecoveryRecordHandler.recoverUncompletedRecordTask();
         } catch (FileNotFoundException e) {
             log.warning("Task file not found");
         } catch (IOException e) {

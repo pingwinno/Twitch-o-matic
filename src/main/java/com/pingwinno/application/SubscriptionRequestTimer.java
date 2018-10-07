@@ -1,7 +1,8 @@
 package com.pingwinno.application;
 
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.infrastructure.HttpSeviceHelper;
 import com.pingwinno.infrastructure.models.SubscriptionQueryModel;
 import org.apache.http.client.methods.HttpPost;
@@ -21,10 +22,10 @@ public class SubscriptionRequestTimer extends TimerTask {
     private int resubscribingPeriod;
 
 
-    public SubscriptionRequestTimer(String serverAddress, SubscriptionQueryModel subscriptionModel) {
-        Gson gson = new Gson();
+    public SubscriptionRequestTimer(String serverAddress, SubscriptionQueryModel subscriptionModel) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
         this.serverAddress = serverAddress;
-        this.postData = gson.toJson(subscriptionModel);
+        this.postData = mapper.writeValueAsString(subscriptionModel);
         this.resubscribingPeriod = subscriptionModel.getHubLeaseSeconds() * 1000;
     }
 
