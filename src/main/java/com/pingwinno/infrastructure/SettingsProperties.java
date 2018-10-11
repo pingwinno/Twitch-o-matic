@@ -40,15 +40,26 @@ public class SettingsProperties {
         return callbackAddress;
     }
 
-    public static int getServerPort() {
-        int serverPort = 0;
+    public static int getTwitchServerPort() {
+        int twitchServerPort = 0;
         try {
-            serverPort = Integer.parseInt(getProperties().getProperty("ServerPort"));
+            twitchServerPort = Integer.parseInt(getProperties().getProperty("TwitchServerPort"));
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Can't read ServerPort");
+            log.log(Level.SEVERE, "Can't read TwitchServerPort");
             System.exit(1);
         }
-        return serverPort;
+        return twitchServerPort;
+    }
+
+    public static int getManagementServerPort() {
+        int managementServerPort = 0;
+        try {
+            managementServerPort = Integer.parseInt(getProperties().getProperty("ManagementServerPort"));
+        } catch (IOException e) {
+            log.log(Level.SEVERE, "Can't read ManagementServerPort");
+            System.exit(1);
+        }
+        return managementServerPort;
     }
 
     public static String getUser() {

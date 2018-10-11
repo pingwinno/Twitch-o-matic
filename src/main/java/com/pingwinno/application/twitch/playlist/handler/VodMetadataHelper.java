@@ -12,16 +12,16 @@ import java.io.IOException;
 
 public class VodMetadataHelper {
 
-    public static StreamMetadataModel getLastVod() throws IOException, InterruptedException {
+    public static StreamMetadataModel getLastVod(String user) throws IOException, InterruptedException {
 
         HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
-        HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/channels/" + SettingsProperties.getUser() +
+        HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/channels/" + user +
                 "/videos?limit=1&broadcast_type=archive&sort=time");
         httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
         JSONObject jsonObj =
                 new JSONObject(EntityUtils.toString(httpSeviceHelper.getService(httpGet, true)));
         System.out.println(EntityUtils.toString(httpSeviceHelper.getService(httpGet, true)));
-        String vodIdString = null;
+
         StreamMetadataModel streamMetadata = new StreamMetadataModel();
         if (jsonObj.getJSONArray("videos") != null) {
             JSONArray params = jsonObj.getJSONArray("videos");

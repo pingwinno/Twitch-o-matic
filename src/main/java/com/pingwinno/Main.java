@@ -1,22 +1,11 @@
 package com.pingwinno;
 
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pingwinno.application.StorageHelper;
-import com.pingwinno.infrastructure.JettyInitializationListener;
-import com.pingwinno.infrastructure.SettingsProperties;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.glassfish.jersey.jackson.JacksonFeature;
-import org.glassfish.jersey.server.ResourceConfig;
-import org.glassfish.jersey.servlet.ServletContainer;
+import com.pingwinno.domain.ManagementServer;
+import com.pingwinno.domain.TwitchServer;
 
-import javax.ws.rs.core.Application;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -33,37 +22,11 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        log.info("start TwitchServer");
+        new Thread(TwitchServer::start).start();
+        log.info("start ManagementServer");
+     //  new Thread(ManagementServer::start).start();
 
-        log.info("Checking storage...");
-        if (!StorageHelper.initialStorageCheck()) {
-            System.exit(1);
-        }
-        Server server = new Server(SettingsProperties.getServerPort());
-
-        ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
-        JettyInitializationListener jettyInitializationListener = new JettyInitializationListener();
-        ctx.addLifeCycleListener(jettyInitializationListener);
-        ctx.setContextPath("/");
-        server.setHandler(ctx);
-
-        final Application application = new ResourceConfig()
-                .packages("org.glassfish.jersey.examples.jackson").register(JacksonFeature.class);
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        ServletHolder serHol = ctx.addServlet(ServletContainer.class, "/*");
-        serHol.setInitOrder(1);
-        //Handler package
-        serHol.setInitParameter("jersey.config.server.provider.packages",
-                "com.pingwinno.presentation");
-        try {
-            server.start();
-            server.join();
-        } catch (Exception ex) {
-            log.log(Level.SEVERE, "Server running failed: " + ex.toString(), ex);
-
-        } finally {
-            server.destroy();
-        }
     }
 }
 

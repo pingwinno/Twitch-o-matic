@@ -69,7 +69,7 @@ public class TwitchApiHandler {
                     (notificationModel.getUser_id().equals(UserIdGetter.getUserId(SettingsProperties.getUser())))) {
                 lastNotificationId = notificationModel.getId();
                 UUID uuid = StorageHelper.getUuidName();
-                StreamMetadataModel streamMetadata = VodMetadataHelper.getLastVod();
+                StreamMetadataModel streamMetadata = VodMetadataHelper.getLastVod(SettingsProperties.getUser());
 
                 StreamDataDBModel streamDataDBModel = new StreamDataDBModel(uuid, DateConverter.convert(streamMetadata.getDate()),
                         streamMetadata.getTitle(),streamMetadata.getGame());
