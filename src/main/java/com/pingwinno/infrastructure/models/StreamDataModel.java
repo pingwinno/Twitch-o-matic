@@ -1,22 +1,25 @@
 package com.pingwinno.infrastructure.models;
 
-import java.util.Date;
 import java.util.UUID;
 
-public class StreamDataDBModel {
+public class StreamDataModel {
 
     private UUID uuid;
     private String date;
     private String title;
     private String game;
 
-public StreamDataDBModel(UUID uuid, String date, String title, String game){
+    public StreamDataModel(UUID uuid, String date, String title, String game) {
 
-    this.uuid = uuid;
-    this.title = title;
-    this.date = date;
-    this.game = game;
-}
+        this.uuid = uuid;
+        this.title = title;
+        this.date = date;
+        this.game = game;
+    }
+    public StreamDataModel(){
+
+    }
+
 
     public String getGame() {
         return game;
@@ -30,7 +33,7 @@ public StreamDataDBModel(UUID uuid, String date, String title, String game){
         return date;
     }
 
-    public void String(String date) {
+    public void setDate (String date) {
         this.date = date;
     }
 
@@ -51,7 +54,7 @@ public StreamDataDBModel(UUID uuid, String date, String title, String game){
     }
 
 
-public String toString(){
-return ("uuid:"+uuid+", date:"+date+", title:"+title+", game:"+game);
-}
+    public String toString() {
+        return ("uuid:" + uuid + ", date:" + date + ", title:" + title + ", game:" + game);
+    }
 }

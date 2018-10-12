@@ -3,7 +3,7 @@ package com.pingwinno.domain;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.models.StreamDataDBModel;
+import com.pingwinno.infrastructure.models.StreamDataModel;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -16,10 +16,10 @@ import java.io.*;
 public class DataBaseHandler {
     private String metadataString;
 
-    public DataBaseHandler(StreamDataDBModel streamDataDBModel) throws JsonProcessingException {
+
+    public DataBaseHandler(StreamDataModel streamDataModel) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
-        metadataString = mapper.writeValueAsString(streamDataDBModel);
-        System.out.println(metadataString);
+        metadataString = mapper.writeValueAsString(streamDataModel);
     }
 
     public void writeToLocalDB() throws IOException {

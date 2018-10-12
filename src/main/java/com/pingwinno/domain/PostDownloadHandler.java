@@ -4,8 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.infrastructure.SettingsProperties;
 
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,4 +36,5 @@ public class PostDownloadHandler {
             log.log(Level.SEVERE, "Can't run command. Exception: " + e.toString(), e);
         }
     }
+
 }

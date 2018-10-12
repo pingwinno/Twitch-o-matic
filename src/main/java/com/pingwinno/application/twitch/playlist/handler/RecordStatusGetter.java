@@ -20,7 +20,6 @@ public class RecordStatusGetter {
         recordStatusString = jsonObj.get("status").toString();
         httpSeviceHelper.close();
 
-        System.out.println(recordStatusString);
         return recordStatusString;
     }
 }

@@ -25,7 +25,7 @@ public class Main {
         log.info("start TwitchServer");
         new Thread(TwitchServer::start).start();
         log.info("start ManagementServer");
-     //  new Thread(ManagementServer::start).start();
+      new Thread(ManagementServer::start).start();
 
     }
 }

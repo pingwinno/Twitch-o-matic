@@ -1,14 +1,15 @@
-package com.pingwinno.presentation;
+package com.pingwinno.presentation.twitch.api;
 
 
-import com.pingwinno.application.DateConverter;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.DataBaseHandler;
 import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.models.*;
+import com.pingwinno.infrastructure.models.NotificationDataModel;
+import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
+import com.pingwinno.infrastructure.models.StreamStatusNotificationModel;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -46,7 +47,7 @@ public class TwitchApiHandler {
             else {
                 String hubChallenge = info.getQueryParameters().getFirst("hub.challenge");
                 response = Response.status(Response.Status.OK).entity(hubChallenge).build();
-                log.fine("Subscription complete" + hubMode + " hub.challenge is:" + hubChallenge);
+                log.info("Subscription complete" + hubMode + " hub.challenge is:" + hubChallenge);
                 log.info(" Twith-o-matic started. Waiting for stream up");
             }
         } else log.warning("Subscription query is not correct. Try restart Twitch-o-matic.");
@@ -68,25 +69,23 @@ public class TwitchApiHandler {
                     (notificationModel.getType().equals("live")) &&
                     (notificationModel.getUser_id().equals(UserIdGetter.getUserId(SettingsProperties.getUser())))) {
                 lastNotificationId = notificationModel.getId();
-                UUID uuid = StorageHelper.getUuidName();
-                StreamMetadataModel streamMetadata = VodMetadataHelper.getLastVod(SettingsProperties.getUser());
 
-                StreamDataDBModel streamDataDBModel = new StreamDataDBModel(uuid, DateConverter.convert(streamMetadata.getDate()),
-                        streamMetadata.getTitle(),streamMetadata.getGame());
-                DataBaseHandler dataBaseHandler = new DataBaseHandler(streamDataDBModel);
-                dataBaseHandler.writeToLocalDB();
+                StreamExtendedDataModel streamMetadata = VodMetadataHelper.getLastVod(SettingsProperties.getUser());
+                streamMetadata.setUuid(StorageHelper.getUuidName());
+
                 log.info("Try to start record");
                 VodDownloader vodDownloader = new VodDownloader();
+
                 if (streamMetadata.getVodId() != null) {
-                    RecordTaskModel recordTask = new RecordTaskModel(uuid, streamMetadata.getVodId());
-                    new Thread(() -> vodDownloader.initializeDownload(recordTask)).start();
+
+                    new Thread(() -> vodDownloader.initializeDownload(streamMetadata)).start();
 
                     String startedAt = notificationModel.getStarted_at();
                     log.info("Record started at: " + startedAt);
-                }
-                else {
+                } else {
                     log.severe("vodId is null. Stream not found");
                 }
+
             }
         }
         return Response.status(Response.Status.ACCEPTED).build();

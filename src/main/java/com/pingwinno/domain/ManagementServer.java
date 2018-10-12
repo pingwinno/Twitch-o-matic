@@ -23,18 +23,18 @@ public class ManagementServer {
 
         ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
 
-        ctx.setContextPath("/start");
+        ctx.setContextPath("/");
         server.setHandler(ctx);
 
         final Application application = new ResourceConfig()
                 .packages("org.glassfish.jersey.examples.jackson").register(JacksonFeature.class);
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        ServletHolder serHol = ctx.addServlet(ServletContainer.class, "/start/*");
+        ServletHolder serHol = ctx.addServlet(ServletContainer.class, "/*");
         serHol.setInitOrder(2);
         //Handler package
         serHol.setInitParameter("jersey.config.server.provider.packages",
-                "com.pingwinno.presentation.ManagementApi");
+                "com.pingwinno.presentation.management.api");
         try {
             server.start();
             server.join();

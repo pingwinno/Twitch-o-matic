@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.pingwinno.infrastructure.RecordTaskList;
-import com.pingwinno.infrastructure.models.RecordTaskModel;
+import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
 
 import java.io.*;
 import java.util.LinkedList;
@@ -19,7 +19,7 @@ public class RecordTaskHandler {
         try {
             recordTaskList =
                     new RecordTaskList(mapper.readValue(fileReader,
-                            new TypeReference<LinkedList<RecordTaskModel>>() {
+                            new TypeReference<LinkedList<StreamExtendedDataModel>>() {
                             }));
         } catch (MismatchedInputException ignored) {
         }
@@ -27,7 +27,7 @@ public class RecordTaskHandler {
         return (recordTaskList.getTaskList().size() != 0);
     }
 
-    static public void saveTask(RecordTaskModel recordTaskModel) throws IOException {
+    static public void saveTask(StreamExtendedDataModel recordTaskModel) throws IOException {
         RecordTaskList recordTaskList = new RecordTaskList();
         recordTaskList.addTask(recordTaskModel);
         ObjectMapper mapper = new ObjectMapper();
@@ -40,7 +40,7 @@ public class RecordTaskHandler {
         fileWriter.close();
     }
 
-    static public void removeTask(RecordTaskModel recordTaskModel) throws IOException {
+    static public void removeTask(StreamExtendedDataModel recordTaskModel) throws IOException {
         RecordTaskList recordTaskList = new RecordTaskList();
         recordTaskList.removeTask(recordTaskModel);
         ObjectMapper mapper = new ObjectMapper();

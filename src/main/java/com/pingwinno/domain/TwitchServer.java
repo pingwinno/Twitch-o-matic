@@ -40,7 +40,7 @@ public class TwitchServer {
         serHol.setInitOrder(1);
         //Handler package
         serHol.setInitParameter("jersey.config.server.provider.packages",
-                "com.pingwinno.presentation");
+                "com.pingwinno.presentation.twitch.api");
         try {
             server.start();
             server.join();

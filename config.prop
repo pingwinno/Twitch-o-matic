@@ -1,6 +1,6 @@
-CallbackAddress = http://31.202.48.159:48567/handler
+CallbackAddress = http://31.202.13.123:48567/handler
 TwitchServerPort = 48567
-ManagementServerPort = 80
+ManagementServerPort = 8034
 User = unknowndevice
 
 RecordedStreamPath = /home/shiro/recordFolder/
