@@ -10,24 +10,40 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class SettingsProperties {
-    private final static String PROPSFILE = "config.prop";
+    private final static String PROPSFILE = "config_test.prop";
+    private final static String TESTPROPSFILE = "config_test.prop";
+
     private static org.slf4j.Logger log = LoggerFactory.getLogger(SettingsProperties.class.getName());
 
     private static Properties props;
 
     private static Properties getProperties() throws IOException {
 
-        try {
-
-            if (props == null) {
-                props = new Properties();
-                props.load(new FileInputStream(new File(PROPSFILE)));
+        boolean isLoaded;
+        if (props == null) {
+            props = new Properties();
+            try {
+                props.load(new FileInputStream(new File(TESTPROPSFILE)));
+                isLoaded = true;
+            } catch (FileNotFoundException e) {
+                log.debug("config_test.prop not found");
+                isLoaded = false;
             }
-        } catch (FileNotFoundException e) {
-            log.error("config.prop not found. {}", e);
-            log.error("Place config.prop in Twitch-o-matic folder and try again");
-            System.exit(1);
+            if (!isLoaded) {
+                try {
+                    props.load(new FileInputStream(new File(PROPSFILE)));
+                    isLoaded = true;
+                } catch (FileNotFoundException e) {
+                    log.debug("config_test.prop not found");
+                    isLoaded = false;
+                }
+            }
+            if (!isLoaded) {
+                log.error("Config file not found");
+                System.exit(1);
+            }
         }
+
         return props;
     }
 

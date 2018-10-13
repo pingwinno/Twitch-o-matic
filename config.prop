@@ -1,14 +1,13 @@
-CallbackAddress = http://31.202.13.123:48567/handler
-TwitchServerPort = 48567
-ManagementServerPort = 8034
-User = unknowndevice
+CallbackAddress = http://yourcallbackaddress:yourport/handler
+ServerPort = yourport
 
-RecordedStreamPath = /home/shiro/recordFolder/
+User = twitchUser
 
-ExecutePostDownloadCommand = true
+RecordedStreamPath = pathForRecording
+
+ExecutePostDownloadCommand = false
 CommandAgrs = ["example", "of", "command", "array"]
 
-StreamQuality = best
+StreamQuality = chunked, 720p60, 720p30, 480p30, 360p30,160p30 , audio_only
 
-RedisPutEndpoint = http://18.217.205.7:80/api/add_stream
 

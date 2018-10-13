@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class MasterPlaylistDownloader {
@@ -35,7 +36,7 @@ public class MasterPlaylistDownloader {
         builder.setParameter("p", Integer.toString(ThreadLocalRandom.current().nextInt(1, 99998)));
         httpGet = new HttpGet(builder.build());
         reader = new BufferedReader(new InputStreamReader
-                (httpSeviceHelper.getService(httpGet, false).getContent(), "UTF-8"));
+                (httpSeviceHelper.getService(httpGet, false).getContent(), StandardCharsets.UTF_8));
 
         return reader;
     }

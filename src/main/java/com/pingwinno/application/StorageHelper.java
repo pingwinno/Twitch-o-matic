@@ -38,7 +38,7 @@ public class StorageHelper {
             }
         } else if (!FILE_PATH.canWrite()) {
             log.warn("Can't write in " + SettingsProperties.getRecordedStreamPath());
-            log.warn("Check permissions or change RecordedStreamPath in config.prop");
+            log.warn("Check permissions or change RecordedStreamPath in config_test.prop");
             pass = false;
         }
         log.info("Free space is:" + checkFreeSpace() + "GB");
