@@ -1,4 +1,4 @@
-package com.pingwinno.domain;
+package com.pingwinno.domain.servers;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,13 +11,14 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Application;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class TwitchServer {
-    private static Logger log = Logger.getLogger(TwitchServer.class.getName());
+    private static org.slf4j.Logger log = LoggerFactory.getLogger(TwitchServer.class.getName());
 
     public static void start() {
         log.info("Checking storage...");
@@ -25,7 +26,7 @@ public class TwitchServer {
             System.exit(1);
         }
         Server server = new Server(SettingsProperties.getTwitchServerPort());
-
+        log.debug("Running TwitchAPI server...");
         ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
         JettyInitializationListener jettyInitializationListener = new JettyInitializationListener();
         ctx.addLifeCycleListener(jettyInitializationListener);
@@ -44,8 +45,9 @@ public class TwitchServer {
         try {
             server.start();
             server.join();
+            log.debug("Start server complete.");
         } catch (Exception ex) {
-            log.log(Level.SEVERE, "Server running failed: " + ex.toString(), ex);
+            log.error("Server running failed: {}", ex);
 
         } finally {
             server.destroy();

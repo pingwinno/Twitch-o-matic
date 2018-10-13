@@ -2,6 +2,7 @@ package com.pingwinno.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.infrastructure.SettingsProperties;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -14,7 +15,7 @@ import java.util.logging.Logger;
 
 public class PostDownloadHandler {
 
-    private static Logger log = Logger.getLogger(PostDownloadHandler.class.getName());
+    private static org.slf4j.Logger log = LoggerFactory.getLogger(PostDownloadHandler.class.getName());
 
     public static void handleDownloadedStream() throws IOException {
 
@@ -33,7 +34,7 @@ public class PostDownloadHandler {
                 log.info(line);
             }
         } catch (IOException e) {
-            log.log(Level.SEVERE, "Can't run command. Exception: " + e.toString(), e);
+            log.error("Can't run command. Exception: {}", e);
         }
     }
 

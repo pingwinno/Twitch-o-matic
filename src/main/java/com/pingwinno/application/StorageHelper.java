@@ -1,6 +1,7 @@
 package com.pingwinno.application;
 
 import com.pingwinno.infrastructure.SettingsProperties;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.util.logging.Logger;
 
 public class StorageHelper {
     private final static File FILE_PATH = new File(SettingsProperties.getRecordedStreamPath());
-    private static Logger log = Logger.getLogger(StorageHelper.class.getName());
+    private static org.slf4j.Logger log = LoggerFactory.getLogger(StorageHelper.class.getName());
 
     private static int checkFreeSpace() {
 
@@ -22,9 +23,7 @@ public class StorageHelper {
     private static boolean creatingRecordedPath() {
         return FILE_PATH.mkdir();
     }
-
-
-
+    
     public static boolean initialStorageCheck() {
         boolean pass = true;
         log.info("Free space is:" + checkFreeSpace() + "GB");
@@ -38,8 +37,8 @@ public class StorageHelper {
                 log.info("Success!");
             }
         } else if (!FILE_PATH.canWrite()) {
-            log.warning("Can't write in " + SettingsProperties.getRecordedStreamPath());
-            log.warning("Check permissions or change RecordedStreamPath in config.prop");
+            log.warn("Can't write in " + SettingsProperties.getRecordedStreamPath());
+            log.warn("Check permissions or change RecordedStreamPath in config.prop");
             pass = false;
         }
         log.info("Free space is:" + checkFreeSpace() + "GB");

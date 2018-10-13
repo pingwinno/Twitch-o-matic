@@ -5,13 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.pingwinno.infrastructure.RecordTaskList;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.LinkedList;
 
 public class RecordTaskHandler {
 
+    private static org.slf4j.Logger log = LoggerFactory.getLogger(RecordTaskHandler.class.getName());
+
     static public boolean loadTaskList() throws IOException {
+        log.debug("Loading task list...");
         FileReader fileReader = new FileReader("recoveryList.json");
         BufferedReader reader = new BufferedReader(fileReader);
         ObjectMapper mapper = new ObjectMapper();
@@ -24,10 +28,12 @@ public class RecordTaskHandler {
         } catch (MismatchedInputException ignored) {
         }
         reader.close();
+        log.debug("Task list loaded");
         return (recordTaskList.getTaskList().size() != 0);
     }
 
     static public void saveTask(StreamExtendedDataModel recordTaskModel) throws IOException {
+        log.debug("Saving task...");
         RecordTaskList recordTaskList = new RecordTaskList();
         recordTaskList.addTask(recordTaskModel);
         ObjectMapper mapper = new ObjectMapper();
@@ -38,9 +44,11 @@ public class RecordTaskHandler {
         out.flush();
         out.close();
         fileWriter.close();
+        log.debug("Task saved");
     }
 
     static public void removeTask(StreamExtendedDataModel recordTaskModel) throws IOException {
+        log.debug("Removing task...");
         RecordTaskList recordTaskList = new RecordTaskList();
         recordTaskList.removeTask(recordTaskModel);
         ObjectMapper mapper = new ObjectMapper();
@@ -51,5 +59,6 @@ public class RecordTaskHandler {
         out.flush();
         out.close();
         fileWriter.close();
+        log.debug("Task removed");
     }
 }

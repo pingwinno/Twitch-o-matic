@@ -1,20 +1,22 @@
 package com.pingwinno;
 
 
-import com.pingwinno.domain.ManagementServer;
-import com.pingwinno.domain.TwitchServer;
+import com.pingwinno.domain.servers.ManagementServer;
+import com.pingwinno.domain.servers.TwitchServer;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 
 public class Main {
 
-    private static Logger log = Logger.getLogger(Main.class.getName());
+
 
     public static void main(String[] args) {
+
+        org.slf4j.Logger log = LoggerFactory.getLogger(Main.class.getName());
 
         try {
             LogManager.getLogManager().readConfiguration(new FileInputStream("log.prop"));

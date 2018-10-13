@@ -7,13 +7,13 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 public class HttpSeviceHelper {
 
-    private static Logger log = Logger.getLogger(HttpSeviceHelper.class.getName());
+    private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
     private CloseableHttpClient client;
     private CloseableHttpResponse response;
 
@@ -27,7 +27,7 @@ public class HttpSeviceHelper {
         }
         response = client.execute(httpGet);
         //System.out.println(EntityUtils.toString(response.getEntity()));
-        log.info("Request response: " + response.getStatusLine());
+        log.debug("Request response: {}", response.getStatusLine());
 
         return response.getEntity();
     }
@@ -41,7 +41,7 @@ public class HttpSeviceHelper {
             client = HttpClients.custom().setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
         }
         response = client.execute(httpPost);
-        log.info("Request response: " + response.getStatusLine());
+        log.debug("Request response: {}", response.getStatusLine());
 
         return response.getEntity();
     }

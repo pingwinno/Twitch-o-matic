@@ -5,13 +5,14 @@ import com.pingwinno.application.SubscriptionRequestTimer;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
 import com.pingwinno.infrastructure.models.SubscriptionQueryModel;
 import org.eclipse.jetty.util.component.LifeCycle;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Logger;
 
 public class JettyInitializationListener implements LifeCycle.Listener {
-    private static Logger log = Logger.getLogger(JettyInitializationListener.class.getName());
+    private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @Override
     public void lifeCycleStarting(LifeCycle lifeCycle) {
@@ -26,7 +27,7 @@ public class JettyInitializationListener implements LifeCycle.Listener {
         try {
             RecoveryRecordHandler.recoverUncompletedRecordTask();
         } catch (FileNotFoundException e) {
-            log.warning("Task file not found");
+            log.warn("Task file not found");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -38,7 +39,7 @@ public class JettyInitializationListener implements LifeCycle.Listener {
                     SettingsProperties.getCallbackAddress(), 8640);
             SubscriptionRequestTimer subscriptionQuery =
                     new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
-            log.info("Sending subscription query");
+            log.debug("Sending subscription query");
             subscriptionQuery.sendSubscriptionRequest();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

@@ -4,6 +4,7 @@ import com.pingwinno.application.RecordTaskHandler;
 import com.pingwinno.application.twitch.playlist.handler.*;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileOutputStream;
@@ -21,10 +22,9 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 public class VodDownloader {
-    private static Logger log = Logger.getLogger(VodDownloader.class.getName());
+    private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
     private MasterPlaylistDownloader masterPlaylistDownloader = new MasterPlaylistDownloader();
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
     private ReadableByteChannel readableByteChannel;
@@ -42,11 +42,10 @@ public class VodDownloader {
         vodId = streamDataModel.getVodId();
 
         try {
-            if (RecordStatusGetter.getRecordStatus(vodId).equals("recording")){
+            if (RecordStatusGetter.getRecordStatus(vodId).equals("recording")) {
                 threadsNumber = 2;
-            }
-            else{
-                threadsNumber =10;
+            } else {
+                threadsNumber = 10;
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -58,12 +57,12 @@ public class VodDownloader {
                 if (!Files.exists(streamPath)) {
                     Files.createDirectories(streamPath);
                 } else {
-                    log.warning("Stream folder exist. Maybe it's unfinished task. " +
+                    log.warn("Stream folder exist. Maybe it's unfinished task. " +
                             "If task can't be complete, it will be remove from task list.");
                     log.info("Trying finish download...");
                 }
             } catch (IOException e) {
-                log.severe("Can't create file or folder for VoD downloader" + e.toString());
+                log.error("Can't create file or folder for VoD downloader. {}", e);
             }
             vodId = streamDataModel.getVodId();
 
@@ -88,17 +87,17 @@ public class VodDownloader {
                 executorService.shutdown();
                 executorService.awaitTermination(10, TimeUnit.MINUTES);
             } else {
-                log.severe("vod id with id " + vodId + " not found. Close downloader thread...");
+                log.error("vod id with id {} not found. Close downloader thread...", vodId);
                 stopRecord();
             }
             this.recordCycle();
         } catch (IOException | URISyntaxException | InterruptedException e) {
-            log.severe("Vod downloader initialization failed" + e);
+            log.error("Vod downloader initialization failed. {}", e);
             stopRecord();
         }
     }
 
-   synchronized private boolean refreshDownload() throws InterruptedException {
+    synchronized private boolean refreshDownload() throws InterruptedException {
         boolean status = false;
         try {
             String m3u8Link = MasterPlaylistParser.parse(
@@ -116,7 +115,7 @@ public class VodDownloader {
                         try {
                             downloadChunk(streamPath, chunkName);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            log.error("Chunk download error. {}", e);
                         }
                     };
                     executorService.execute(runnable);
@@ -126,7 +125,7 @@ public class VodDownloader {
             executorService.shutdown();
             executorService.awaitTermination(10, TimeUnit.MINUTES);
         } catch (IOException | URISyntaxException e) {
-            log.severe("Vod downloader refresh failed." + e);
+            log.error("Vod downloader refresh failed. {}", e);
             stopRecord();
         }
         return status;
@@ -144,19 +143,20 @@ public class VodDownloader {
             log.info("End of list. Downloading last chunks");
             this.refreshDownload();
 
-            downloadFile(streamDataModel.getPreviewUrl(),"preview.jpg");
+            log.debug("Download preview");
+            downloadFile(streamDataModel.getPreviewUrl(), "preview.jpg");
+            log.debug("Download m3u8");
             downloadFile(MasterPlaylistParser.parse(
-                    masterPlaylistDownloader.getPlaylist(vodId)),"index-dvr.m3u8");
+                    masterPlaylistDownloader.getPlaylist(vodId)), "index-dvr.m3u8");
             DataBaseHandler dataBaseHandler = new DataBaseHandler(streamDataModel);
-            log.info("write to local db");
+            log.debug("write to local db");
             dataBaseHandler.writeToLocalDB();
-            log.info("write to remote db");
+            log.debug("write to remote db");
             dataBaseHandler.writeToRemoteDB();
 
-            log.info("Stop record");
             stopRecord();
         } else {
-            log.severe("Getting status failed. Stop cycle...");
+            log.error("Getting status failed. Stop cycle...");
             stopRecord();
         }
     }
@@ -165,14 +165,14 @@ public class VodDownloader {
         URL website = new URL(streamPath + "/" + fileName);
         URLConnection connection = website.openConnection();
         if ((!Files.exists(Paths.get(streamFolderPath + "/" + fileName))) ||
-        (connection.getContentLengthLong() != Files.size((Paths.get(streamFolderPath + "/" + fileName))))){
+                (connection.getContentLengthLong() != Files.size((Paths.get(streamFolderPath + "/" + fileName))))) {
 
             readableByteChannel = Channels.newChannel(website.openStream());
             FileOutputStream fos = new FileOutputStream(streamFolderPath + "/" + fileName);
             fos.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
             fos.close();
             log.info(fileName + " complete");
-        }else {
+        } else {
             log.info("Chunk exist. Skipping...");
         }
     }
@@ -186,6 +186,7 @@ public class VodDownloader {
 
     private void stopRecord() {
         try {
+            log.info("Stop record");
             log.info("Closing vod downloader...");
             readableByteChannel.close();
             masterPlaylistDownloader.close();
@@ -195,11 +196,12 @@ public class VodDownloader {
             }
             RecordTaskHandler.removeTask(streamDataModel);
         } catch (IOException e) {
-            log.severe("VoD downloader unexpectedly stop " + e);
+            log.error("VoD downloader unexpectedly stop. {}", e);
         }
     }
-    private void stopRecord(boolean flag){
-        if (flag){
+
+    private void stopRecord(boolean flag) {
+        if (flag) {
             stopRecord();
         }
     }
