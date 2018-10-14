@@ -4,7 +4,7 @@
     "name": "Twitch-o-matic",
     "packages": "com.pingwinno",
     "ThresholdFilter": {
-      "level": "trace"
+      "level": "debug"
     },
     "appenders": {
       "appender": [
@@ -15,13 +15,13 @@
             "pattern": "%d{dd-MMM-yyyy HH:mm:ss} %highlight{%-5level} %c{1} %m %n"
           },
           "ThresholdFilter": {
-            "level": "trace"
+            "level": "info"
           }
         },
         {
           "type": "File",
           "name": "File",
-          "fileName":"Twitch-o-matic.log",
+          "fileName":"/var/log/Twitch-o-matic.log",
           "PatternLayout": {
             "pattern": "%d{dd-MMM-yyyy HH:mm:ss} %-5level %c{1} %m %n"
           },
@@ -33,7 +33,7 @@
     },
     "loggers": {
       "logger": [
-        { "name": "com.pingwinno", "level": "trace", "additivity": "false",
+        { "name": "com.pingwinno", "level": "debug", "additivity": "false",
           "AppenderRef": [{ "ref": "File" }, {"ref": "STDOUT"}]}
       ],
       "root": { "level": "error", "AppenderRef": { "ref": "STDOUT" }}

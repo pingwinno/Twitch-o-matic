@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class SettingsProperties {
-    private final static String PROPSFILE = "config_test.prop";
+    private final static String PROPSFILE = System.getProperty("user.home") + "/.config/config.prop";
     private final static String TESTPROPSFILE = "config_test.prop";
 
     private static org.slf4j.Logger log = LoggerFactory.getLogger(SettingsProperties.class.getName());

@@ -1,5 +1,6 @@
-CallbackAddress = http://yourcallbackaddress:yourport/handler
-ServerPort = yourport
+CallbackAddress = http://yourcallbackaddress
+TwitchServerPort = port for Webhook API
+ManagementServerPort = port for management ToM
 
 User = twitchUser
 
