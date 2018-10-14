@@ -26,8 +26,7 @@ import java.io.IOException;
 public class TwitchApiHandler {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
     private String lastNotificationId;
-
-
+    
     @GET
     public Response getSubscriptionQuery(@Context UriInfo info) {
         Response response = null;
