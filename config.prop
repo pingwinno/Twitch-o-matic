@@ -1,14 +1,14 @@
-CallbackAddress = http://yourcallbackaddress:yourport/handler
-ServerPort = yourport
+CallbackAddress = http://yourcallbackaddress
+TwitchServerPort = port for Webhook API
+ManagementServerPort = port for management ToM
 
 User = twitchUser
 
 RecordedStreamPath = pathForRecording
 
-ExecutePostDownloadCommand = true
+ExecutePostDownloadCommand = false
 CommandAgrs = ["example", "of", "command", "array"]
 
-StreamQuality = best
+StreamQuality = chunked, 720p60, 720p30, 480p30, 360p30,160p30 , audio_only
 
-DownloadMode = vod
 

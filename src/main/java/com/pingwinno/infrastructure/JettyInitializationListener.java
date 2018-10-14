@@ -1,15 +1,18 @@
 package com.pingwinno.infrastructure;
 
+import com.pingwinno.application.RecoveryRecordHandler;
 import com.pingwinno.application.SubscriptionRequestTimer;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
 import com.pingwinno.infrastructure.models.SubscriptionQueryModel;
 import org.eclipse.jetty.util.component.LifeCycle;
+import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Logger;
 
 public class JettyInitializationListener implements LifeCycle.Listener {
-    private static Logger log = Logger.getLogger(JettyInitializationListener.class.getName());
+    private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @Override
     public void lifeCycleStarting(LifeCycle lifeCycle) {
@@ -21,17 +24,25 @@ public class JettyInitializationListener implements LifeCycle.Listener {
 
         //subscribe request
 
+        try {
+            RecoveryRecordHandler.recoverUncompletedRecordTask();
+        } catch (FileNotFoundException e) {
+            log.warn("Task file not found");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         SubscriptionQueryModel json;
         try {
             json = new SubscriptionQueryModel("subscribe",
                     "https://api.twitch.tv/helix/streams?user_id=" +
                             UserIdGetter.getUserId(SettingsProperties.getUser()),
-                    SettingsProperties.getCallbackAddress(), 864000);
+                    SettingsProperties.getCallbackAddress() + ":"+ SettingsProperties.getTwitchServerPort() +
+                    "/handler", 8640);
             SubscriptionRequestTimer subscriptionQuery =
                     new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
-            log.fine("Sending subscription query");
+            log.debug("Sending subscription query");
             subscriptionQuery.sendSubscriptionRequest();
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
 

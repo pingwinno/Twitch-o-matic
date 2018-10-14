@@ -1,30 +1,31 @@
 package com.pingwinno.application;
 
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.infrastructure.HttpSeviceHelper;
 import com.pingwinno.infrastructure.models.SubscriptionQueryModel;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Logger;
 
 
 public class SubscriptionRequestTimer extends TimerTask {
 
-    private static Logger log = Logger.getLogger(SubscriptionRequestTimer.class.getName());
+    private static org.slf4j.Logger log = LoggerFactory.getLogger(StorageHelper.class.getName());
     private String serverAddress;
     private String postData;
     private int resubscribingPeriod;
 
 
-    public SubscriptionRequestTimer(String serverAddress, SubscriptionQueryModel subscriptionModel) {
-        Gson gson = new Gson();
+    public SubscriptionRequestTimer(String serverAddress, SubscriptionQueryModel subscriptionModel) throws JsonProcessingException {
+        ObjectMapper mapper = new ObjectMapper();
         this.serverAddress = serverAddress;
-        this.postData = gson.toJson(subscriptionModel);
+        this.postData = mapper.writeValueAsString(subscriptionModel);
         this.resubscribingPeriod = subscriptionModel.getHubLeaseSeconds() * 1000;
     }
 
@@ -42,12 +43,14 @@ public class SubscriptionRequestTimer extends TimerTask {
             httpPost.addHeader("Content-Type", "application/json");
             httpPost.addHeader("Client-ID", "4zswqk0crwt2wy4b76aaltk2z02m67");
             httpPost.setEntity(postBody);
-            log.fine("Subscription query send.");
+            log.debug("Subscription query send.");
             httpSeviceHelper.getService(httpPost, true);
-            log.fine("Waiting for hub.challenge request");
+            log.debug("Waiting for hub.challenge request");
             httpSeviceHelper.close();
         } catch (IOException e) {
-            log.severe("Subscription timer request failed. " + e);
+            log.error("Subscription timer request failed. {}", e);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -1,17 +1,18 @@
 package com.pingwinno.infrastructure.models;
 
-import com.google.gson.annotations.SerializedName;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 //subscription query object
 public class SubscriptionQueryModel {
 
-    @SerializedName("hub.mode")
+    @JsonProperty("hub.mode")
     private String hubMode;
-    @SerializedName("hub.topic")
+    @JsonProperty("hub.topic")
     private String hubTopic;
-    @SerializedName("hub.callback")
+    @JsonProperty("hub.callback")
     private String hubCallback;
-    @SerializedName("hub.lease_seconds")
+    @JsonProperty("hub.lease_seconds")
     private int hubLeaseSeconds;
     /* May used to sign notification payloads
     @SerializedName("hub.secret")
