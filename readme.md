@@ -8,7 +8,7 @@ Example: ```127.0.0.1:9999/start?type=vod&value=123456789```
 
 Requirements:
 * Static IP or DDNS(not checked)
-* Linux 
+* Linux
 * ~3 GB storage per hour stream on 1080p
 * Oracle JRE 10 ( may not work with OpenJRE/JDK)
 
@@ -33,3 +33,6 @@ Q: How to record streams from multiple streamers?
 
 Q: What type of streams does this app rec?
 A: Live only. Rehost, retry, and other types will be filtered.
+
+Q: Can I run it on Windows/Mac?
+A: ToM developed only for Linux. You can try, but don't report issue. It will not be fixed.
