@@ -16,7 +16,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.UUID;
 
-
+@Path("/")
 public class ManagementApiHandler {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
