@@ -59,7 +59,7 @@ public class ManagementApiHandler {
         return response;
     }
 
-    @Path("/start")
+    @Path("/validate")
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response validateRecord(@QueryParam("vodId") String vodId, @QueryParam("uuid") String uuid) {
