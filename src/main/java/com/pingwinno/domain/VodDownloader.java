@@ -7,16 +7,16 @@ import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashSet;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -27,7 +27,6 @@ public class VodDownloader {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
     private MasterPlaylistDownloader masterPlaylistDownloader = new MasterPlaylistDownloader();
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
-    private ReadableByteChannel readableByteChannel;
     private LinkedHashSet<String> chunks = new LinkedHashSet<>();
     private String streamFolderPath;
     private String vodId;
@@ -167,28 +166,26 @@ public class VodDownloader {
         if ((!Files.exists(Paths.get(streamFolderPath + "/" + fileName))) ||
                 (connection.getContentLengthLong() != Files.size((Paths.get(streamFolderPath + "/" + fileName))))) {
 
-            readableByteChannel = Channels.newChannel(website.openStream());
-            FileOutputStream fos = new FileOutputStream(streamFolderPath + "/" + fileName);
-            fos.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-            fos.close();
-            log.info(fileName + " complete");
+            try (InputStream in = website.openStream()) {
+                Files.copy(in, Paths.get(streamFolderPath + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
+                log.info(fileName + " complete");
+            }
         } else {
             log.info("Chunk exist. Skipping...");
         }
     }
 
     private void downloadFile(String url, String fileName) throws IOException {
-        readableByteChannel = Channels.newChannel(new URL(url).openStream());
-        FileOutputStream fos = new FileOutputStream(streamFolderPath + "/" + fileName);
-        fos.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-        fos.close();
+        try (InputStream in = new URL(url).openStream()) {
+            Files.copy(in, Paths.get(streamFolderPath + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
+            log.info(fileName + " complete");
+        }
     }
 
     private void stopRecord() {
         try {
             log.info("Stop record");
             log.info("Closing vod downloader...");
-            readableByteChannel.close();
             masterPlaylistDownloader.close();
             mediaPlaylistDownloader.close();
             if (SettingsProperties.getExecutePostDownloadCommand()) {
