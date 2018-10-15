@@ -1,18 +1,14 @@
+
 [Unit]
 Description=Twitch-o-matic Service
 After=multi-user.target
 
 [Service]
-Type=idle
-Restart=always
-RestartSec=20
-StartLimitInterval=200
-StartLimitBurst=5
+Type=forking
 
-WorkingDirectory=/usr/local/Twitch-o-matic/
-ExecStart=/usr/local/bin/Twitch-o-matic.sh start
-ExecStop=/usr/local/bin/Twitch-o-matic.sh stop
-ExecRestart =/usr/local/bin/Twitch-o-matic.sh restart
+ExecStart=/bin/bash /usr/local/bin/Twitch-o-matic.sh start
+ExecStop=/bin/bash /usr/local/bin/Twitch-o-matic.sh stop
+ExecReload =/bin/bash /usr/local/bin/Twitch-o-matic.sh reload
 
 [Install]
 WantedBy=multi-user.target
