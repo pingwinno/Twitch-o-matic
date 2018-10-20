@@ -70,7 +70,7 @@ public class VodDownloader {
             //if stream  exist
             if (m3u8Link != null) {
                 String streamPath = StreamPathExtractor.extract(m3u8Link);
-                chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link));
+                chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), true);
                 ExecutorService executorService = Executors.newFixedThreadPool(threadsNumber);
 
                 for (String chunkName : chunks) {
@@ -102,8 +102,9 @@ public class VodDownloader {
             String m3u8Link = MasterPlaylistParser.parse(
                     masterPlaylistDownloader.getPlaylist(vodId));
             String streamPath = StreamPathExtractor.extract(m3u8Link);
-            BufferedReader reader = mediaPlaylistDownloader.getMediaPlaylist(m3u8Link);
-            LinkedHashSet<String> refreshedPlaylist = MediaPlaylistParser.parse(reader);
+
+            LinkedHashSet<String> refreshedPlaylist =
+                    MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), true);
 
             ExecutorService executorService = Executors.newFixedThreadPool(threadsNumber);
             for (String chunkName : refreshedPlaylist) {
@@ -145,8 +146,8 @@ public class VodDownloader {
             log.debug("Download preview");
             downloadFile(streamDataModel.getPreviewUrl(), "preview.jpg");
             log.debug("Download m3u8");
-            downloadFile(MasterPlaylistParser.parse(
-                    masterPlaylistDownloader.getPlaylist(vodId)), "index-dvr.m3u8");
+            MediaPlaylistWriter.write( new MediaPlaylistDownloader().getMediaPlaylist(MasterPlaylistParser.parse
+                    (new MasterPlaylistDownloader().getPlaylist(vodId))), streamFolderPath);
             DataBaseHandler dataBaseHandler = new DataBaseHandler(streamDataModel);
             log.debug("write to local db");
             dataBaseHandler.writeToLocalDB();
