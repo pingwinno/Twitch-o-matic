@@ -4,6 +4,7 @@ import com.pingwinno.application.RecordTaskHandler;
 import com.pingwinno.application.twitch.playlist.handler.*;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
@@ -149,11 +150,16 @@ public class VodDownloader {
             MediaPlaylistWriter.write( new MediaPlaylistDownloader().getMediaPlaylist(MasterPlaylistParser.parse
                     (new MasterPlaylistDownloader().getPlaylist(vodId))), streamFolderPath);
             DataBaseHandler dataBaseHandler = new DataBaseHandler(streamDataModel);
-            log.debug("write to local db");
-            dataBaseHandler.writeToLocalDB();
-            log.debug("write to remote db");
-            dataBaseHandler.writeToRemoteDB();
-
+            try {
+                log.debug("write to local db");
+                dataBaseHandler.writeToLocalDB();
+                log.debug("write to remote db");
+                dataBaseHandler.writeToRemoteDB();
+            }
+            catch (Exception e) {
+                log.warn("Write to db failed. Skip.");
+                log.warn("{}",e);
+            }
             stopRecord();
         } else {
             log.error("Getting status failed. Stop cycle...");
