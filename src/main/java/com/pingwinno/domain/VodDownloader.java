@@ -4,16 +4,13 @@ import com.pingwinno.application.RecordTaskHandler;
 import com.pingwinno.application.twitch.playlist.handler.*;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
-import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -147,7 +144,7 @@ public class VodDownloader {
             log.debug("Download preview");
             downloadFile(streamDataModel.getPreviewUrl(), "preview.jpg");
             log.debug("Download m3u8");
-            MediaPlaylistWriter.write( new MediaPlaylistDownloader().getMediaPlaylist(MasterPlaylistParser.parse
+            MediaPlaylistWriter.write(new MediaPlaylistDownloader().getMediaPlaylist(MasterPlaylistParser.parse
                     (new MasterPlaylistDownloader().getPlaylist(vodId))), streamFolderPath);
             DataBaseHandler dataBaseHandler = new DataBaseHandler(streamDataModel);
             try {
@@ -155,10 +152,9 @@ public class VodDownloader {
                 dataBaseHandler.writeToLocalDB();
                 log.debug("write to remote db");
                 dataBaseHandler.writeToRemoteDB();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 log.warn("Write to db failed. Skip.");
-                log.warn("{}",e);
+                log.warn("Stacktrace {}", e);
             }
             stopRecord();
         } else {
