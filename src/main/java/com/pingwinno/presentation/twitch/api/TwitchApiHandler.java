@@ -1,12 +1,17 @@
 package com.pingwinno.presentation.twitch.api;
 
 
+import com.pingwinno.application.DateConverter;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.VodDownloader;
+import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.StartedBy;
+import com.pingwinno.infrastructure.State;
 import com.pingwinno.infrastructure.models.NotificationDataModel;
+import com.pingwinno.infrastructure.models.StatusDataModel;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
 import com.pingwinno.infrastructure.models.StreamStatusNotificationModel;
 import org.slf4j.LoggerFactory;
@@ -20,6 +25,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 
 @Path("/handler")
@@ -54,7 +60,9 @@ public class TwitchApiHandler {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response handleStreamNotification(StreamStatusNotificationModel dataModel) throws IOException, InterruptedException {
+    public Response handleStreamNotification(StreamStatusNotificationModel dataModel)
+            throws IOException, InterruptedException {
+
         log.debug("Incoming stream up/down notification");
         NotificationDataModel[] notificationArray = dataModel.getData();
         if (notificationArray.length > 0) {
@@ -69,6 +77,10 @@ public class TwitchApiHandler {
 
                 StreamExtendedDataModel streamMetadata = VodMetadataHelper.getLastVod(SettingsProperties.getUser());
                 streamMetadata.setUuid(StorageHelper.getUuidName());
+
+                new RecordStatusList().addStatus
+                        (new StatusDataModel(streamMetadata.getVodId(), StartedBy.WEBHOOK, DateConverter.convert(LocalDateTime.now()),
+                                State.INITIALIZE, streamMetadata.getUuid()));
 
                 log.info("Try to start record");
                 VodDownloader vodDownloader = new VodDownloader();

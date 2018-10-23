@@ -14,8 +14,6 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Application;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class TwitchServer {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(TwitchServer.class.getName());
@@ -47,7 +45,7 @@ public class TwitchServer {
             server.join();
             log.debug("Start server complete.");
         } catch (Exception ex) {
-            log.error("Server running failed: {}", ex);
+            log.error("Server running failed: { }", ex);
 
         } finally {
             server.destroy();
