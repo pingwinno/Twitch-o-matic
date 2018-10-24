@@ -1,12 +1,17 @@
 package com.pingwinno.infrastructure.models;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.UUID;
 
 public class StreamDataModel {
-
+    @JsonProperty
     private UUID uuid;
+    @JsonProperty
     private String date;
+    @JsonProperty
     private String title;
+    @JsonProperty
     private String game;
 
     public StreamDataModel(UUID uuid, String date, String title, String game) {

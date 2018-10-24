@@ -142,7 +142,7 @@ public class VodDownloader {
             this.refreshDownload();
 
             log.debug("Download preview");
-            downloadFile(streamDataModel.getPreviewUrl(), "preview.jpg");
+            downloadFile(VodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), "preview.jpg");
             log.debug("Download m3u8");
             MediaPlaylistWriter.write(new MediaPlaylistDownloader().getMediaPlaylist(MasterPlaylistParser.parse
                     (new MasterPlaylistDownloader().getPlaylist(vodId))), streamFolderPath);
@@ -150,12 +150,12 @@ public class VodDownloader {
             try {
                 log.debug("write to local db");
                 dataBaseHandler.writeToLocalDB();
-                log.debug("write to remote db");
-                dataBaseHandler.writeToRemoteDB();
             } catch (Exception e) {
                 log.warn("Write to db failed. Skip.");
                 log.warn("Stacktrace {}", e);
             }
+            SqliteHandler sqliteHandler = new SqliteHandler();
+            sqliteHandler.insert(streamDataModel);
             stopRecord();
         } else {
             log.error("Getting status failed. Stop cycle...");
@@ -199,12 +199,5 @@ public class VodDownloader {
             log.error("VoD downloader unexpectedly stop. {}", e);
         }
     }
-
-    private void stopRecord(boolean flag) {
-        if (flag) {
-            stopRecord();
-        }
-    }
-
 
 }
