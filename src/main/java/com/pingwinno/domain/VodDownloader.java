@@ -137,7 +137,7 @@ public class VodDownloader {
             }
             log.info("Finalize record...");
             log.info("Wait for renewing playlist");
-            Thread.sleep(150 * 1000);
+            Thread.sleep(50 * 1000);
             log.info("End of list. Downloading last chunks");
             this.refreshDownload();
 

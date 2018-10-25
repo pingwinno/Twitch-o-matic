@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 public class JettyInitializationListener implements LifeCycle.Listener {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
@@ -37,7 +36,7 @@ public class JettyInitializationListener implements LifeCycle.Listener {
                     "https://api.twitch.tv/helix/streams?user_id=" +
                             UserIdGetter.getUserId(SettingsProperties.getUser()),
                     SettingsProperties.getCallbackAddress() + ":"+ SettingsProperties.getTwitchServerPort() +
-                    "/handler", 8640);
+                            "/handler", 864000);
             SubscriptionRequestTimer subscriptionQuery =
                     new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
             log.debug("Sending subscription query");

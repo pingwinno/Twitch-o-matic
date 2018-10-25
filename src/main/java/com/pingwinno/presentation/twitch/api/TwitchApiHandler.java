@@ -32,6 +32,7 @@ public class TwitchApiHandler {
         Response response = null;
         log.debug("Incoming challenge request");
         if (info != null) {
+            log.debug("hub.mode {} ", info.getQueryParameters().getFirst("hub.mode"));
             String hubMode = info.getQueryParameters().getFirst("hub.mode");
             //handle denied response
             if (hubMode.equals("denied")) {
