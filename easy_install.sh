@@ -10,6 +10,7 @@ cd ./Twitch-o-matic
 mvn package
 mkdir /usr/local/Twitch-o-matic/
 mkdir  $HOME/.config/
+mkdir  $HOME/db/
 mv config.prop $HOME/.config/
 mv ./target/Twitch-o-matic.jar /usr/local/Twitch-o-matic/
 mv Twitch-o-matic.sh /usr/local/bin/
