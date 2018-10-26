@@ -23,7 +23,8 @@ public class ManagementApiHandler {
     @Path("/start")
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Response startRecord(@QueryParam("type") String type, @QueryParam("value") String value) {
+    public Response startRecord(@QueryParam("type") String type,
+                                @QueryParam("value") String value, @QueryParam("skip_muted") String skipMuted) {
         Response response;
         StreamExtendedDataModel streamMetadata = null;
         try {
