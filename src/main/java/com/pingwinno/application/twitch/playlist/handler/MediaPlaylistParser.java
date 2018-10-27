@@ -19,6 +19,8 @@ public class MediaPlaylistParser {
                 log.trace(chunk);
                 if (skipMuted && !chunk.contains("muted")) {
                     chunks.add(chunk);
+                } else {
+                    chunks.add(chunk);
                 }
             }
         }

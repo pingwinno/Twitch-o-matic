@@ -68,7 +68,7 @@ public class VodDownloader {
             //if stream  exist
             if (m3u8Link != null) {
                 String streamPath = StreamPathExtractor.extract(m3u8Link);
-                chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), true);
+                chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
                 ExecutorService executorService = Executors.newFixedThreadPool(threadsNumber);
 
                 for (String chunkName : chunks) {
@@ -102,7 +102,7 @@ public class VodDownloader {
             String streamPath = StreamPathExtractor.extract(m3u8Link);
 
             LinkedHashSet<String> refreshedPlaylist =
-                    MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), true);
+                    MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
 
             ExecutorService executorService = Executors.newFixedThreadPool(threadsNumber);
             for (String chunkName : refreshedPlaylist) {

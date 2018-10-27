@@ -41,6 +41,7 @@ public class ManagementApiHandler {
 
                     streamMetadata.setUuid(StorageHelper.getUuidName());
                     StreamExtendedDataModel finalStreamMetadata = streamMetadata;
+                    streamMetadata.setSkipMuted(skipMuted.equals("true"));
                     new Thread(() -> vodDownloader.initializeDownload(finalStreamMetadata)).start();
 
                     String startedAt = streamMetadata.getDate();
@@ -63,7 +64,8 @@ public class ManagementApiHandler {
     @Path("/validate")
     @GET
     @Produces(MediaType.TEXT_HTML)
-    public Response validateRecord(@QueryParam("vodId") String vodId, @QueryParam("uuid") String uuid) {
+    public Response validateRecord(@QueryParam("vodId") String vodId,
+                                   @QueryParam("uuid") String uuid, @QueryParam("skip_muted") String skipMuted) {
         Response response;
         StreamExtendedDataModel streamMetadata = null;
         try {
@@ -78,6 +80,7 @@ public class ManagementApiHandler {
 
                     streamMetadata.setUuid(UUID.fromString(uuid));
                     StreamExtendedDataModel finalStreamMetadata = streamMetadata;
+                    streamMetadata.setSkipMuted(skipMuted.equals("true"));
                     new Thread(() -> vodDownloader.initializeDownload(finalStreamMetadata)).start();
 
                     String startedAt = streamMetadata.getDate();
