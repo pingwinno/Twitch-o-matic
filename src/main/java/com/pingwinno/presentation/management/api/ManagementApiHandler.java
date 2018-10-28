@@ -3,16 +3,17 @@ package com.pingwinno.presentation.management.api;
 
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
+import com.pingwinno.domain.SqliteHandler;
 import com.pingwinno.domain.VodDownloader;
+import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -21,7 +22,7 @@ public class ManagementApiHandler {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @Path("/start")
-    @GET
+    @POST
     @Produces(MediaType.TEXT_HTML)
     public Response startRecord(@QueryParam("type") String type,
                                 @QueryParam("value") String value, @QueryParam("skip_muted") String skipMuted) {
@@ -62,7 +63,7 @@ public class ManagementApiHandler {
     }
 
     @Path("/validate")
-    @GET
+    @POST
     @Produces(MediaType.TEXT_HTML)
     public Response validateRecord(@QueryParam("vodId") String vodId,
                                    @QueryParam("uuid") String uuid, @QueryParam("skip_muted") String skipMuted) {
@@ -98,6 +99,25 @@ public class ManagementApiHandler {
             log.error("Can't start record {}", e);
         }
         return response;
+    }
+
+    @Path("/delete")
+    @DELETE
+    public Response deleteStream(@QueryParam("uuid") String uuid, @QueryParam("delete_media") String deleteMedia) {
+
+        SqliteHandler sqliteHandler = new SqliteHandler();
+        sqliteHandler.delete("uuid", uuid);
+        log.info("delete stream {}", uuid);
+        if (deleteMedia.equals("true")) {
+            try {
+                FileUtils.deleteDirectory(new File(SettingsProperties.getRecordedStreamPath() + uuid));
+            } catch (IOException e) {
+                log.error("can't delete media {] ", e);
+                return Response.notModified().build();
+            }
+        }
+
+        return Response.accepted().build();
     }
 
 

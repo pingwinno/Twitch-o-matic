@@ -55,4 +55,20 @@ public class SqliteHandler {
         }
         log.info("insert stream data complete");
     }
+
+    public void delete(String column, String value) {
+        String sql = "DELETE FROM warehouses WHERE " + column + " = ?";
+
+        try (Connection conn = this.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, value);
+
+            pstmt.executeUpdate();
+
+        } catch (SQLException e) {
+            log.error("delete failed {}", e);
+        }
+    }
+
 }
