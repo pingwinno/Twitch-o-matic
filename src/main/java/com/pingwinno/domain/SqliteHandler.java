@@ -57,7 +57,7 @@ public class SqliteHandler {
     }
 
     public void delete(String column, String value) {
-        String sql = "DELETE FROM warehouses WHERE " + column + " = ?";
+        String sql = "DELETE FROM streams WHERE " + column + " = ?";
 
         try (Connection conn = this.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
