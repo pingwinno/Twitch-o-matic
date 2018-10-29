@@ -22,7 +22,7 @@ public class ManagementApiHandler {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @Path("/start")
-    @POST
+    @GET
     @Produces(MediaType.TEXT_HTML)
     public Response startRecord(@QueryParam("type") String type,
                                 @QueryParam("value") String value, @QueryParam("skip_muted") String skipMuted) {
@@ -63,7 +63,7 @@ public class ManagementApiHandler {
     }
 
     @Path("/validate")
-    @POST
+    @GET
     @Produces(MediaType.TEXT_HTML)
     public Response validateRecord(@QueryParam("vodId") String vodId,
                                    @QueryParam("uuid") String uuid, @QueryParam("skip_muted") String skipMuted) {
