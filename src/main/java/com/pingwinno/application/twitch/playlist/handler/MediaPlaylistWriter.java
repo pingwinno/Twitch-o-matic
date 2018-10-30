@@ -15,16 +15,17 @@ public class MediaPlaylistWriter {
 
         FileWriter fstream = new FileWriter(streamFolderPath + "/index-dvr.m3u8");
         BufferedWriter out = new BufferedWriter(fstream);
-        log.debug("Write to local db...");
-        out.newLine();
-        log.debug("done");
+        log.debug("Writing playlist...");
 
         while ((line = reader.readLine()) != null) {
 
             if (line.contains("muted")) {
+                log.trace("muted line { }", line);
+
                 out.write(line.replace("-muted", ""));
                 out.newLine();
             } else {
+                log.trace("simple line { }", line);
                 out.write(line);
                 out.newLine();
             }
@@ -32,6 +33,8 @@ public class MediaPlaylistWriter {
         }
         out.close();
         fstream.close();
+        log.debug("done");
+
     }
 }
 

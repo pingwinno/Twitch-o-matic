@@ -2,9 +2,7 @@ package com.pingwinno.domain;
 
 import com.pingwinno.application.RecordTaskHandler;
 import com.pingwinno.application.twitch.playlist.handler.*;
-import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.State;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +39,6 @@ public class VodDownloader {
         vodId = streamDataModel.getVodId();
 
         try {
-            new RecordStatusList().changeState(vodId, State.RUNNING);
             if (RecordStatusGetter.getRecordStatus(vodId).equals("recording")) {
                 threadsNumber = 2;
             } else {
@@ -63,8 +60,6 @@ public class VodDownloader {
                 }
             } catch (IOException e) {
                 log.error("Can't create file or folder for VoD downloader. {}", e);
-                new RecordStatusList().changeState(vodId, State.ERROR);
-                stopRecord();
             }
             vodId = streamDataModel.getVodId();
 
@@ -73,7 +68,7 @@ public class VodDownloader {
             //if stream  exist
             if (m3u8Link != null) {
                 String streamPath = StreamPathExtractor.extract(m3u8Link);
-                chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), true);
+                chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
                 ExecutorService executorService = Executors.newFixedThreadPool(threadsNumber);
 
                 for (String chunkName : chunks) {
@@ -90,13 +85,11 @@ public class VodDownloader {
                 executorService.awaitTermination(10, TimeUnit.MINUTES);
             } else {
                 log.error("vod id with id {} not found. Close downloader thread...", vodId);
-                new RecordStatusList().changeState(vodId, State.ERROR);
                 stopRecord();
             }
             this.recordCycle();
         } catch (IOException | URISyntaxException | InterruptedException e) {
             log.error("Vod downloader initialization failed. {}", e);
-            new RecordStatusList().changeState(vodId, State.ERROR);
             stopRecord();
         }
     }
@@ -109,7 +102,7 @@ public class VodDownloader {
             String streamPath = StreamPathExtractor.extract(m3u8Link);
 
             LinkedHashSet<String> refreshedPlaylist =
-                    MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), true);
+                    MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
 
             ExecutorService executorService = Executors.newFixedThreadPool(threadsNumber);
             for (String chunkName : refreshedPlaylist) {
@@ -131,7 +124,6 @@ public class VodDownloader {
             executorService.awaitTermination(10, TimeUnit.MINUTES);
         } catch (IOException | URISyntaxException e) {
             log.error("Vod downloader refresh failed. {}", e);
-            new RecordStatusList().changeState(vodId, State.ERROR);
             stopRecord();
         }
         return status;
@@ -145,12 +137,12 @@ public class VodDownloader {
             }
             log.info("Finalize record...");
             log.info("Wait for renewing playlist");
-            //Thread.sleep(100 * 1000);
+            Thread.sleep(50 * 1000);
             log.info("End of list. Downloading last chunks");
             this.refreshDownload();
 
             log.debug("Download preview");
-            downloadFile(streamDataModel.getPreviewUrl(), "preview.jpg");
+            downloadFile(VodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), "preview.jpg");
             log.debug("Download m3u8");
             MediaPlaylistWriter.write(new MediaPlaylistDownloader().getMediaPlaylist(MasterPlaylistParser.parse
                     (new MasterPlaylistDownloader().getPlaylist(vodId))), streamFolderPath);
@@ -158,14 +150,13 @@ public class VodDownloader {
             try {
                 log.debug("write to local db");
                 dataBaseHandler.writeToLocalDB();
-                log.debug("write to remote db");
-                dataBaseHandler.writeToRemoteDB();
             } catch (Exception e) {
                 log.warn("Write to db failed. Skip.");
-                log.warn("{}", e);
+                log.warn("Stacktrace {}", e);
             }
+            SqliteHandler sqliteHandler = new SqliteHandler();
+            sqliteHandler.insert(streamDataModel);
             stopRecord();
-            new RecordStatusList().changeState(vodId, State.COMPLETE);
         } else {
             log.error("Getting status failed. Stop cycle...");
             stopRecord();
@@ -206,15 +197,7 @@ public class VodDownloader {
             RecordTaskHandler.removeTask(streamDataModel);
         } catch (IOException e) {
             log.error("VoD downloader unexpectedly stop. {}", e);
-            new RecordStatusList().changeState(vodId, State.ERROR);
         }
     }
-
-    private void stopRecord(boolean flag) {
-        if (flag) {
-            stopRecord();
-        }
-    }
-
 
 }

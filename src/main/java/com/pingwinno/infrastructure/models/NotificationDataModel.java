@@ -5,6 +5,7 @@ public class NotificationDataModel {
     private String id;
     private String[] community_ids;
     private String user_id;
+    private String user_name;
     private String game_id;
     private String type;
     private String title;
@@ -12,6 +13,14 @@ public class NotificationDataModel {
     private String started_at;
     private String language;
     private String thumbnail_url;
+
+    public String getUser_name() {
+        return user_name;
+    }
+
+    public void setUser_name(String user_name) {
+        this.user_name = user_name;
+    }
 
     public String[] getCommunity_ids() {
         return community_ids;

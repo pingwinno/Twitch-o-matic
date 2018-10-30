@@ -1,25 +1,20 @@
 package com.pingwinno.presentation.management.api;
 
 
-import com.pingwinno.application.DateConverter;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
+import com.pingwinno.domain.SqliteHandler;
 import com.pingwinno.domain.VodDownloader;
-import com.pingwinno.infrastructure.RecordStatusList;
-import com.pingwinno.infrastructure.StartedBy;
-import com.pingwinno.infrastructure.State;
-import com.pingwinno.infrastructure.models.StatusDataModel;
+import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Path("/")
@@ -27,9 +22,10 @@ public class ManagementApiHandler {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @Path("/start")
-    @POST
+    @GET
     @Produces(MediaType.TEXT_HTML)
-    public Response startRecord(@QueryParam("type") String type, @QueryParam("value") String value) {
+    public Response startRecord(@QueryParam("type") String type,
+                                @QueryParam("value") String value, @QueryParam("skip_muted") String skipMuted) {
         Response response;
         StreamExtendedDataModel streamMetadata = null;
         try {
@@ -46,11 +42,7 @@ public class ManagementApiHandler {
 
                     streamMetadata.setUuid(StorageHelper.getUuidName());
                     StreamExtendedDataModel finalStreamMetadata = streamMetadata;
-
-                    new RecordStatusList().addStatus
-                            (new StatusDataModel(streamMetadata.getVodId(), StartedBy.MANUAL, DateConverter.convert(LocalDateTime.now()),
-                                    State.INITIALIZE, streamMetadata.getUuid()));
-
+                    streamMetadata.setSkipMuted(skipMuted.equals("true"));
                     new Thread(() -> vodDownloader.initializeDownload(finalStreamMetadata)).start();
 
                     String startedAt = streamMetadata.getDate();
@@ -71,9 +63,10 @@ public class ManagementApiHandler {
     }
 
     @Path("/validate")
-    @POST
+    @GET
     @Produces(MediaType.TEXT_HTML)
-    public Response validateRecord(@QueryParam("vodId") String vodId, @QueryParam("uuid") String uuid) {
+    public Response validateRecord(@QueryParam("vodId") String vodId,
+                                   @QueryParam("uuid") String uuid, @QueryParam("skip_muted") String skipMuted) {
         Response response;
         StreamExtendedDataModel streamMetadata = null;
         try {
@@ -88,11 +81,7 @@ public class ManagementApiHandler {
 
                     streamMetadata.setUuid(UUID.fromString(uuid));
                     StreamExtendedDataModel finalStreamMetadata = streamMetadata;
-
-                    new RecordStatusList().addStatus
-                            (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, DateConverter.convert(LocalDateTime.now()),
-                                    State.INITIALIZE, streamMetadata.getUuid()));
-
+                    streamMetadata.setSkipMuted(skipMuted.equals("true"));
                     new Thread(() -> vodDownloader.initializeDownload(finalStreamMetadata)).start();
 
                     String startedAt = streamMetadata.getDate();
@@ -110,6 +99,25 @@ public class ManagementApiHandler {
             log.error("Can't start record {}", e);
         }
         return response;
+    }
+
+    @Path("/delete")
+    @DELETE
+    public Response deleteStream(@QueryParam("uuid") String uuid, @QueryParam("delete_media") String deleteMedia) {
+
+        SqliteHandler sqliteHandler = new SqliteHandler();
+        sqliteHandler.delete("uuid", uuid);
+        log.info("delete stream {}", uuid);
+        if (deleteMedia.equals("true")) {
+            try {
+                FileUtils.deleteDirectory(new File(SettingsProperties.getRecordedStreamPath() + uuid));
+            } catch (IOException e) {
+                log.error("can't delete media {] ", e);
+                return Response.notModified().build();
+            }
+        }
+
+        return Response.accepted().build();
     }
 
 
