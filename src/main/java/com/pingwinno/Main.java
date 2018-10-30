@@ -1,9 +1,10 @@
 package com.pingwinno;
 
 
-import com.pingwinno.domain.SqliteHandler;
 import com.pingwinno.domain.servers.ManagementServer;
 import com.pingwinno.domain.servers.TwitchServer;
+import com.pingwinno.domain.sqlite.handlers.SqliteStatusDataHandler;
+import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
@@ -16,10 +17,11 @@ public class Main {
         Main.class.getResourceAsStream("log4j2.json");
 
         org.slf4j.Logger log = LoggerFactory.getLogger(Main.class.getName());
-        SqliteHandler sqliteHandler = new SqliteHandler();
+
         try {
             log.debug("initialize db");
-            sqliteHandler.initializeDB();
+            new SqliteStreamDataHandler().initializeDB();
+            new SqliteStatusDataHandler().initializeDB();
         } catch (SQLException e) {
             log.error("DB initialization failed { } ", e);
         }

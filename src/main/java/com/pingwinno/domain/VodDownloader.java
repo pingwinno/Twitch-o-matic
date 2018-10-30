@@ -2,7 +2,10 @@ package com.pingwinno.domain;
 
 import com.pingwinno.application.RecordTaskHandler;
 import com.pingwinno.application.twitch.playlist.handler.*;
+import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
+import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +51,7 @@ public class VodDownloader {
             e.printStackTrace();
         }
         try {
+            new RecordStatusList().changeState(vodId, State.RUNNING);
             RecordTaskHandler.saveTask(streamDataModel);
             try {
                 Path streamPath = Paths.get(streamFolderPath);
@@ -59,6 +63,7 @@ public class VodDownloader {
                     log.info("Trying finish download...");
                 }
             } catch (IOException e) {
+                new RecordStatusList().changeState(vodId, State.ERROR);
                 log.error("Can't create file or folder for VoD downloader. {}", e);
             }
             vodId = streamDataModel.getVodId();
@@ -84,6 +89,7 @@ public class VodDownloader {
                 executorService.shutdown();
                 executorService.awaitTermination(10, TimeUnit.MINUTES);
             } else {
+                new RecordStatusList().changeState(vodId, State.ERROR);
                 log.error("vod id with id {} not found. Close downloader thread...", vodId);
                 stopRecord();
             }
@@ -113,6 +119,7 @@ public class VodDownloader {
                         try {
                             downloadChunk(streamPath, chunkName);
                         } catch (IOException e) {
+                            new RecordStatusList().changeState(vodId, State.ERROR);
                             log.error("Chunk download error. {}", e);
                         }
                     };
@@ -154,10 +161,12 @@ public class VodDownloader {
                 log.warn("Write to db failed. Skip.");
                 log.warn("Stacktrace {}", e);
             }
-            SqliteHandler sqliteHandler = new SqliteHandler();
+            SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
             sqliteHandler.insert(streamDataModel);
             stopRecord();
+            new RecordStatusList().changeState(vodId, State.COMPLETE);
         } else {
+            new RecordStatusList().changeState(vodId, State.ERROR);
             log.error("Getting status failed. Stop cycle...");
             stopRecord();
         }
@@ -196,6 +205,7 @@ public class VodDownloader {
             }
             RecordTaskHandler.removeTask(streamDataModel);
         } catch (IOException e) {
+            new RecordStatusList().changeState(vodId, State.ERROR);
             log.error("VoD downloader unexpectedly stop. {}", e);
         }
     }

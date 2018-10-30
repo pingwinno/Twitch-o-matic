@@ -2,13 +2,18 @@ package com.pingwinno.presentation.twitch.api;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pingwinno.application.DateConverter;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.HashHandler;
+import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.enums.StartedBy;
+import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.NotificationDataModel;
+import com.pingwinno.infrastructure.models.StatusDataModel;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
 import com.pingwinno.infrastructure.models.StreamStatusNotificationModel;
 import org.slf4j.LoggerFactory;
@@ -19,6 +24,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 
 @Path("/handler")
@@ -75,6 +81,10 @@ public class TwitchApiHandler {
 
                     StreamExtendedDataModel streamMetadata = VodMetadataHelper.getLastVod(SettingsProperties.getUser());
                     streamMetadata.setUuid(StorageHelper.getUuidName());
+
+                    new RecordStatusList().addStatus
+                            (new StatusDataModel(streamMetadata.getVodId(), StartedBy.WEBHOOK, DateConverter.convert(LocalDateTime.now()),
+                                    State.INITIALIZE, streamMetadata.getUuid()));
 
                     log.info("Try to start record");
                     VodDownloader vodDownloader = new VodDownloader();

@@ -1,7 +1,7 @@
 package com.pingwinno.infrastructure.models;
 
-import com.pingwinno.infrastructure.StartedBy;
-import com.pingwinno.infrastructure.State;
+import com.pingwinno.infrastructure.enums.StartedBy;
+import com.pingwinno.infrastructure.enums.State;
 
 import java.util.UUID;
 

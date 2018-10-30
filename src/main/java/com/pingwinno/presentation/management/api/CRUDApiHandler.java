@@ -1,12 +1,17 @@
 package com.pingwinno.presentation.management.api;
 
 
+import com.pingwinno.application.DateConverter;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
-import com.pingwinno.domain.SqliteHandler;
 import com.pingwinno.domain.VodDownloader;
+import com.pingwinno.domain.sqlite.handlers.SqliteHandler;
+import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
+import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
+import com.pingwinno.infrastructure.enums.StartedBy;
+import com.pingwinno.infrastructure.enums.State;
+import com.pingwinno.infrastructure.models.*;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
 
@@ -15,26 +20,26 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
-import java.util.UUID;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
 
 @Path("/")
-public class ManagementApiHandler {
+public class CRUDApiHandler {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
-    @Path("/start")
-    @GET
+    @Path("/add")
+    @POST
     @Produces(MediaType.TEXT_HTML)
-    public Response startRecord(@QueryParam("type") String type,
-                                @QueryParam("value") String value, @QueryParam("skip_muted") String skipMuted) {
+    public Response startRecord(AddDataModel dataModel) {
         Response response;
         StreamExtendedDataModel streamMetadata = null;
         try {
-            log.trace("type: {}",type);
-            log.trace("value: {}",value);
-            if (type.equals("user")) {
-                streamMetadata = VodMetadataHelper.getLastVod(value);
-            } else if (type.equals("vod")) {
-                streamMetadata = VodMetadataHelper.getVodMetadata(value);
+            log.trace("type: {}", dataModel.getType());
+            log.trace("value: {}", dataModel.getValue());
+            if (dataModel.getType().equals("user")) {
+                streamMetadata = VodMetadataHelper.getLastVod(dataModel.getValue());
+            } else if (dataModel.getType().equals("vod")) {
+                streamMetadata = VodMetadataHelper.getVodMetadata(dataModel.getValue());
             }
             if (streamMetadata != null) {
                 VodDownloader vodDownloader = new VodDownloader();
@@ -42,14 +47,19 @@ public class ManagementApiHandler {
 
                     streamMetadata.setUuid(StorageHelper.getUuidName());
                     StreamExtendedDataModel finalStreamMetadata = streamMetadata;
-                    streamMetadata.setSkipMuted(skipMuted.equals("true"));
+                    streamMetadata.setSkipMuted(dataModel.isSkipMuted());
+
+                    new RecordStatusList().addStatus
+                            (new StatusDataModel(streamMetadata.getVodId(), StartedBy.MANUAL, DateConverter.convert(LocalDateTime.now()),
+                                    State.INITIALIZE, streamMetadata.getUuid()));
+
                     new Thread(() -> vodDownloader.initializeDownload(finalStreamMetadata)).start();
 
                     String startedAt = streamMetadata.getDate();
                     log.info("Record started at:{} ", startedAt);
                     response = Response.accepted().build();
                 } else {
-                    log.error("Stream {] not found", value);
+                    log.error("Stream {] not found", dataModel.getValue());
                     response = Response.status(Response.Status.NOT_FOUND).build();
                 }
             } else {
@@ -63,32 +73,36 @@ public class ManagementApiHandler {
     }
 
     @Path("/validate")
-    @GET
+    @POST
     @Produces(MediaType.TEXT_HTML)
-    public Response validateRecord(@QueryParam("vodId") String vodId,
-                                   @QueryParam("uuid") String uuid, @QueryParam("skip_muted") String skipMuted) {
+    public Response validateRecord(ValidationDataModel dataModel) {
         Response response;
         StreamExtendedDataModel streamMetadata = null;
         try {
-            log.trace("vodId: {}",vodId);
-            log.trace("uuid: {}",uuid);
+            log.trace("vodId: {}", dataModel.getVodId());
+            log.trace("uuid: {}", dataModel.getStreamDataModel().getUuid());
 
-                streamMetadata = VodMetadataHelper.getVodMetadata(vodId);
+            streamMetadata = VodMetadataHelper.getVodMetadata(dataModel.getVodId());
 
             if (streamMetadata != null) {
                 VodDownloader vodDownloader = new VodDownloader();
                 if (streamMetadata.getVodId() != null) {
 
-                    streamMetadata.setUuid(UUID.fromString(uuid));
+                    streamMetadata.setUuid(dataModel.getStreamDataModel().getUuid());
                     StreamExtendedDataModel finalStreamMetadata = streamMetadata;
-                    streamMetadata.setSkipMuted(skipMuted.equals("true"));
+                    streamMetadata.setSkipMuted(dataModel.isSkipMuted());
+
+                    new RecordStatusList().addStatus
+                            (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, DateConverter.convert(LocalDateTime.now()),
+                                    State.INITIALIZE, streamMetadata.getUuid()));
+
                     new Thread(() -> vodDownloader.initializeDownload(finalStreamMetadata)).start();
 
                     String startedAt = streamMetadata.getDate();
                     log.info("Record started at:{} ", startedAt);
                     response = Response.accepted().build();
                 } else {
-                    log.error("Stream {] not found", vodId);
+                    log.error("Stream {] not found", dataModel.getVodId());
                     response = Response.status(Response.Status.NOT_FOUND).build();
                 }
             } else {
@@ -106,7 +120,7 @@ public class ManagementApiHandler {
     public Response deleteStream(@QueryParam("uuid") String uuid, @QueryParam("delete_media") String deleteMedia) {
 
         SqliteHandler sqliteHandler = new SqliteHandler();
-        sqliteHandler.delete("uuid", uuid);
+        sqliteHandler.delete(uuid);
         log.info("delete stream {}", uuid);
         if (deleteMedia.equals("true")) {
             try {
@@ -120,5 +134,18 @@ public class ManagementApiHandler {
         return Response.accepted().build();
     }
 
+    @Path("/update")
+    @POST
+    public Response updateStream(StreamDataModel dataModel) {
+        SqliteStreamDataHandler sqliteStreamDataHandler = new SqliteStreamDataHandler();
+        try {
+            sqliteStreamDataHandler.update(dataModel);
+        } catch (SQLException e) {
+            log.error("update failed { }", e);
+            return Response.notModified().build();
+        }
+        return Response.ok().build();
+
+    }
 
 }

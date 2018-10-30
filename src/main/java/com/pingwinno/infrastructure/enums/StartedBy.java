@@ -1,4 +1,4 @@
-package com.pingwinno.infrastructure;
+package com.pingwinno.infrastructure.enums;
 
 public enum StartedBy {
     WEBHOOK,
