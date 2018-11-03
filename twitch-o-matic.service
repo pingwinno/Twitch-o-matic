@@ -5,10 +5,11 @@ After=multi-user.target
 
 [Service]
 Type=forking
+User=tom-daemon
 
 ExecStart=/bin/bash /usr/local/bin/Twitch-o-matic.sh start
 ExecStop=/bin/bash /usr/local/bin/Twitch-o-matic.sh stop
-ExecReload =/bin/bash /usr/local/bin/Twitch-o-matic.sh reload
+ExecReload =/bin/bash /usr/local/bin/Twitch-o-matic.sh restart
 
 [Install]
 WantedBy=multi-user.target

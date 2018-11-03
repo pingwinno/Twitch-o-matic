@@ -5,7 +5,7 @@ ManagementServerPort = port for management ToM
 User = twitchUser
 
 RecordedStreamPath = pathForRecording
-
+SqliteFolder = /usr/local/twitch-o-matic//db/
 ExecutePostDownloadCommand = false
 CommandAgrs = ["example", "of", "command", "array"]
 

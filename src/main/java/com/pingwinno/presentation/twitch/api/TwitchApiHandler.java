@@ -73,7 +73,7 @@ public class TwitchApiHandler {
                         (notificationModel.getType().equals("live")) &&
                         (notificationModel.getUser_id().equals(UserIdGetter.getUserId(SettingsProperties.getUser())))) {
                     lastVodId = streamMetadata.getVodId();
-                    
+
                     streamMetadata.setUuid(StorageHelper.getUuidName());
 
                     log.info("Try to start record");
