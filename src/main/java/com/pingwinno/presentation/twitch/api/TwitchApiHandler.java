@@ -3,6 +3,7 @@ package com.pingwinno.presentation.twitch.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.application.StorageHelper;
+import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.HashHandler;
@@ -23,7 +24,7 @@ import java.io.IOException;
 @Path("/handler")
 public class TwitchApiHandler {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
-    private String lastVodId;
+    private static String lastVodId;
     
     @GET
     public Response getSubscriptionQuery(@Context UriInfo info) {
@@ -70,10 +71,9 @@ public class TwitchApiHandler {
                 if ((!(streamMetadata.getVodId().equals(lastVodId))) &&
                         //filter for live streams
                         (notificationModel.getType().equals("live")) &&
-                        (notificationModel.getUser_name().equals(SettingsProperties.getUser()))) {
+                        (notificationModel.getUser_id().equals(UserIdGetter.getUserId(SettingsProperties.getUser())))) {
                     lastVodId = streamMetadata.getVodId();
-
-
+                    
                     streamMetadata.setUuid(StorageHelper.getUuidName());
 
                     log.info("Try to start record");
@@ -88,6 +88,8 @@ public class TwitchApiHandler {
                     } else {
                         log.error("vodId is null. Stream not found");
                     }
+                } else {
+                    log.info("stream duplicate");
                 }
             } else {
                 log.info("Stream down notification");
