@@ -1,5 +1,6 @@
 package com.pingwinno.domain.sqlite.handlers;
 
+import com.pingwinno.infrastructure.SettingsProperties;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
@@ -10,7 +11,7 @@ public class SqliteHandler {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     Connection connect() {
-        String url = "jdbc:sqlite:" + System.getProperty("user.home") + "/db/streams.db";
+        String url = "jdbc:sqlite:" + SettingsProperties.getSqliteFolder() + "streams.db";
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(url);

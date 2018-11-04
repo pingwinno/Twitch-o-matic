@@ -2,7 +2,6 @@ package com.pingwinno;
 
 
 import com.pingwinno.application.StorageHelper;
-import com.pingwinno.domain.SqliteHandler;
 import com.pingwinno.domain.servers.ManagementServer;
 import com.pingwinno.domain.servers.TwitchServer;
 import org.apache.commons.daemon.Daemon;
@@ -22,7 +21,6 @@ public class Main implements Daemon {
         Main.class.getResourceAsStream("log4j2.json");
 
         org.slf4j.Logger log = LoggerFactory.getLogger(Main.class.getName());
-        SqliteHandler sqliteHandler = new SqliteHandler();
         try {
             log.debug("initialize db");
             new SqliteStreamDataHandler().initializeDB();

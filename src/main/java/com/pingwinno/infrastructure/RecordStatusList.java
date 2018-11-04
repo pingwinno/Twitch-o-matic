@@ -40,14 +40,12 @@ public class RecordStatusList {
 
     synchronized public void changeState(String vodId, State state) {
 
-        dataHandler.update(statusList.get(statusList.indexOf(statusList.stream()
+       StatusDataModel updatedDataModel = statusList.get(statusList.indexOf(statusList.stream()
                 .filter(statusDataModel -> vodId.equals(statusDataModel.getVodId()))
                 .findAny()
-                .orElse(null))));
-        statusList.get(statusList.indexOf(statusList.stream()
-                .filter(statusDataModel -> vodId.equals(statusDataModel.getVodId()))
-                .findAny()
-                .orElse(null))).setState(state);
+                .orElse(null)));
+       updatedDataModel.setState(state);
+       dataHandler.update(updatedDataModel);
 
     }
 
