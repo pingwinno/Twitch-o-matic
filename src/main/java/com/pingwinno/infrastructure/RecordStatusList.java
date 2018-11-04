@@ -46,7 +46,12 @@ public class RecordStatusList {
                 .orElse(null)));
        updatedDataModel.setState(state);
        dataHandler.update(updatedDataModel);
-
+    }
+    synchronized public boolean isExist(String vodId){
+        return  statusList.get(statusList.indexOf(statusList.stream()
+                .filter(statusDataModel -> vodId.equals(statusDataModel.getVodId()))
+                .findAny()
+                .orElse(null))) != null;
     }
 
 }

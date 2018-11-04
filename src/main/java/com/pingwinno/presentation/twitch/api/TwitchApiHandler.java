@@ -74,12 +74,11 @@ public class TwitchApiHandler {
                 NotificationDataModel notificationModel = notificationArray[0];
                 StreamExtendedDataModel streamMetadata = VodMetadataHelper.getLastVod(SettingsProperties.getUser());
                 //check for notification duplicate
-                if ((!(streamMetadata.getVodId().equals(lastVodId))) &&
+                if ((new RecordStatusList().isExist(streamMetadata.getVodId())) &&
                         //filter for live streams
                         (notificationModel.getType().equals("live")) &&
                         (notificationModel.getUser_id().equals(UserIdGetter.getUserId(SettingsProperties.getUser())))) {
-                    lastVodId = streamMetadata.getVodId();
-
+                    
                     streamMetadata.setUuid(StorageHelper.getUuidName());
 
                     new RecordStatusList().addStatus
