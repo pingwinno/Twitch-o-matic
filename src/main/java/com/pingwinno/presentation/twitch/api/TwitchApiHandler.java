@@ -30,7 +30,7 @@ import java.time.LocalDateTime;
 @Path("/handler")
 public class TwitchApiHandler {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
-    private String lastNotificationId;
+    private static String lastVodId;
     
     @GET
     public Response getSubscriptionQuery(@Context UriInfo info) {
@@ -72,14 +72,14 @@ public class TwitchApiHandler {
             if (notificationArray.length > 0) {
                 log.info("Stream is up");
                 NotificationDataModel notificationModel = notificationArray[0];
+                StreamExtendedDataModel streamMetadata = VodMetadataHelper.getLastVod(SettingsProperties.getUser());
                 //check for notification duplicate
-                if ((!(notificationModel.getId().equals(lastNotificationId))) &&
+                if ((!(streamMetadata.getVodId().equals(lastVodId))) &&
                         //filter for live streams
                         (notificationModel.getType().equals("live")) &&
                         (notificationModel.getUser_id().equals(UserIdGetter.getUserId(SettingsProperties.getUser())))) {
-                    lastNotificationId = notificationModel.getId();
+                    lastVodId = streamMetadata.getVodId();
 
-                    StreamExtendedDataModel streamMetadata = VodMetadataHelper.getLastVod(SettingsProperties.getUser());
                     streamMetadata.setUuid(StorageHelper.getUuidName());
 
                     new RecordStatusList().addStatus
@@ -98,6 +98,8 @@ public class TwitchApiHandler {
                     } else {
                         log.error("vodId is null. Stream not found");
                     }
+                } else {
+                    log.info("stream duplicate");
                 }
             } else {
                 log.info("Stream down notification");

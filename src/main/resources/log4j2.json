@@ -21,7 +21,7 @@
         {
           "type": "File",
           "name": "File",
-          "fileName":"/var/log/Twitch-o-matic.log",
+          "fileName": "/var/log/tom/twitch-o-matic.log",
           "PatternLayout": {
             "pattern": "%d{dd-MMM-yyyy HH:mm:ss} %-5level %c{1} %m %n"
           },

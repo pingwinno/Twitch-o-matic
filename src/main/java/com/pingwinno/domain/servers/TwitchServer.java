@@ -2,7 +2,6 @@ package com.pingwinno.domain.servers;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pingwinno.application.StorageHelper;
 import com.pingwinno.infrastructure.JettyInitializationListener;
 import com.pingwinno.infrastructure.SettingsProperties;
 import org.eclipse.jetty.server.Server;
@@ -17,13 +16,10 @@ import javax.ws.rs.core.Application;
 
 public class TwitchServer {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(TwitchServer.class.getName());
-
+    private static Server server;
     public static void start() {
-        log.info("Checking storage...");
-        if (!StorageHelper.initialStorageCheck()) {
-            System.exit(1);
-        }
-        Server server = new Server(SettingsProperties.getTwitchServerPort());
+        server = new Server(SettingsProperties.getTwitchServerPort());
+
         log.debug("Running TwitchAPI server...");
         ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
         JettyInitializationListener jettyInitializationListener = new JettyInitializationListener();
@@ -50,5 +46,9 @@ public class TwitchServer {
         } finally {
             server.destroy();
         }
+    }
+
+    public static void stop() throws Exception {
+        server.stop();
     }
 }

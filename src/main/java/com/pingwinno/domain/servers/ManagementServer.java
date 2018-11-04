@@ -14,11 +14,10 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.Application;
 
 public class ManagementServer {
+    private static Server server;
     private static org.slf4j.Logger log = LoggerFactory.getLogger(ManagementServer.class.getName());
     public static void start() {
-
-        Server server = new Server(SettingsProperties.getManagementServerPort());
-
+        server = new Server(SettingsProperties.getManagementServerPort());
         ServletContextHandler ctx = new ServletContextHandler(ServletContextHandler.NO_SESSIONS);
 
         ctx.setContextPath("/");
@@ -44,4 +43,9 @@ public class ManagementServer {
             server.destroy();
         }
     }
+
+    public static void stop() throws Exception {
+        server.stop();
+    }
+
 }

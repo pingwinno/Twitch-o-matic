@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class SettingsProperties {
-    private final static String PROPSFILE = System.getProperty("user.home") + "/.config/config.prop";
+    private final static String PROPSFILE = "/etc/tom/config.prop";
     private final static String TESTPROPSFILE = "config_test.prop";
 
     private static org.slf4j.Logger log = LoggerFactory.getLogger(SettingsProperties.class.getName());
@@ -146,6 +146,17 @@ public class SettingsProperties {
             System.exit(1);
         }
         return redisPutEndpoint;
+    }
+
+    public static String getSqliteFolder() {
+        String sqliteFolder = null;
+        try {
+            sqliteFolder = getProperties().getProperty("SqliteFolder");
+        } catch (IOException e) {
+            log.error("Can't read SqliteFolder. {}", e);
+            System.exit(1);
+        }
+        return sqliteFolder;
     }
 }
 
