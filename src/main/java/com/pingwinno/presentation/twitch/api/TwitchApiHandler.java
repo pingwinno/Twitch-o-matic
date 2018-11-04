@@ -78,7 +78,7 @@ public class TwitchApiHandler {
                         //filter for live streams
                         (notificationModel.getType().equals("live")) &&
                         (notificationModel.getUser_id().equals(UserIdGetter.getUserId(SettingsProperties.getUser())))) {
-                    
+
                     streamMetadata.setUuid(StorageHelper.getUuidName());
 
                     new RecordStatusList().addStatus

@@ -1,6 +1,5 @@
 package com.pingwinno.domain;
 
-import com.pingwinno.application.RecordTaskHandler;
 import com.pingwinno.application.twitch.playlist.handler.*;
 import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
 import com.pingwinno.infrastructure.RecordStatusList;
@@ -52,7 +51,6 @@ public class VodDownloader {
         }
         try {
             new RecordStatusList().changeState(vodId, State.RUNNING);
-            RecordTaskHandler.saveTask(streamDataModel);
             try {
                 Path streamPath = Paths.get(streamFolderPath);
                 if (!Files.exists(streamPath)) {
@@ -203,7 +201,6 @@ public class VodDownloader {
             if (SettingsProperties.getExecutePostDownloadCommand()) {
                 PostDownloadHandler.handleDownloadedStream();
             }
-            RecordTaskHandler.removeTask(streamDataModel);
         } catch (IOException e) {
             new RecordStatusList().changeState(vodId, State.ERROR);
             log.error("VoD downloader unexpectedly stop. {}", e);
