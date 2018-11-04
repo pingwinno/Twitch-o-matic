@@ -37,8 +37,8 @@ mv twitch-o-matic.sh /usr/local/bin/
 chmod +x /usr/local/bin/twitch-o-matic.sh
 
 
-cp twitch-o-matic.service /etc/systemd/system/
-cd ../../
+cp twitch-o-matic.service /etc/systemd/system/twitch-o-matic.service
+cd ../
 rm -rf Twitch-o-matic
 chmod 644 /etc/systemd/system/twitch-o-matic.service
 systemctl daemon-reload
