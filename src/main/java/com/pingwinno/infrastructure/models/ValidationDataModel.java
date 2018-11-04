@@ -1,13 +1,15 @@
 package com.pingwinno.infrastructure.models;
 
+import java.util.UUID;
+
 public class ValidationDataModel {
 
-    private StreamDataModel streamDataModel;
+    private UUID uuid;
     private boolean skipMuted;
     private String vodId;
 
-    public ValidationDataModel(StreamDataModel streamDataModel, boolean skipMuted, String vodId) {
-        this.streamDataModel = streamDataModel;
+    public ValidationDataModel(UUID uuid, boolean skipMuted, String vodId) {
+        this.uuid = uuid;
         this.skipMuted = skipMuted;
         this.vodId = vodId;
     }
@@ -20,12 +22,12 @@ public class ValidationDataModel {
         this.vodId = vodId;
     }
 
-    public StreamDataModel getStreamDataModel() {
-        return streamDataModel;
+    public UUID getUuid() {
+        return uuid;
     }
 
-    public void setStreamDataModel(StreamDataModel streamDataModel) {
-        this.streamDataModel = streamDataModel;
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public boolean isSkipMuted() {

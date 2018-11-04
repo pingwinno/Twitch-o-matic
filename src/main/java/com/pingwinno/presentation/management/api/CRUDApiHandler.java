@@ -80,7 +80,7 @@ public class CRUDApiHandler {
         StreamExtendedDataModel streamMetadata = null;
         try {
             log.trace("vodId: {}", dataModel.getVodId());
-            log.trace("uuid: {}", dataModel.getStreamDataModel().getUuid());
+            log.trace("uuid: {}", dataModel.getUuid());
 
             streamMetadata = VodMetadataHelper.getVodMetadata(dataModel.getVodId());
 
@@ -88,7 +88,7 @@ public class CRUDApiHandler {
                 VodDownloader vodDownloader = new VodDownloader();
                 if (streamMetadata.getVodId() != null) {
 
-                    streamMetadata.setUuid(dataModel.getStreamDataModel().getUuid());
+                    streamMetadata.setUuid(dataModel.getUuid());
                     StreamExtendedDataModel finalStreamMetadata = streamMetadata;
                     streamMetadata.setSkipMuted(dataModel.isSkipMuted());
 
