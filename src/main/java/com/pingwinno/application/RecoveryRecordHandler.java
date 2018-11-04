@@ -20,13 +20,15 @@ public class RecoveryRecordHandler {
         LinkedList<StatusDataModel> dataModels = new SqliteStatusDataHandler().selectAll();
 
         StatusDataModel dataModel;
-        while ((dataModel = dataModels.get(dataModels.indexOf(dataModels.stream()
-                .filter(statusDataModel -> State.RUNNING.equals(statusDataModel.getState()))
-                .findAny()
-                .orElse(null)))) != null) {
-            StreamExtendedDataModel extendedDataModel = VodMetadataHelper.getVodMetadata(dataModel.getVodId());
-            extendedDataModel.setUuid(dataModel.getUuid());
-            new VodDownloader().initializeDownload(extendedDataModel);
+        if (!dataModels.isEmpty()) {
+            while ((dataModel = dataModels.get(dataModels.indexOf(dataModels.stream()
+                    .filter(statusDataModel -> State.RUNNING.equals(statusDataModel.getState()))
+                    .findAny()
+                    .orElse(null)))) != null) {
+                StreamExtendedDataModel extendedDataModel = VodMetadataHelper.getVodMetadata(dataModel.getVodId());
+                extendedDataModel.setUuid(dataModel.getUuid());
+                new VodDownloader().initializeDownload(extendedDataModel);
+            }
         }
     }
 }

@@ -25,7 +25,13 @@ public class SqliteStreamDataHandler extends SqliteHandler {
         try (Connection connection = super.connect();
              Statement statement = connection.createStatement()) {
             statement.execute(createStreamsTable);
-            statement.execute(createStreamsIndex);
+            try {
+                statement.execute(createStreamsIndex);
+            }
+            catch (SQLException e){
+                log.info("Index exists");
+            }
+
             log.info("Table create complete");
         }
     }

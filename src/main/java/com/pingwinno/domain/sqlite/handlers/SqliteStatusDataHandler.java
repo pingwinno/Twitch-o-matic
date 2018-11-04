@@ -19,15 +19,20 @@ public class SqliteStatusDataHandler extends SqliteHandler {
                 + "	uuid PRIMARY KEY NOT NULL,\n"
                 + "	vodId NOT NULL,\n"
                 + "	date NOT NULL,\n"
-                + " startedBy \n"
-                + " state \n"
+                + " startedBy NOT NULL,\n"
+                + " state NOT NULL\n"
                 + ");";
         String createStatusIndex = "CREATE UNIQUE INDEX idx_status_uuid ON streams_status(uuid);";
 
         try (Connection connection = super.connect();
              Statement statement = connection.createStatement()) {
             statement.execute(createStatusTable);
-            statement.execute(createStatusIndex);
+            try {
+                statement.execute(createStatusIndex);
+            }
+            catch (SQLException e){
+                log.info("Index exists");
+            }
             log.info("Table create complete");
         }
 
