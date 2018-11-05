@@ -16,7 +16,7 @@ public class RecordTaskHandler {
 
     static public boolean loadTaskList() throws IOException {
         log.debug("Loading task list...");
-        FileReader fileReader = new FileReader("recoveryList.json");
+        FileReader fileReader = new FileReader("/usr/local/twitch-o-matic/db/recoveryList.json");
         BufferedReader reader = new BufferedReader(fileReader);
         ObjectMapper mapper = new ObjectMapper();
         RecordTaskList recordTaskList = new RecordTaskList();
@@ -38,7 +38,7 @@ public class RecordTaskHandler {
         recordTaskList.addTask(recordTaskModel);
         ObjectMapper mapper = new ObjectMapper();
         String recordTaskListString = mapper.writeValueAsString(recordTaskList.getTaskList());
-        FileWriter fileWriter = new FileWriter("recoveryList.json");
+        FileWriter fileWriter = new FileWriter("/usr/local/twitch-o-matic/db/recoveryList.json");
         BufferedWriter out = new BufferedWriter(fileWriter);
         out.write(recordTaskListString);
         out.flush();
@@ -53,7 +53,7 @@ public class RecordTaskHandler {
         recordTaskList.removeTask(recordTaskModel);
         ObjectMapper mapper = new ObjectMapper();
         String recordTaskListString = mapper.writeValueAsString(recordTaskList);
-        FileWriter fileWriter = new FileWriter("recoveryList.json");
+        FileWriter fileWriter = new FileWriter("/usr/local/twitch-o-matic/db/recoveryList.json");
         BufferedWriter out = new BufferedWriter(fileWriter);
         out.write(recordTaskListString);
         out.flush();
