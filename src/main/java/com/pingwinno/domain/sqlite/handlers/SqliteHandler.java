@@ -11,7 +11,7 @@ public class SqliteHandler {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     Connection connect() {
-        String url = "jdbc:sqlite:" + SettingsProperties.getSqliteFolder() + "streams.db";
+        String url = "jdbc:sqlite:" + SettingsProperties.getSqliteFile();
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(url);

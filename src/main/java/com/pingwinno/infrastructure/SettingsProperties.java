@@ -148,15 +148,15 @@ public class SettingsProperties {
         return redisPutEndpoint;
     }
 
-    public static String getSqliteFolder() {
-        String sqliteFolder = null;
+    public static String getSqliteFile() {
+        String sqliteFile = null;
         try {
-            sqliteFolder = getProperties().getProperty("SqliteFolder");
+            sqliteFile = getProperties().getProperty("SqliteFile");
         } catch (IOException e) {
-            log.error("Can't read SqliteFolder. {}", e);
+            log.error("Can't read SqliteFile. {}", e);
             System.exit(1);
         }
-        return sqliteFolder;
+        return sqliteFile;
     }
 }
 
