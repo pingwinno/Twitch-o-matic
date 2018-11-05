@@ -53,7 +53,13 @@ public class CRUDApiHandler {
                             (new StatusDataModel(streamMetadata.getVodId(), StartedBy.MANUAL, DateConverter.convert(LocalDateTime.now()),
                                     State.INITIALIZE, streamMetadata.getUuid()));
 
-                    new Thread(() -> vodDownloader.initializeDownload(finalStreamMetadata)).start();
+                    new Thread(() -> {
+                        try {
+                            vodDownloader.initializeDownload(finalStreamMetadata);
+                        } catch (SQLException e) {
+                            log.error("DB error {} ",e);
+                        }
+                    }).start();
 
                     String startedAt = streamMetadata.getDate();
                     log.info("Record started at:{} ", startedAt);
@@ -65,7 +71,7 @@ public class CRUDApiHandler {
             } else {
                 response = Response.status(Response.Status.NOT_ACCEPTABLE).build();
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | SQLException  e) {
             response = Response.status(500, e.toString()).build();
             log.error("Can't start record {}", e);
         }
@@ -96,7 +102,13 @@ public class CRUDApiHandler {
                             (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, DateConverter.convert(LocalDateTime.now()),
                                     State.INITIALIZE, streamMetadata.getUuid()));
 
-                    new Thread(() -> vodDownloader.initializeDownload(finalStreamMetadata)).start();
+                    new Thread(() -> {
+                        try {
+                            vodDownloader.initializeDownload(finalStreamMetadata);
+                        } catch (SQLException e) {
+                            log.error("DB error {} ",e);
+                        }
+                    }).start();
 
                     String startedAt = streamMetadata.getDate();
                     log.info("Record started at:{} ", startedAt);
@@ -108,7 +120,7 @@ public class CRUDApiHandler {
             } else {
                 response = Response.status(Response.Status.NOT_ACCEPTABLE).build();
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException | InterruptedException | SQLException e) {
             response = Response.status(500, e.toString()).build();
             log.error("Can't start record {}", e);
         }

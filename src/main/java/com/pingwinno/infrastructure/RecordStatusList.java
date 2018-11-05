@@ -5,6 +5,7 @@ import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.StatusDataModel;
 import org.slf4j.LoggerFactory;
 
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Objects;
 
@@ -14,19 +15,15 @@ public class RecordStatusList {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
     private static SqliteStatusDataHandler dataHandler = new SqliteStatusDataHandler();
 
-    public RecordStatusList() {
+    public RecordStatusList() throws SQLException {
+        statusList = dataHandler.selectAll();
     }
 
-    public RecordStatusList(LinkedList<StatusDataModel> statusList) {
-        log.trace("create status object");
-        log.trace("{}", statusList);
-        RecordStatusList.statusList = statusList;
-    }
 
-    synchronized public void addStatus(StatusDataModel statusDataModel) {
+    synchronized public void addStatus(StatusDataModel statusDataModel) throws SQLException {
         log.trace("add status");
         log.trace("{}", statusDataModel);
-        if ((statusList.size() != 0) && (statusList.size() > LIST_SIZE)) {
+        if ((dataHandler.selectAll().size()>LIST_SIZE)) {
             dataHandler.delete(Objects.requireNonNull(statusList.pollFirst()).getUuid().toString());
 
         }
@@ -38,8 +35,8 @@ public class RecordStatusList {
         return new LinkedList<>(statusList);
     }
 
-    synchronized public void changeState(String vodId, State state) {
-
+    synchronized public void changeState(String vodId, State state) throws SQLException {
+        statusList = dataHandler.selectAll();
        StatusDataModel updatedDataModel = statusList.get(statusList.indexOf(statusList.stream()
                 .filter(statusDataModel -> vodId.equals(statusDataModel.getVodId()))
                 .findAny()
@@ -47,11 +44,25 @@ public class RecordStatusList {
        updatedDataModel.setState(state);
        dataHandler.update(updatedDataModel);
     }
-    synchronized public boolean isExist(String vodId){
-        return  statusList.get(statusList.indexOf(statusList.stream()
-                .filter(statusDataModel -> vodId.equals(statusDataModel.getVodId()))
-                .findAny()
-                .orElse(null))) != null;
+    synchronized public boolean isExist(String vodId) throws SQLException {
+        boolean isExist ;
+        statusList = dataHandler.selectAll();
+        if (!statusList.isEmpty()) {
+            if (statusList.indexOf(statusList.stream()
+                    .filter(statusDataModel -> vodId.equals(statusDataModel.getVodId()))
+                    .findAny()
+                    .orElse(null)) > 0) {
+                isExist = statusList.get(statusList.indexOf(statusList.stream()
+                        .filter(statusDataModel -> vodId.equals(statusDataModel.getVodId()))
+                        .findAny()
+                        .orElse(null))) != null;
+            }else {
+                isExist =false;
+            }
+        }else {
+            isExist=  false;
+        }
+        return isExist;
     }
 
 }

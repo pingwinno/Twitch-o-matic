@@ -80,20 +80,20 @@ public class SqliteStatusDataHandler extends SqliteHandler {
     }
 
     public void update(StatusDataModel dataModel) {
-        String sql = "UPDATE streams_status SET vodId = ? , "
-                + "date = ? "
-                + "startedBy = ? "
-                + "state = ? "
-                + "WHERE uuid = ?";
+        String sql = "UPDATE streams_status SET vodId = ?, date = ?, startedBy = ?, state = ? WHERE uuid = ?;";
 
         try (Connection conn = super.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
+            log.trace(dataModel.getVodId());
+            log.trace(dataModel.getDate());
+            log.trace(dataModel.getStartedBy().toString());
+            log.trace(dataModel.getState().toString());
+            log.trace(dataModel.getUuid().toString());
             // set the corresponding param
             pstmt.setString(1, dataModel.getVodId());
             pstmt.setString(2, dataModel.getDate());
             pstmt.setString(3, dataModel.getStartedBy().toString());
-            pstmt.setString(3, dataModel.getState().toString());
+            pstmt.setString(4, dataModel.getState().toString());
             pstmt.setString(5, dataModel.getUuid().toString());
             // update
             pstmt.executeUpdate();

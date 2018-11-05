@@ -18,6 +18,7 @@ public class MasterPlaylistParser {
             log.trace(string);
             if (string.contains("VIDEO=\"" + SettingsProperties.getStreamQuality() + "\"")) {
                 m3u8Link = reader.readLine();
+                log.trace(m3u8Link);
             }
         }
         return m3u8Link;

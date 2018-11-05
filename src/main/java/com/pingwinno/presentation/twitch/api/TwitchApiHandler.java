@@ -24,6 +24,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 
@@ -61,7 +62,7 @@ public class TwitchApiHandler {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response handleStreamNotification(String stringDataModel
-            , @HeaderParam("X-Hub-Signature") String signature) throws IOException, InterruptedException {
+            , @HeaderParam("X-Hub-Signature") String signature) throws IOException, InterruptedException, SQLException {
         log.debug("Incoming stream up/down notification");
 
         if (HashHandler.compare(signature, stringDataModel)) {
@@ -74,10 +75,10 @@ public class TwitchApiHandler {
                 NotificationDataModel notificationModel = notificationArray[0];
                 StreamExtendedDataModel streamMetadata = VodMetadataHelper.getLastVod(SettingsProperties.getUser());
                 //check for notification duplicate
-                if ((new RecordStatusList().isExist(streamMetadata.getVodId())) &&
+                log.info("check for duplicate notification");
+                if (!(new RecordStatusList().isExist(streamMetadata.getVodId())) &&
                         //filter for live streams
-                        (notificationModel.getType().equals("live")) &&
-                        (notificationModel.getUser_id().equals(UserIdGetter.getUserId(SettingsProperties.getUser())))) {
+                        (notificationModel.getType().equals("live"))) {
 
                     streamMetadata.setUuid(StorageHelper.getUuidName());
 
@@ -90,7 +91,13 @@ public class TwitchApiHandler {
 
                     if (streamMetadata.getVodId() != null) {
 
-                        new Thread(() -> vodDownloader.initializeDownload(streamMetadata)).start();
+                        new Thread(() -> {
+                            try {
+                                vodDownloader.initializeDownload(streamMetadata);
+                            } catch (SQLException e) {
+                                log.error("DB error {} ",e);
+                            }
+                        }).start();
 
                         String startedAt = notificationModel.getStarted_at();
                         log.info("Record started at: {}", startedAt);
@@ -103,10 +110,12 @@ public class TwitchApiHandler {
             } else {
                 log.info("Stream down notification");
             }
+
         } else {
             log.error("Notification not accepted. Wrong hash.");
         }
-        return Response.status(Response.Status.ACCEPTED).build();
+        log.debug("Response ok");
+        return Response.status(Response.Status.OK).build();
     }
 }
 

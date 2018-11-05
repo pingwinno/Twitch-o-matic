@@ -19,15 +19,15 @@ public class RecoveryRecordHandler {
         log.debug("Recovering uncompleted task...");
         LinkedList<StatusDataModel> dataModels = new SqliteStatusDataHandler().selectAll();
 
-        StatusDataModel dataModel;
+
         if (!dataModels.isEmpty()) {
-            while ((dataModel = dataModels.get(dataModels.indexOf(dataModels.stream()
-                    .filter(statusDataModel -> State.RUNNING.equals(statusDataModel.getState()))
-                    .findAny()
-                    .orElse(null)))) != null) {
-                StreamExtendedDataModel extendedDataModel = VodMetadataHelper.getVodMetadata(dataModel.getVodId());
-                extendedDataModel.setUuid(dataModel.getUuid());
-                new VodDownloader().initializeDownload(extendedDataModel);
+            for (StatusDataModel dataModel:dataModels){
+                if (dataModel.getState().equals(State.RUNNING)) {
+                    log.info("Found uncompleted task. {}", dataModel.getVodId());
+                    StreamExtendedDataModel extendedDataModel = VodMetadataHelper.getVodMetadata(dataModel.getVodId());
+                    extendedDataModel.setUuid(dataModel.getUuid());
+                    new VodDownloader().initializeDownload(extendedDataModel);
+                }
             }
         }
     }

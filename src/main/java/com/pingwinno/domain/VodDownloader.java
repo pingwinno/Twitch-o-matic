@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.sql.SQLException;
 import java.util.LinkedHashSet;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -33,7 +34,7 @@ public class VodDownloader {
     private StreamExtendedDataModel streamDataModel;
     private int threadsNumber = 1;
 
-    public void initializeDownload(StreamExtendedDataModel streamDataModel) {
+    public void initializeDownload(StreamExtendedDataModel streamDataModel) throws SQLException {
 
         this.streamDataModel = streamDataModel;
         UUID uuid = streamDataModel.getUuid();
@@ -92,13 +93,13 @@ public class VodDownloader {
                 stopRecord();
             }
             this.recordCycle();
-        } catch (IOException | URISyntaxException | InterruptedException e) {
+        } catch (IOException | URISyntaxException | InterruptedException | SQLException e) {
             log.error("Vod downloader initialization failed. {}", e);
             stopRecord();
         }
     }
 
-    synchronized private boolean refreshDownload() throws InterruptedException {
+    synchronized private boolean refreshDownload() throws InterruptedException, SQLException {
         boolean status = false;
         try {
             String m3u8Link = MasterPlaylistParser.parse(
@@ -117,7 +118,11 @@ public class VodDownloader {
                         try {
                             downloadChunk(streamPath, chunkName);
                         } catch (IOException e) {
-                            new RecordStatusList().changeState(vodId, State.ERROR);
+                            try {
+                                new RecordStatusList().changeState(vodId, State.ERROR);
+                            } catch (SQLException e1) {
+                                log.error("{}",e1);
+                            }
                             log.error("Chunk download error. {}", e);
                         }
                     };
@@ -134,7 +139,7 @@ public class VodDownloader {
         return status;
     }
 
-    private void recordCycle() throws IOException, InterruptedException, URISyntaxException {
+    private void recordCycle() throws IOException, InterruptedException, URISyntaxException, SQLException {
         if (!RecordStatusGetter.getRecordStatus(vodId).equals("")) {
             while (RecordStatusGetter.getRecordStatus(vodId).equals("recording")) {
                 refreshDownload();
@@ -192,7 +197,7 @@ public class VodDownloader {
         }
     }
 
-    private void stopRecord() {
+    private void stopRecord() throws SQLException {
         try {
             log.info("Stop record");
             log.info("Closing vod downloader...");

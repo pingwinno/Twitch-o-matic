@@ -76,10 +76,9 @@ public class SqliteStreamDataHandler extends SqliteHandler {
 
 
     public void update(StreamDataModel dataModel) throws SQLException {
-        String sql = "UPDATE streams SET title = ? , "
-                + "date = ? "
-                + "game = ? "
-                + "WHERE uuid = ?";
+        String sql = "UPDATE streams\n"
+                + "SET title = ?, date = ?, game = ?\n"
+                + "WHERE uuid = ?;";
 
         try (Connection conn = this.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
