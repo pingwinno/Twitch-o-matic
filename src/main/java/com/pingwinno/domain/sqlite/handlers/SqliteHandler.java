@@ -20,10 +20,4 @@ public class SqliteHandler {
         }
         return conn;
     }
-
-
-    public void delete(String uuid) {
-
-    }
-
 }

@@ -92,8 +92,7 @@ public class SqliteStreamDataHandler extends SqliteHandler {
             pstmt.executeUpdate();
         }
     }
-
-    @Override
+    
     public void delete(String uuid) {
         String sql = "DELETE FROM streams WHERE uuid = ?";
 

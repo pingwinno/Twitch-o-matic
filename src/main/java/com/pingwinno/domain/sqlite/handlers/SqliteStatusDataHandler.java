@@ -102,7 +102,6 @@ public class SqliteStatusDataHandler extends SqliteHandler {
         }
     }
 
-    @Override
     public void delete(String uuid) {
         String sql = "DELETE FROM streams_status WHERE uuid = ?";
 
