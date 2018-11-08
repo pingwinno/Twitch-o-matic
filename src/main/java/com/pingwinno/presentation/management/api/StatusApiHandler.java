@@ -11,8 +11,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.sql.SQLException;
 
-@Path("/status")
+@Path("/status_api")
 public class StatusApiHandler {
+    @Path("/status_list")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStatusList() {

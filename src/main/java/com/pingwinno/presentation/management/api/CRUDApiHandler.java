@@ -1,6 +1,8 @@
 package com.pingwinno.presentation.management.api;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.application.DateConverter;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
@@ -161,6 +163,18 @@ public class CRUDApiHandler {
         }
         return Response.ok().build();
 
+    }
+
+    @Path("/streams")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getStatusList() {
+        try {
+            return Response.status(Response.Status.OK)
+                    .entity(new ObjectMapper().writeValueAsString(new SqliteStreamDataHandler().selectAll())).build();
+        } catch (JsonProcessingException | SQLException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
 }
