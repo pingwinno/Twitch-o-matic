@@ -7,11 +7,11 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class SqliteHandler {
+public abstract class SqliteHandler {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     Connection connect() {
-        String url = "jdbc:sqlite:" + SettingsProperties.getSqliteFile();
+        String url = "jdbc:sqlite:" + SettingsProperties.getSqliteFile()+"streams.db";
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(url);
@@ -20,4 +20,5 @@ public class SqliteHandler {
         }
         return conn;
     }
+
 }

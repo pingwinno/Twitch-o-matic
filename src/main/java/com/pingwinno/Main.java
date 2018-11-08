@@ -10,6 +10,7 @@ import com.pingwinno.domain.sqlite.handlers.SqliteStatusDataHandler;
 import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 
@@ -29,8 +30,12 @@ public class Main implements Daemon {
             log.error("DB initialization failed { } ", e);
         }
         log.info("Checking storage...");
-        if (!StorageHelper.initialStorageCheck()) {
-            System.exit(1);
+        try {
+            if (!StorageHelper.initialStorageCheck()) {
+                System.exit(1);
+            }
+        } catch (IOException e) {
+            log.error("Checking storage failed {}", e);
         }
 
         Thread.sleep(100);

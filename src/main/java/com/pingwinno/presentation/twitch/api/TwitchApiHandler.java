@@ -79,7 +79,7 @@ public class TwitchApiHandler {
                 if (!(new RecordStatusList().isExist(streamMetadata.getVodId())) &&
                         //filter for live streams
                         (notificationModel.getType().equals("live"))) {
-
+                    if (streamMetadata.getVodId() != null) {
                     streamMetadata.setUuid(StorageHelper.getUuidName());
 
                     new RecordStatusList().addStatus
@@ -88,8 +88,6 @@ public class TwitchApiHandler {
 
                     log.info("Try to start record");
                     VodDownloader vodDownloader = new VodDownloader();
-
-                    if (streamMetadata.getVodId() != null) {
 
                         new Thread(() -> {
                             try {

@@ -20,12 +20,12 @@ public class MediaPlaylistWriter {
         while ((line = reader.readLine()) != null) {
 
             if (line.contains("muted")) {
-                log.trace("muted line { }", line);
+                log.trace("muted line {}", line);
 
                 out.write(line.replace("-muted", ""));
                 out.newLine();
             } else {
-                log.trace("simple line { }", line);
+                log.trace("simple line {}", line);
                 out.write(line);
                 out.newLine();
             }

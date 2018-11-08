@@ -6,6 +6,7 @@ import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.domain.sqlite.handlers.SqliteHandler;
+import com.pingwinno.domain.sqlite.handlers.SqliteStatusDataHandler;
 import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
 import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.SettingsProperties;
@@ -20,10 +21,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 
-@Path("/")
+@Path("/management_api")
 public class CRUDApiHandler {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
@@ -131,12 +134,12 @@ public class CRUDApiHandler {
     @DELETE
     public Response deleteStream(@QueryParam("uuid") String uuid, @QueryParam("delete_media") String deleteMedia) {
 
-        SqliteHandler sqliteHandler = new SqliteHandler();
+        SqliteStatusDataHandler sqliteHandler = new SqliteStatusDataHandler();
         sqliteHandler.delete(uuid);
         log.info("delete stream {}", uuid);
         if (deleteMedia.equals("true")) {
             try {
-                FileUtils.deleteDirectory(new File(SettingsProperties.getRecordedStreamPath() + uuid));
+                Files.delete(Paths.get(SettingsProperties.getRecordedStreamPath() + uuid));
             } catch (IOException e) {
                 log.error("can't delete media {] ", e);
                 return Response.notModified().build();

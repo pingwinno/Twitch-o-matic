@@ -19,7 +19,6 @@ public class RecoveryRecordHandler {
         log.debug("Recovering uncompleted task...");
         LinkedList<StatusDataModel> dataModels = new SqliteStatusDataHandler().selectAll();
 
-
         if (!dataModels.isEmpty()) {
             for (StatusDataModel dataModel:dataModels){
                 if (dataModel.getState().equals(State.RUNNING)) {

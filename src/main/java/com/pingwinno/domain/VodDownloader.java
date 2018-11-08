@@ -183,7 +183,10 @@ public class VodDownloader {
 
             try (InputStream in = website.openStream()) {
                 Files.copy(in, Paths.get(streamFolderPath + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
-                log.info(fileName + " complete");
+                if (Integer.parseInt(fileName.replaceAll(".ts", ""))%10 == 0) {
+                    log.info(fileName + " complete");
+                }
+                log.trace(fileName + " complete");
             }
         } else {
             log.info("Chunk exist. Skipping...");
