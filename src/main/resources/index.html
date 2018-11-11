@@ -1,0 +1,109 @@
+<!doctype html>
+<html>
+<head>
+    <!-- Required meta tags -->
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
+
+    <!-- Bootstrap CSS -->
+    <link rel='stylesheet' href='bootstrap.min.css' crossorigin='anonymous'
+          integrity='sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO'>
+
+    <script src='axios.js'></script>
+
+    <script src='jquery-3.3.1.min.js' crossorigin='anonymous'
+            integrity='sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8='></script>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src='popper.min.js' crossorigin='anonymous'
+            integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49'></script>
+    <script src='bootstrap.min.js' crossorigin='anonymous'
+            integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy'></script>
+
+    <title>Management</title>
+    <script src='script.js'></script>
+    <style>
+        textarea {
+            resize: none;
+        }
+
+    </style>
+</head>
+<body>
+<div class='container'>
+    <div class='container p-3'>
+        <b>Add</b>
+        <table class='table table-bordered'>
+            <thead class='thead-dark'>
+            <tr>
+                <th scope='col'>Type</th>
+                <th scope='col'>Value</th>
+                <th scope='col'>Skip muted</th>
+                <th scope='col'>Button</th>
+            </tr>
+            </thead>
+            <tr>
+                <td scope='col' width='80px'>
+                    <input type='radio' name='type'
+                           value='vod' checked> vod<br>
+                    <input type='radio' name='type'
+                           value='user'> user
+                </td>
+                <td scope='col' width='auto'>
+                    <input class='form-control' type='text' name="value" placeholder='value'>
+                </td>
+                <td scope='col' width='130px'>
+                    <input type='checkbox' name="skipMuted"> Skip muted
+                </td>
+                <td scope='col' width='80px'>
+                    <button onclick="add()" class='btn'>Add</button>
+                </td>
+            </tr>
+        </table>
+
+        <b>Validate</b>
+        <table class='table table-bordered'>
+            <thead class='thead-dark'>
+            <tr>
+                <th scope='col'>uuid</th>
+                <th scope='col'>vod</th>
+                <th scope='col'>Skip muted</th>
+                <th scope='col'>Button</th>
+            </tr>
+            </thead>
+            <tr>
+                <td scope='col'>
+                    <input class='form-control' type='text' id="validateUUID" placeholder='uuid'>
+                </td>
+                <td scope='col' width='auto'>
+                    <input class='form-control' type='text' id="validateVOD" placeholder='vod'>
+                </td>
+                <td scope='col' width='130px'>
+                    <input type='checkbox' id="validateSkipMuted"> Skip muted
+                </td>
+                <td scope='col' width='80px'>
+                    <button onclick="validateMain()" class='btn'>Validate</button>
+                </td>
+            </tr>
+        </table>
+
+        <b>Search</b>
+        <input class='form-control' type='text' onkeyup="search(this)" placeholder='Search by uuid, title and game'>
+        <br>
+        <table class='table table-bordered'>
+            <thead class='thead-dark'>
+            <tr>
+                <th scope='col' width='auto'>uuid</th>
+                <th scope='col' width='auto'>Title</th>
+                <th scope='col' width='auto'>Date</th>
+                <th scope='col' width='175px'>Game</th>
+                <th scope='col' width='225px'>Management</th>
+            </tr>
+            </thead>
+            <tbody id='table'></tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

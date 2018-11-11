@@ -2,13 +2,15 @@ package com.pingwinno;
 
 
 import com.pingwinno.application.StorageHelper;
-import com.pingwinno.domain.SqliteHandler;
 import com.pingwinno.domain.servers.ManagementServer;
 import com.pingwinno.domain.servers.TwitchServer;
+import com.pingwinno.domain.sqlite.handlers.SqliteStatusDataHandler;
+import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.sql.SQLException;
 
 
@@ -19,16 +21,21 @@ public class Main implements Daemon {
     public static void main(String[] args) throws InterruptedException {
         Main.class.getResourceAsStream("log4j2.json");
 
-        SqliteHandler sqliteHandler = new SqliteHandler();
+        org.slf4j.Logger log = LoggerFactory.getLogger(Main.class.getName());
         try {
             log.debug("initialize db");
-            sqliteHandler.initializeDB();
+            new SqliteStreamDataHandler().initializeDB();
+            new SqliteStatusDataHandler().initializeDB();
         } catch (SQLException e) {
             log.error("DB initialization failed { } ", e);
         }
         log.info("Checking storage...");
-        if (!StorageHelper.initialStorageCheck()) {
-            System.exit(1);
+        try {
+            if (!StorageHelper.initialStorageCheck()) {
+                System.exit(1);
+            }
+        } catch (IOException e) {
+            log.error("Checking storage failed {}", e);
         }
 
         Thread.sleep(100);

@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class JettyInitializationListener implements LifeCycle.Listener {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
@@ -25,10 +26,8 @@ public class JettyInitializationListener implements LifeCycle.Listener {
 
         try {
             RecoveryRecordHandler.recoverUncompletedRecordTask();
-        } catch (FileNotFoundException e) {
-            log.warn("Task file not found");
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (SQLException | IOException | InterruptedException e) {
+            log.error("Can't recover list {}", e);
         }
         SubscriptionQueryModel json;
         try {

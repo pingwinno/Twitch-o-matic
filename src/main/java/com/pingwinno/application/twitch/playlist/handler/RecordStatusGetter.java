@@ -15,7 +15,7 @@ public class RecordStatusGetter {
         httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
         JSONObject jsonObj =
                 new JSONObject(EntityUtils.toString(httpSeviceHelper.getService(httpGet, true)));
-        String recordStatusString = "recorded";
+        String recordStatusString;
 
         recordStatusString = jsonObj.get("status").toString();
         httpSeviceHelper.close();

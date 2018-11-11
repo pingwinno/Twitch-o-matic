@@ -2,13 +2,18 @@ package com.pingwinno.presentation.twitch.api;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pingwinno.application.DateConverter;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.HashHandler;
+import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.enums.StartedBy;
+import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.NotificationDataModel;
+import com.pingwinno.infrastructure.models.StatusDataModel;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
 import com.pingwinno.infrastructure.models.StreamStatusNotificationModel;
 import org.slf4j.LoggerFactory;
@@ -19,6 +24,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
+import java.sql.SQLException;
+import java.time.LocalDateTime;
 
 
 @Path("/handler")
@@ -55,7 +62,7 @@ public class TwitchApiHandler {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response handleStreamNotification(String stringDataModel
-            , @HeaderParam("X-Hub-Signature") String signature) throws IOException, InterruptedException {
+            , @HeaderParam("X-Hub-Signature") String signature) throws IOException, InterruptedException, SQLException {
         log.debug("Incoming stream up/down notification");
 
         if (HashHandler.compare(signature, stringDataModel)) {
@@ -68,20 +75,27 @@ public class TwitchApiHandler {
                 NotificationDataModel notificationModel = notificationArray[0];
                 StreamExtendedDataModel streamMetadata = VodMetadataHelper.getLastVod(SettingsProperties.getUser());
                 //check for notification duplicate
-                if ((!(streamMetadata.getVodId().equals(lastVodId))) &&
+                log.info("check for duplicate notification");
+                if (!(new RecordStatusList().isExist(streamMetadata.getVodId())) &&
                         //filter for live streams
-                        (notificationModel.getType().equals("live")) &&
-                        (notificationModel.getUser_id().equals(UserIdGetter.getUserId(SettingsProperties.getUser())))) {
-                    lastVodId = streamMetadata.getVodId();
-
+                        (notificationModel.getType().equals("live"))) {
+                    if (streamMetadata.getVodId() != null) {
                     streamMetadata.setUuid(StorageHelper.getUuidName());
+
+                    new RecordStatusList().addStatus
+                            (new StatusDataModel(streamMetadata.getVodId(), StartedBy.WEBHOOK, DateConverter.convert(LocalDateTime.now()),
+                                    State.INITIALIZE, streamMetadata.getUuid()));
 
                     log.info("Try to start record");
                     VodDownloader vodDownloader = new VodDownloader();
 
-                    if (streamMetadata.getVodId() != null) {
-
-                        new Thread(() -> vodDownloader.initializeDownload(streamMetadata)).start();
+                        new Thread(() -> {
+                            try {
+                                vodDownloader.initializeDownload(streamMetadata);
+                            } catch (SQLException e) {
+                                log.error("DB error {} ",e);
+                            }
+                        }).start();
 
                         String startedAt = notificationModel.getStarted_at();
                         log.info("Record started at: {}", startedAt);
@@ -94,10 +108,12 @@ public class TwitchApiHandler {
             } else {
                 log.info("Stream down notification");
             }
+
         } else {
             log.error("Notification not accepted. Wrong hash.");
         }
-        return Response.status(Response.Status.ACCEPTED).build();
+        log.debug("Response ok");
+        return Response.status(Response.Status.OK).build();
     }
 }
 
