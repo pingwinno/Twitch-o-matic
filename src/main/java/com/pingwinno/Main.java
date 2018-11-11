@@ -6,6 +6,7 @@ import com.pingwinno.domain.servers.ManagementServer;
 import com.pingwinno.domain.servers.TwitchServer;
 import com.pingwinno.domain.sqlite.handlers.SqliteStatusDataHandler;
 import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
+import com.pingwinno.infrastructure.SettingsProperties;
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
 import org.slf4j.LoggerFactory;
@@ -41,8 +42,12 @@ public class Main implements Daemon {
         Thread.sleep(100);
         log.info("start TwitchServer");
         new Thread(TwitchServer::start).start();
-        log.info("start ManagementServer");
-        new Thread(ManagementServer::start).start();
+        if (SettingsProperties.getTwitchServerPort() != 0) {
+            log.info("start ManagementServer");
+            new Thread(ManagementServer::start).start();
+        } else {
+            log.info("Management server is disabled");
+        }
     }
 
     @Override
