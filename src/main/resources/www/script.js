@@ -2,15 +2,19 @@ var path = window.location.origin+"/management_api/";
 function write() {
     $("#table").empty();
     $.getJSON(path + "streams", function (data) {
+        data.sort(function (a, b) {
+        return (b["date"] > a["date"]) ? 1 : ((b["date"] < a["date"]) ? -1 : 0);
+        });
         jQuery.each(data, function (index, value) {
             $("#table").append(
                 "<tr>" +
                 "<th scope='row'>" + value.uuid + "</th>" +
                 "<td><textarea style='height:115px;' class='form-control' id='" + value.uuid + "Title' readonly>" + value.title + "</textarea></td>" +
 
-                "<td><textarea style='height:115px;' class='form-control' " +
-                "title='" + timeConverter(value.date) + "' onkeyup='titleReWrite(this)' " +
-                "id='" + value.uuid + "Date' readonly>" + value.date + "</textarea></td>" +
+                "<td><textarea style='height:75px;' class='form-control' " +
+                "onchange='titleReWrite(this)' " +
+                "id='" + value.uuid + "Date' readonly>" + value.date + "</textarea>" +
+                "<label>" + timeConverter(value.date) + "</label></td>" +
 
                 "<td><textarea style='height:115px;' class='form-control' id='" + value.uuid + "Game' readonly>" + value.game + " </textarea></td>" +
                 "<td class='form text-right'>" +
@@ -52,7 +56,7 @@ function search(sender) {
 write();
 
 function titleReWrite(sender) {
-    sender.setAttribute("title", timeConverter(sender.value));
+    sender.parentElement.lastChild.innerHTML = timeConverter(sender.value.trim());
 }
 
 function edit(sender, uuid) {
