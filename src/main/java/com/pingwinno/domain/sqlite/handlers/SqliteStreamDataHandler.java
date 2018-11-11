@@ -47,15 +47,16 @@ public class SqliteStreamDataHandler extends SqliteHandler {
             preparedStatement.setString(2, streamDataModel.getTitle());
             preparedStatement.setString(3, streamDataModel.getDate());
             preparedStatement.setString(4, streamDataModel.getGame());
+            log.trace(streamDataModel.toString());
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("insert failed {}", e);
         }
         log.info("insert stream data complete");
     }
 
-    public LinkedList<StreamDataModel> selectAll() throws SQLException {
+    public LinkedList<StreamDataModel> selectAll() {
         String sqlQuery = "SELECT uuid, title, date, game FROM streams";
         LinkedList<StreamDataModel> streams = new LinkedList<>();
         try (Connection conn = this.connect();

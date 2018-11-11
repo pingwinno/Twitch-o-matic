@@ -168,7 +168,7 @@ public class CRUDApiHandler {
         try {
             return Response.status(Response.Status.OK)
                     .entity(new ObjectMapper().writeValueAsString(new SqliteStreamDataHandler().selectAll())).build();
-        } catch (JsonProcessingException | SQLException e) {
+        } catch (JsonProcessingException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }

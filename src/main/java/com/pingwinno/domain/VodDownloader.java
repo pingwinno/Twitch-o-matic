@@ -146,6 +146,7 @@ public class VodDownloader {
                 Thread.sleep(20 * 1000);
             }
             log.info("Finalize record...");
+
             log.info("Wait for renewing playlist");
             Thread.sleep(50 * 1000);
             log.info("End of list. Downloading last chunks");
@@ -156,16 +157,15 @@ public class VodDownloader {
             log.debug("Download m3u8");
             MediaPlaylistWriter.write(new MediaPlaylistDownloader().getMediaPlaylist(MasterPlaylistParser.parse
                     (new MasterPlaylistDownloader().getPlaylist(vodId))), streamFolderPath);
-            DataBaseHandler dataBaseHandler = new DataBaseHandler(streamDataModel);
             try {
                 log.debug("write to local db");
-                dataBaseHandler.writeToLocalDB();
+                SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
+                sqliteHandler.insert(streamDataModel);
             } catch (Exception e) {
                 log.warn("Write to db failed. Skip.");
                 log.warn("Stacktrace {}", e);
             }
-            SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
-            sqliteHandler.insert(streamDataModel);
+
             stopRecord();
             new RecordStatusList().changeState(vodId, State.COMPLETE);
         } else {
