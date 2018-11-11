@@ -8,10 +8,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 @Path("/")
 public class SiteHandler {
@@ -23,28 +19,21 @@ public class SiteHandler {
 
         ClassLoader classLoader = getClass().getClassLoader();
 
-        try {
-            return Response.ok().entity(Files.newInputStream(Paths.get(classLoader.getResource("index.html").getFile())))
-                    .build();
-        } catch (IOException e) {
-            log.error("Page upload failed");
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
+        return Response.ok().entity(
+                (classLoader.getResourceAsStream("www/index.html")))
+                .build();
     }
 
     @Path("{filename}")
     @GET
     @Produces(MediaType.WILDCARD)
-    public InputStream getPage(@PathParam("filename") String fileName) {
+    public Response getPage(@PathParam("filename") String fileName) {
+
 
         ClassLoader classLoader = getClass().getClassLoader();
 
-        try {
-            return Files.newInputStream(Paths.get(classLoader.getResource(fileName).getFile()));
-        } catch (IOException e) {
-            log.error("Page upload failed");
-            return null;
-        }
+        return Response.ok().entity(classLoader.getResourceAsStream(
+                "www/" + fileName)).build();
 
 
     }
