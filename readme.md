@@ -2,9 +2,7 @@ It is an application for the automatic recording streams without mute on Twitch.
 
 ToM uses Twitch HLS API for downloading chunks with m3u8 playlist and preview. Unfortunately, it doesn't work (yet) if streamer has disabled VoD saving. App stores streams in raw HLS. You can compile it into one file using ffmpeg. 
 
-ToM has REST API for management (WIP). For now you can record live stream by username or download VoD by VoD ID. 
-```{server_address}:{management port}/start?type={user_or_vod}&value={user_or_VoDID}```
-Example: ```127.0.0.1:9999/start?type=vod&value=123456789```
+ToM has page for management on address '''SERVERIP:MANAGEMENT_PORT'''. For now it not have autorization so be carefull. You can disable it by setting port to 0.
 
 Requirements:
 * Static IP or DDNS(not checked)
