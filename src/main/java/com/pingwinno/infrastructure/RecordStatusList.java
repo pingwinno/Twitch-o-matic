@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Objects;
+import java.util.UUID;
 
 public class RecordStatusList {
     private static final int LIST_SIZE = 100;
@@ -35,10 +36,10 @@ public class RecordStatusList {
         return new LinkedList<>(statusList);
     }
 
-    synchronized public void changeState(String vodId, State state) throws SQLException {
+    synchronized public void changeState(UUID uuid, State state) throws SQLException {
         statusList = dataHandler.selectAll();
        StatusDataModel updatedDataModel = statusList.get(statusList.indexOf(statusList.stream()
-                .filter(statusDataModel -> vodId.equals(statusDataModel.getVodId()))
+               .filter(statusDataModel -> uuid.equals(statusDataModel.getUuid()))
                 .findAny()
                 .orElse(null)));
        updatedDataModel.setState(state);

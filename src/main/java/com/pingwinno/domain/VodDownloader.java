@@ -33,11 +33,11 @@ public class VodDownloader {
     private String vodId;
     private StreamExtendedDataModel streamDataModel;
     private int threadsNumber = 1;
-
+    private UUID uuid;
     public void initializeDownload(StreamExtendedDataModel streamDataModel) throws SQLException {
 
         this.streamDataModel = streamDataModel;
-        UUID uuid = streamDataModel.getUuid();
+        uuid = streamDataModel.getUuid();
         streamFolderPath = SettingsProperties.getRecordedStreamPath() + uuid.toString();
         vodId = streamDataModel.getVodId();
 
@@ -51,7 +51,7 @@ public class VodDownloader {
             e.printStackTrace();
         }
         try {
-            new RecordStatusList().changeState(vodId, State.RUNNING);
+            new RecordStatusList().changeState(uuid, State.RUNNING);
             try {
                 Path streamPath = Paths.get(streamFolderPath);
                 if (!Files.exists(streamPath)) {
@@ -62,7 +62,7 @@ public class VodDownloader {
                     log.info("Trying finish download...");
                 }
             } catch (IOException e) {
-                new RecordStatusList().changeState(vodId, State.ERROR);
+                new RecordStatusList().changeState(uuid, State.ERROR);
                 log.error("Can't create file or folder for VoD downloader. {}", e);
             }
             vodId = streamDataModel.getVodId();
@@ -88,7 +88,7 @@ public class VodDownloader {
                 executorService.shutdown();
                 executorService.awaitTermination(10, TimeUnit.MINUTES);
             } else {
-                new RecordStatusList().changeState(vodId, State.ERROR);
+                new RecordStatusList().changeState(uuid, State.ERROR);
                 log.error("vod id with id {} not found. Close downloader thread...", vodId);
                 stopRecord();
             }
@@ -119,7 +119,7 @@ public class VodDownloader {
                             downloadChunk(streamPath, chunkName);
                         } catch (IOException e) {
                             try {
-                                new RecordStatusList().changeState(vodId, State.ERROR);
+                                new RecordStatusList().changeState(uuid, State.ERROR);
                             } catch (SQLException e1) {
                                 log.error("{}",e1);
                             }
@@ -167,9 +167,9 @@ public class VodDownloader {
             }
 
             stopRecord();
-            new RecordStatusList().changeState(vodId, State.COMPLETE);
+            new RecordStatusList().changeState(uuid, State.COMPLETE);
         } else {
-            new RecordStatusList().changeState(vodId, State.ERROR);
+            new RecordStatusList().changeState(uuid, State.ERROR);
             log.error("Getting status failed. Stop cycle...");
             stopRecord();
         }
@@ -210,7 +210,7 @@ public class VodDownloader {
                 PostDownloadHandler.handleDownloadedStream();
             }
         } catch (IOException e) {
-            new RecordStatusList().changeState(vodId, State.ERROR);
+            new RecordStatusList().changeState(uuid, State.ERROR);
             log.error("VoD downloader unexpectedly stop. {}", e);
         }
     }

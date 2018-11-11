@@ -28,7 +28,7 @@
                     <a class="nav-link" href="index.html">Management</a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="#">Link</a>
+                    <a class="nav-link" href="#">Status</a>
                 </li>
             </ul>
         </div>
@@ -50,11 +50,11 @@
     </div>
 </div>
 <script type="application/javascript">
-    var path = window.location.origin+"/management_api/";
+    var path = window.location.origin+"/status_api/";
 
     function write() {
         $("#table").empty();
-        $.getJSON(path + "status", function (data) {
+        $.getJSON(path + "status_list", function (data) {
             data.sort(function (a, b) {
                 var first = new Date(a["date"].replace('T', ' ').replace('Z', ''));
                 var second = new Date(b["date"].replace('T', ' ').replace('Z', ''));
