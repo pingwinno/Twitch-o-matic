@@ -1,5 +1,4 @@
-var path = "http://localhost:20000/management_api/";
-
+var path = window.location.origin+"/management_api/";
 function write() {
     $("#table").empty();
     $.getJSON(path + "streams", function (data) {
