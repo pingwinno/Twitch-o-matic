@@ -14,6 +14,9 @@ public class ValidationDataModel {
         this.vodId = vodId;
     }
 
+    public ValidationDataModel() {
+    }
+
     public String getVodId() {
         return vodId;
     }
