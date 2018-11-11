@@ -94,7 +94,7 @@ public class SqliteStreamDataHandler extends SqliteHandler {
     }
 
     public LinkedList<String> search(String searchRow, String resultRow){
-        String sql = "SELECT "+resultRow+" FROM streams WHERE capacity = ?";
+        String sql = "SELECT " + resultRow + " FROM streams WHERE " + resultRow + " = ?";
         LinkedList<String> searchResult = new LinkedList<>();
         try (Connection conn = this.connect();
              PreparedStatement pstmt  = conn.prepareStatement(sql)){

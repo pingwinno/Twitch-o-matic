@@ -103,7 +103,7 @@ public class SqliteStatusDataHandler extends SqliteHandler {
     }
 
     public LinkedList<String> search(String searchRow, String resultRow){
-        String sql = "SELECT "+resultRow+" FROM streams_status WHERE capacity = ?";
+        String sql = "SELECT " + resultRow + " FROM streams_status WHERE " + resultRow + " = ?";
         LinkedList<String> searchResult = new LinkedList<>();
         try (Connection conn = this.connect();
              PreparedStatement pstmt  = conn.prepareStatement(sql)){
@@ -132,6 +132,7 @@ public class SqliteStatusDataHandler extends SqliteHandler {
             pstmt.setString(1, uuid);
 
             pstmt.executeUpdate();
+            log.debug(uuid + " deleted");
 
         } catch (SQLException e) {
             log.error("delete failed {}", e);

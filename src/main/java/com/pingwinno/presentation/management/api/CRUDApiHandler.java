@@ -7,21 +7,17 @@ import com.pingwinno.application.DateConverter;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.VodDownloader;
-import com.pingwinno.domain.sqlite.handlers.SqliteHandler;
-import com.pingwinno.domain.sqlite.handlers.SqliteStatusDataHandler;
 import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
 import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.enums.StartedBy;
 import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.*;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -132,11 +128,11 @@ public class CRUDApiHandler {
         return response;
     }
 
-    @Path("/delete")
+    @Path("{uuid}")
     @DELETE
-    public Response deleteStream(@QueryParam("uuid") String uuid, @QueryParam("delete_media") String deleteMedia) {
+    public Response deleteStream(@PathParam("uuid") String uuid, @QueryParam("delete_media") String deleteMedia) {
 
-        SqliteStatusDataHandler sqliteHandler = new SqliteStatusDataHandler();
+        SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
         sqliteHandler.delete(uuid);
         log.info("delete stream {}", uuid);
         if (deleteMedia.equals("true")) {
