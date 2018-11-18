@@ -1,6 +1,8 @@
 package com.pingwinno.infrastructure.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NotificationDataModel {
     private String id;
     private String[] community_ids;
