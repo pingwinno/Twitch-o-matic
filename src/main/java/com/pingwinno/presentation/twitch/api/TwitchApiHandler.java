@@ -4,7 +4,6 @@ package com.pingwinno.presentation.twitch.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.application.DateConverter;
 import com.pingwinno.application.StorageHelper;
-import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.HashHandler;
@@ -76,9 +75,7 @@ public class TwitchApiHandler {
                 StreamExtendedDataModel streamMetadata = VodMetadataHelper.getLastVod(SettingsProperties.getUser());
                 //check for notification duplicate
                 log.info("check for duplicate notification");
-                if (!(new RecordStatusList().isExist(streamMetadata.getVodId())) &&
-                        //filter for live streams
-                        (notificationModel.getType().equals("live"))) {
+                if (notificationModel.getType().equals("live")) {
                     if (streamMetadata.getVodId() != null) {
                     streamMetadata.setUuid(StorageHelper.getUuidName());
 
