@@ -44,6 +44,7 @@ public class VodDownloader {
         try {
             if (RecordStatusGetter.getRecordStatus(vodId).equals("recording")) {
                 threadsNumber = 2;
+                Thread.sleep(200 * 1000);
             } else {
                 threadsNumber = 10;
             }
