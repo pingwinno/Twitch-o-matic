@@ -1,15 +1,12 @@
 package com.pingwinno.infrastructure;
 
-import com.pingwinno.application.RecoveryRecordHandler;
 import com.pingwinno.application.SubscriptionRequestTimer;
 import com.pingwinno.application.twitch.playlist.handler.UserIdGetter;
 import com.pingwinno.infrastructure.models.SubscriptionQueryModel;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.sql.SQLException;
 
 public class JettyInitializationListener implements LifeCycle.Listener {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
@@ -24,11 +21,6 @@ public class JettyInitializationListener implements LifeCycle.Listener {
 
         //subscribe request
 
-        try {
-            RecoveryRecordHandler.recoverUncompletedRecordTask();
-        } catch (SQLException | IOException | InterruptedException e) {
-            log.error("Can't recover list {}", e);
-        }
         SubscriptionQueryModel json;
         try {
             HashHandler.generateKey();

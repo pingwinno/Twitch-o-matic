@@ -1,7 +1,9 @@
 package com.pingwinno;
 
 
+import com.pingwinno.application.RecoveryRecordHandler;
 import com.pingwinno.application.StorageHelper;
+import com.pingwinno.domain.MongoDBHandler;
 import com.pingwinno.domain.servers.ManagementServer;
 import com.pingwinno.domain.servers.TwitchServer;
 import com.pingwinno.domain.sqlite.handlers.SqliteStatusDataHandler;
@@ -23,13 +25,26 @@ public class Main implements Daemon {
         Main.class.getResourceAsStream("log4j2.json");
 
         org.slf4j.Logger log = LoggerFactory.getLogger(Main.class.getName());
+
+        try {
+            RecoveryRecordHandler.recoverUncompletedRecordTask();
+        } catch (SQLException | IOException | InterruptedException | IllegalStateException ignore) {
+            log.error("Can't recover list {}");
+        }
+        if (!SettingsProperties.getMongoDBAddress().trim().equals("")) {
+            log.info("Connect to MongoDB...");
+            MongoDBHandler.connect();
+        } else {
+            log.warn("MongoDB address not set");
+        }
         try {
             log.debug("initialize db");
             new SqliteStreamDataHandler().initializeDB();
             new SqliteStatusDataHandler().initializeDB();
         } catch (SQLException e) {
-            log.error("DB initialization failed { } ", e);
+            log.error("DB initialization failed {} ", e);
         }
+
         log.info("Checking storage...");
         try {
             if (!StorageHelper.initialStorageCheck()) {

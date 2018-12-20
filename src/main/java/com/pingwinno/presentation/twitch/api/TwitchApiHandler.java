@@ -9,6 +9,7 @@ import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.HashHandler;
 import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.StartedBy;
 import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.NotificationDataModel;
@@ -61,7 +62,7 @@ public class TwitchApiHandler {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response handleStreamNotification(String stringDataModel
-            , @HeaderParam("X-Hub-Signature") String signature) throws IOException, InterruptedException, SQLException {
+            , @HeaderParam("X-Hub-Signature") String signature) throws IOException, InterruptedException, SQLException, StreamNotFoundExeption {
         log.debug("Incoming stream up/down notification");
 
         if (HashHandler.compare(signature, stringDataModel)) {
@@ -88,6 +89,9 @@ public class TwitchApiHandler {
 
                         new Thread(() -> {
                             try {
+                                if (DateConverter.convert(notificationModel.getStarted_at()).equals(streamMetadata.getDate())) {
+                                    log.warn("date equals: {} {}", notificationModel.getStarted_at(), streamMetadata.getDate());
+                                }
                                 vodDownloader.initializeDownload(streamMetadata);
                             } catch (SQLException e) {
                                 log.error("DB error {} ",e);

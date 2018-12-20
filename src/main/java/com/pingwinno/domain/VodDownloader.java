@@ -1,10 +1,16 @@
 package com.pingwinno.domain;
 
+import com.pingwinno.application.AnimatedPreviewGenerator;
+import com.pingwinno.application.TimelinePreviewGenerator;
 import com.pingwinno.application.twitch.playlist.handler.*;
 import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
 import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.State;
+import com.pingwinno.infrastructure.models.ChunkModel;
+import com.pingwinno.infrastructure.models.PreviewModel;
+import com.pingwinno.infrastructure.models.StreamDocumentModel;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +25,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,7 +35,7 @@ public class VodDownloader {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
     private MasterPlaylistDownloader masterPlaylistDownloader = new MasterPlaylistDownloader();
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
-    private LinkedHashSet<String> chunks = new LinkedHashSet<>();
+    private LinkedHashSet<ChunkModel> chunks = new LinkedHashSet<>();
     private String streamFolderPath;
     private String vodId;
     private StreamExtendedDataModel streamDataModel;
@@ -44,6 +51,7 @@ public class VodDownloader {
         try {
             if (RecordStatusGetter.getRecordStatus(vodId).equals("recording")) {
                 threadsNumber = 2;
+                log.info("Wait for creating vod...");
                 Thread.sleep(200 * 1000);
             } else {
                 threadsNumber = 10;
@@ -73,10 +81,11 @@ public class VodDownloader {
             //if stream  exist
             if (m3u8Link != null) {
                 String streamPath = StreamPathExtractor.extract(m3u8Link);
-                chunks = MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
+                chunks = MediaPlaylistParser.getChunks(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
                 ExecutorService executorService = Executors.newFixedThreadPool(threadsNumber);
 
-                for (String chunkName : chunks) {
+                for (ChunkModel chunk : chunks) {
+                    String chunkName = chunk.getChunkName();
                     Runnable runnable = () -> {
                         try {
                             downloadChunk(streamPath, chunkName);
@@ -94,27 +103,29 @@ public class VodDownloader {
                 stopRecord();
             }
             this.recordCycle();
-        } catch (IOException | URISyntaxException | InterruptedException | SQLException e) {
+        } catch (IOException | URISyntaxException | InterruptedException | SQLException | StreamNotFoundExeption e) {
             log.error("Vod downloader initialization failed. {}", e);
             stopRecord();
         }
     }
 
-    synchronized private boolean refreshDownload() throws InterruptedException, SQLException {
-        boolean status = false;
+    synchronized private void refreshDownload() throws InterruptedException, SQLException {
+        boolean status;
         try {
             String m3u8Link = MasterPlaylistParser.parse(
                     masterPlaylistDownloader.getPlaylist(vodId));
             String streamPath = StreamPathExtractor.extract(m3u8Link);
 
-            LinkedHashSet<String> refreshedPlaylist =
-                    MediaPlaylistParser.parse(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
+            LinkedHashSet<ChunkModel> refreshedPlaylist =
+                    MediaPlaylistParser.getChunks(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
 
             ExecutorService executorService = Executors.newFixedThreadPool(threadsNumber);
-            for (String chunkName : refreshedPlaylist) {
+            for (ChunkModel chunk : refreshedPlaylist) {
 
-                status = chunks.add(chunkName);
+                status = chunks.add(chunk);
+                log.trace("status: {}, chunk: {}", status, chunk.getChunkName());
                 if (status) {
+                    String chunkName = chunk.getChunkName();
                     Runnable runnable = () -> {
                         try {
                             downloadChunk(streamPath, chunkName);
@@ -137,10 +148,9 @@ public class VodDownloader {
             log.error("Vod downloader refresh failed. {}", e);
             stopRecord();
         }
-        return status;
     }
 
-    private void recordCycle() throws IOException, InterruptedException, URISyntaxException, SQLException {
+    private void recordCycle() throws IOException, InterruptedException, URISyntaxException, SQLException, StreamNotFoundExeption {
         if (!RecordStatusGetter.getRecordStatus(vodId).equals("")) {
             while (RecordStatusGetter.getRecordStatus(vodId).equals("recording")) {
                 refreshDownload();
@@ -165,6 +175,25 @@ public class VodDownloader {
             } catch (Exception e) {
                 log.warn("Write to db failed. Skip.");
                 log.warn("Stacktrace {}", e);
+            }
+            if (!SettingsProperties.getMongoDBAddress().equals("")) {
+                log.info("write to remote db");
+                LinkedList<PreviewModel> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, chunks);
+                LinkedList<PreviewModel> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, chunks);
+
+                StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
+                streamDocumentModel.setUuid(streamDataModel.getUuid().toString());
+                streamDocumentModel.setTitle(streamDataModel.getTitle());
+                streamDocumentModel.setDate(streamDataModel.getDate());
+                streamDocumentModel.setGame(streamDataModel.getGame());
+
+                streamDocumentModel.setDuration(MediaPlaylistParser.getTotalSec(new MediaPlaylistDownloader().
+                        getMediaPlaylist(MasterPlaylistParser.parse(new MasterPlaylistDownloader().getPlaylist(vodId)))));
+                streamDocumentModel.setAnimatedPreviews(animatedPreview);
+                streamDocumentModel.setTimelinePreviews(timelinePreview);
+
+                DataBaseHandler.writeToRemoteDB(streamDocumentModel);
+                log.info("Complete");
             }
 
             stopRecord();
@@ -195,6 +224,9 @@ public class VodDownloader {
     }
 
     private void downloadFile(String url, String fileName) throws IOException {
+        if (fileName.contains("muted")) {
+            fileName = fileName.replace("_muted", "");
+        }
         try (InputStream in = new URL(url).openStream()) {
             Files.copy(in, Paths.get(streamFolderPath + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
             log.info(fileName + " complete");

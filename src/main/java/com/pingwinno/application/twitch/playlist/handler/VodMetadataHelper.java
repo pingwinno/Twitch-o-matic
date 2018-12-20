@@ -2,17 +2,22 @@ package com.pingwinno.application.twitch.playlist.handler;
 
 import com.pingwinno.application.DateConverter;
 import com.pingwinno.infrastructure.HttpSeviceHelper;
+import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class VodMetadataHelper {
+    private static org.slf4j.Logger log = LoggerFactory.getLogger(VodMetadataHelper.class.getName());
 
-    public static StreamExtendedDataModel getLastVod(String user) throws IOException, InterruptedException {
+    public static StreamExtendedDataModel getLastVod(String user) throws IOException, InterruptedException,
+            StreamNotFoundExeption {
 
         HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/channels/" + user +
@@ -33,7 +38,8 @@ public class VodMetadataHelper {
         return streamMetadata;
         }
 
-    public static StreamExtendedDataModel getVodMetadata(String vodId) throws IOException, InterruptedException {
+    public static StreamExtendedDataModel getVodMetadata(String vodId) throws IOException,
+            InterruptedException, StreamNotFoundExeption {
 
         HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/videos/" + vodId);
@@ -44,16 +50,22 @@ public class VodMetadataHelper {
         StreamExtendedDataModel streamMetadata = new StreamExtendedDataModel();
 
         if (!dataObj.toString().equals("")) {
-            streamMetadata.setVodId(vodId);
-            streamMetadata.setTitle(dataObj.get("title").toString());
-            streamMetadata.setDate(DateConverter.convert(dataObj.get("recorded_at").toString()));
+            try {
+                streamMetadata.setVodId(vodId);
+                streamMetadata.setTitle(dataObj.get("title").toString());
+                streamMetadata.setDate(DateConverter.convert(dataObj.get("recorded_at").toString()));
 
-            streamMetadata.setPreviewUrl((dataObj.getJSONObject("preview").get("large")).toString());
-            if (!dataObj.get("game").toString().equals("")) {
-                streamMetadata.setGame(dataObj.get("game").toString());
+                streamMetadata.setPreviewUrl((dataObj.getJSONObject("preview").get("large")).toString());
+                if (!dataObj.get("game").toString().equals("")) {
+                    streamMetadata.setGame(dataObj.get("game").toString());
+                } else streamMetadata.setGame("");
+                httpSeviceHelper.close();
+            } catch (IllegalStateException | JSONException e) {
+                log.error("{}", e);
+                throw new StreamNotFoundExeption("Stream " + vodId + "not found");
             }
-            else streamMetadata.setGame("");
-            httpSeviceHelper.close();
+        } else {
+            throw new StreamNotFoundExeption("Stream " + vodId + "not found");
         }
         return streamMetadata;
     }

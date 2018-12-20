@@ -110,7 +110,6 @@ public class SettingsProperties {
             }
         } catch (IOException e) {
             log.error("Can't read ExecutePostDownloadCommand.", e);
-            System.exit(1);
         }
         return executePostDownloadCommand;
     }
@@ -121,31 +120,34 @@ public class SettingsProperties {
             commandArgs = getProperties().getProperty("CommandAgrs");
         } catch (IOException e) {
             log.error("Can't read CommandAgrs. {}", e);
-            System.exit(1);
+
         }
         return commandArgs;
     }
 
     public static String getStreamQuality() {
-        String streamQuality = null;
+        String streamQuality;
         try {
             streamQuality = getProperties().getProperty("StreamQuality");
+            // check for default config
+            if (streamQuality.equals("chunked, 720p60, 720p30, 480p30, 360p30, 160p30, audio_only")) {
+                streamQuality = "chunked";
+            }
         } catch (IOException e) {
             log.error("Can't read StreamQuality. {}", e);
-            System.exit(1);
+            return "chunked";
         }
         return streamQuality;
     }
 
-    public static String getRedisPutEndpoint() {
-        String redisPutEndpoint = null;
+    public static String getMongoDBAddress() {
+        String mongoDBAddress = null;
         try {
-            redisPutEndpoint = getProperties().getProperty("RedisPutEndpoint");
+            mongoDBAddress = getProperties().getProperty("MongoDBAddress");
         } catch (IOException e) {
-            log.error("Can't read RedisPutEndpoint. {}", e);
-            System.exit(1);
+            log.error("Can't read MongoDBAddress. {}", e);
         }
-        return redisPutEndpoint;
+        return mongoDBAddress;
     }
 
     public static String getSqliteFile() {

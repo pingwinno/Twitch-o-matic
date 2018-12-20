@@ -1,7 +1,5 @@
 package com.pingwinno.domain;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pingwinno.infrastructure.SettingsProperties;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
@@ -12,10 +10,7 @@ public class PostDownloadHandler {
 
     private static org.slf4j.Logger log = LoggerFactory.getLogger(PostDownloadHandler.class.getName());
 
-    public static void handleDownloadedStream() throws IOException {
-
-        ObjectMapper mapper = new ObjectMapper();
-        String[] command = mapper.readValue(SettingsProperties.getCommandArgs(), String[].class);
+    public static void handleDownloadedStream(String... command) {
 
         try {
             ProcessBuilder builder = new ProcessBuilder(command);

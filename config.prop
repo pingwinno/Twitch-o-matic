@@ -9,6 +9,8 @@ SqliteFile = /usr/local/twitch-o-matic/db/
 ExecutePostDownloadCommand = false
 CommandAgrs = ["example", "of", "command", "array"]
 
-StreamQuality = chunked, 720p60, 720p30, 480p30, 360p30,160p30 , audio_only
+// Should match exact VIDEO field from HLS master playlist from Twitch
+StreamQuality = chunked, 720p60, 720p30, 480p30, 360p30, 160p30, audio_only
 
-
+//Leave empty if not used
+MongoDBAddress =

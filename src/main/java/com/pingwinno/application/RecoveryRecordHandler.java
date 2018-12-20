@@ -3,6 +3,7 @@ package com.pingwinno.application;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.domain.sqlite.handlers.SqliteStatusDataHandler;
+import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.StatusDataModel;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
@@ -22,10 +23,17 @@ public class RecoveryRecordHandler {
         if (!dataModels.isEmpty()) {
             for (StatusDataModel dataModel:dataModels){
                 if (dataModel.getState().equals(State.RUNNING)) {
-                    log.info("Found uncompleted task. {}", dataModel.getVodId());
-                    StreamExtendedDataModel extendedDataModel = VodMetadataHelper.getVodMetadata(dataModel.getVodId());
-                    extendedDataModel.setUuid(dataModel.getUuid());
-                    new VodDownloader().initializeDownload(extendedDataModel);
+                    try {
+                        log.info("Found uncompleted task. {}", dataModel.getVodId());
+                        StreamExtendedDataModel extendedDataModel;
+                        extendedDataModel = VodMetadataHelper.getVodMetadata(dataModel.getVodId());
+                        extendedDataModel.setUuid(dataModel.getUuid());
+                        new VodDownloader().initializeDownload(extendedDataModel);
+                    } catch (StreamNotFoundExeption streamNotFoundExeption) {
+                        log.warn("Stream {} not found. Delete stream...", dataModel.getVodId());
+                        new SqliteStatusDataHandler().delete(dataModel.getUuid().toString());
+                    }
+
                 }
             }
         }

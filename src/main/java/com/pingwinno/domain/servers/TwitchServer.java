@@ -41,7 +41,7 @@ public class TwitchServer {
             server.join();
             log.debug("Start server complete.");
         } catch (Exception ex) {
-            log.error("Server running failed: { }", ex);
+            log.error("Server running failed: {}", ex);
 
         } finally {
             server.destroy();
