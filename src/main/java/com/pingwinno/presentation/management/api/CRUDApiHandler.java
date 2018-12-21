@@ -10,6 +10,7 @@ import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
 import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.StartedBy;
 import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.*;
@@ -72,7 +73,7 @@ public class CRUDApiHandler {
             } else {
                 response = Response.status(Response.Status.NOT_ACCEPTABLE).build();
             }
-        } catch (IOException | InterruptedException | SQLException  e) {
+        } catch (IOException | InterruptedException | SQLException | StreamNotFoundExeption e) {
             response = Response.status(500, e.toString()).build();
             log.error("Can't start record {}", e);
         }
@@ -121,7 +122,7 @@ public class CRUDApiHandler {
             } else {
                 response = Response.status(Response.Status.NOT_ACCEPTABLE).build();
             }
-        } catch (IOException | InterruptedException | SQLException e) {
+        } catch (IOException | InterruptedException | SQLException | StreamNotFoundExeption e) {
             response = Response.status(500, e.toString()).build();
             log.error("Can't start record {}", e);
         }
