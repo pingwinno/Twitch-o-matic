@@ -7,16 +7,17 @@ import com.mongodb.MongoClientURI;
 import com.pingwinno.infrastructure.SettingsProperties;
 
 public class MongoDBHandler {
-    private static DBCollection collection;
+    private static DB database;
 
     public static void connect() {
         MongoClient mongoClient = new MongoClient(new MongoClientURI("mongodb://" + SettingsProperties.getMongoDBAddress() + ":27017"));
-        DB database = mongoClient.getDB("streams");
-        collection = database.getCollection(SettingsProperties.getUser());
+        database = mongoClient.getDB("streams");
+
     }
 
-    public static DBCollection getCollection() {
-        return collection;
+    public static DBCollection getCollection(String user) {
+
+        return database.getCollection(user);
     }
 
 }

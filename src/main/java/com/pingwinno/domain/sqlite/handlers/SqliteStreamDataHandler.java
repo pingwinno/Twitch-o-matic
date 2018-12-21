@@ -12,10 +12,10 @@ public class SqliteStreamDataHandler extends SqliteHandler {
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
-    public void initializeDB() throws SQLException {
+    public void initializeDB(String user) throws SQLException {
 
         log.info("Try to create table");
-        String createStreamsTable = "CREATE TABLE IF NOT EXISTS streams (\n"
+        String createStreamsTable = "CREATE TABLE IF NOT EXISTS streams_" + user + " (\n"
                 + "	uuid PRIMARY KEY NOT NULL,\n"
                 + "	title NOT NULL,\n"
                 + "	date NOT NULL,\n"
@@ -38,7 +38,7 @@ public class SqliteStreamDataHandler extends SqliteHandler {
 
 
     public void insert(StreamDataModel streamDataModel) {
-        String sqlQuery = "INSERT INTO streams(uuid,title,date,game) VALUES(?,?,?,?)";
+        String sqlQuery = "INSERT INTO streams_" + streamDataModel.getUser() + "(uuid,title,date,game) VALUES(?,?,?,?)";
         log.info("insert stream data...");
         try (Connection connection = this.connect();
 
@@ -56,8 +56,8 @@ public class SqliteStreamDataHandler extends SqliteHandler {
         log.info("insert stream data complete");
     }
 
-    public LinkedList<StreamDataModel> selectAll() {
-        String sqlQuery = "SELECT uuid, title, date, game FROM streams";
+    public LinkedList<StreamDataModel> selectAll(String user) {
+        String sqlQuery = "SELECT uuid, title, date, game FROM streams_" + user;
         LinkedList<StreamDataModel> streams = new LinkedList<>();
         try (Connection conn = this.connect();
              Statement stmt = conn.createStatement();
@@ -66,7 +66,7 @@ public class SqliteStreamDataHandler extends SqliteHandler {
             // loop through the result set
             while (rs.next()) {
                 StreamDataModel streamDataModel = new StreamDataModel(UUID.fromString(rs.getString("uuid")),
-                        rs.getString("date"), rs.getString("title"), rs.getString("game"));
+                        rs.getString("date"), rs.getString("title"), rs.getString("game"), user);
                 streams.add(streamDataModel);
             }
         } catch (SQLException e) {
@@ -77,7 +77,7 @@ public class SqliteStreamDataHandler extends SqliteHandler {
 
 
     public void update(StreamDataModel dataModel) throws SQLException {
-        String sql = "UPDATE streams\n"
+        String sql = "UPDATE streams_" + dataModel.getUser() + "\n"
                 + "SET title = ?, date = ?, game = ?\n"
                 + "WHERE uuid = ?;";
 
@@ -94,8 +94,8 @@ public class SqliteStreamDataHandler extends SqliteHandler {
         }
     }
 
-    public LinkedList<String> search(String searchRow, String resultRow){
-        String sql = "SELECT " + resultRow + " FROM streams WHERE " + resultRow + " = ?";
+    public LinkedList<String> search(String searchRow, String resultRow, String user) {
+        String sql = "SELECT " + resultRow + " FROM streams_" + user + " WHERE " + resultRow + " = ?";
         LinkedList<String> searchResult = new LinkedList<>();
         try (Connection conn = this.connect();
              PreparedStatement pstmt  = conn.prepareStatement(sql)){
@@ -114,9 +114,9 @@ public class SqliteStreamDataHandler extends SqliteHandler {
         }
         return searchResult;
     }
-    
-    public void delete(String uuid) {
-        String sql = "DELETE FROM streams WHERE uuid = ?";
+
+    public void delete(String uuid, String user) {
+        String sql = "DELETE FROM streams_" + user + " WHERE uuid = ?";
 
         try (Connection conn = this.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {

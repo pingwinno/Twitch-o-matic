@@ -53,7 +53,7 @@ public class CRUDApiHandler {
 
                     new RecordStatusList().addStatus
                             (new StatusDataModel(streamMetadata.getVodId(), StartedBy.MANUAL, DateConverter.convert(LocalDateTime.now()),
-                                    State.INITIALIZE, streamMetadata.getUuid()));
+                                    State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
 
                     new Thread(() -> {
                         try {
@@ -102,7 +102,7 @@ public class CRUDApiHandler {
 
                     new RecordStatusList().addStatus
                             (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, DateConverter.convert(LocalDateTime.now()),
-                                    State.INITIALIZE, streamMetadata.getUuid()));
+                                    State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
 
                     new Thread(() -> {
                         try {
@@ -129,12 +129,12 @@ public class CRUDApiHandler {
         return response;
     }
 
-    @Path("{uuid}")
+    @Path("{user}/{uuid}")
     @DELETE
-    public Response deleteStream(@PathParam("uuid") String uuid, @QueryParam("delete_media") String deleteMedia) {
+    public Response deleteStream(@PathParam("uuid") String uuid, @PathParam("user") String user, @QueryParam("delete_media") String deleteMedia) {
 
         SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
-        sqliteHandler.delete(uuid);
+        sqliteHandler.delete(uuid, user);
         log.info("delete stream {}", uuid);
         if (deleteMedia.equals("true")) {
             try {
@@ -162,13 +162,13 @@ public class CRUDApiHandler {
 
     }
 
-    @Path("/streams")
+    @Path("/streams/{user}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getStatusList() {
+    public Response getStatusList(@PathParam("user") String user) {
         try {
             return Response.status(Response.Status.OK)
-                    .entity(new ObjectMapper().writeValueAsString(new SqliteStreamDataHandler().selectAll())).build();
+                    .entity(new ObjectMapper().writeValueAsString(new SqliteStreamDataHandler().selectAll(user))).build();
         } catch (JsonProcessingException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }

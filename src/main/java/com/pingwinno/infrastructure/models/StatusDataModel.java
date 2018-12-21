@@ -11,13 +11,23 @@ public class StatusDataModel {
     private String date;
     private State state;
     private UUID uuid;
+    private String user;
 
-    public StatusDataModel(String vodId, StartedBy startedBy, String date, State state, UUID uuid) {
+    public StatusDataModel(String vodId, StartedBy startedBy, String date, State state, UUID uuid, String user) {
         this.vodId = vodId;
         this.startedBy = startedBy;
         this.date = date;
         this.state = state;
         this.uuid = uuid;
+        this.user = user;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
     }
 
     public UUID getUuid() {

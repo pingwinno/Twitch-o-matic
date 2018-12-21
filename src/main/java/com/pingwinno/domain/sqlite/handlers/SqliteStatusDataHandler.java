@@ -20,6 +20,7 @@ public class SqliteStatusDataHandler extends SqliteHandler {
                 + "	vodId NOT NULL,\n"
                 + "	date NOT NULL,\n"
                 + " startedBy NOT NULL,\n"
+                + " user NOT NULL,\n"
                 + " state NOT NULL\n"
                 + ");";
         String createStatusIndex = "CREATE UNIQUE INDEX idx_status_uuid ON streams_status(uuid);";
@@ -39,7 +40,7 @@ public class SqliteStatusDataHandler extends SqliteHandler {
     }
 
     public void insert(StatusDataModel statusDataModel) {
-        String sqlQuery = "INSERT INTO streams_status(uuid,state,date,startedBy,vodId) VALUES(?,?,?,?,?)";
+        String sqlQuery = "INSERT INTO streams_status(uuid,state,date,startedBy,user,vodId) VALUES(?,?,?,?,?,?)";
         log.info("insert streams_status data...");
         try (Connection connection = super.connect();
 
@@ -49,6 +50,7 @@ public class SqliteStatusDataHandler extends SqliteHandler {
             preparedStatement.setString(3, statusDataModel.getDate());
             preparedStatement.setString(4, statusDataModel.getStartedBy().toString());
             preparedStatement.setString(5, statusDataModel.getVodId());
+            preparedStatement.setString(5, statusDataModel.getUser());
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
@@ -70,7 +72,7 @@ public class SqliteStatusDataHandler extends SqliteHandler {
                         new StatusDataModel(rs.getString("vodId"),
                                 StartedBy.valueOf(rs.getString("startedBy")),
                                 rs.getString("date"), State.valueOf(rs.getString("state")),
-                                UUID.fromString(rs.getString("uuid")));
+                                UUID.fromString(rs.getString("uuid")), rs.getString("user"));
                 streams.add(streamDataModel);
             }
         } catch (SQLException e) {
@@ -80,7 +82,7 @@ public class SqliteStatusDataHandler extends SqliteHandler {
     }
 
     public void update(StatusDataModel dataModel) {
-        String sql = "UPDATE streams_status SET vodId = ?, date = ?, startedBy = ?, state = ? WHERE uuid = ?;";
+        String sql = "UPDATE streams_status SET vodId = ?, date = ?, startedBy = ?, user = ?, state = ? WHERE uuid = ?;";
 
         try (Connection conn = super.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -94,7 +96,8 @@ public class SqliteStatusDataHandler extends SqliteHandler {
             pstmt.setString(2, dataModel.getDate());
             pstmt.setString(3, dataModel.getStartedBy().toString());
             pstmt.setString(4, dataModel.getState().toString());
-            pstmt.setString(5, dataModel.getUuid().toString());
+            pstmt.setString(5, dataModel.getUser());
+            pstmt.setString(6, dataModel.getUuid().toString());
             // update
             pstmt.executeUpdate();
         } catch (SQLException e) {
@@ -103,7 +106,7 @@ public class SqliteStatusDataHandler extends SqliteHandler {
     }
 
     public LinkedList<String> search(String searchRow, String resultRow){
-        String sql = "SELECT " + resultRow + " FROM streams_status WHERE " + resultRow + " = ?";
+        String sql = "SELECT " + resultRow + " FROM streams_status WHERE " + searchRow + " = ?";
         LinkedList<String> searchResult = new LinkedList<>();
         try (Connection conn = this.connect();
              PreparedStatement pstmt  = conn.prepareStatement(sql)){
