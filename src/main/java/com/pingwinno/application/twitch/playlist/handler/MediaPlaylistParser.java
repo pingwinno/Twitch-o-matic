@@ -34,14 +34,14 @@ public class MediaPlaylistParser {
         return chunks;
     }
 
-    public static String getTotalSec(BufferedReader reader) throws IOException {
+    public static long getTotalSec(BufferedReader reader) throws IOException {
         String header;
-        String time = "0";
+        long time = 0;
         while ((header = reader.readLine()) != null) {
             log.trace(header);
             if (header.contains("#EXT-X-TWITCH-TOTAL-SECS")) {
-                time = header.substring(header.lastIndexOf(":") + 1);
-                log.trace(time);
+                time = Long.parseLong(header.substring(header.lastIndexOf(":") + 1));
+                log.trace("Stream duration: {}", time);
             }
         }
         return time;

@@ -12,7 +12,7 @@ public class StreamDocumentModel {
     private Date date;
     private String title;
     private String game;
-    private String duration;
+    private long duration;
     private LinkedList<PreviewModel> animatedPreviews;
     private LinkedList<PreviewModel> timelinePreviews;
 
@@ -48,11 +48,11 @@ public class StreamDocumentModel {
         this.game = game;
     }
 
-    public String getDuration() {
+    public long getDuration() {
         return duration;
     }
 
-    public void setDuration(String duration) {
+    public void setDuration(long duration) {
         this.duration = duration;
     }
 
