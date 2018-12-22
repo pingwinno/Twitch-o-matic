@@ -184,7 +184,7 @@ public class VodDownloader {
                 StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
                 streamDocumentModel.setUuid(streamDataModel.getUuid().toString());
                 streamDocumentModel.setTitle(streamDataModel.getTitle());
-                streamDocumentModel.setDate(streamDataModel.getDate());
+                streamDocumentModel.setDate(new java.util.Date((Long.parseLong(streamDataModel.getDate()))));
                 streamDocumentModel.setGame(streamDataModel.getGame());
 
                 streamDocumentModel.setDuration(MediaPlaylistParser.getTotalSec(new MediaPlaylistDownloader().

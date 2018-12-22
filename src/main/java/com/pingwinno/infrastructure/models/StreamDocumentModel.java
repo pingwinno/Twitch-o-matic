@@ -2,13 +2,14 @@ package com.pingwinno.infrastructure.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Date;
 import java.util.LinkedList;
 
 public class StreamDocumentModel {
 
     @JsonProperty("_id")
     private String uuid;
-    private String date;
+    private Date date;
     private String title;
     private String game;
     private String duration;
@@ -23,11 +24,11 @@ public class StreamDocumentModel {
         this.uuid = uuid;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 
