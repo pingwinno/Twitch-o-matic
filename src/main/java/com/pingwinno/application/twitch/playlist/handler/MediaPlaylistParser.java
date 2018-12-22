@@ -40,7 +40,7 @@ public class MediaPlaylistParser {
         while ((header = reader.readLine()) != null) {
             log.trace(header);
             if (header.contains("#EXT-X-TWITCH-TOTAL-SECS")) {
-                time = Long.parseLong(header.substring(header.lastIndexOf(":") + 1));
+                time = (long) Double.parseDouble(header.substring(header.lastIndexOf(":") + 1));
                 log.trace("Stream duration: {}", time);
             }
         }
