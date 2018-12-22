@@ -24,6 +24,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.UUID;
@@ -184,7 +186,7 @@ public class VodDownloader {
                 StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
                 streamDocumentModel.setUuid(streamDataModel.getUuid().toString());
                 streamDocumentModel.setTitle(streamDataModel.getTitle());
-                streamDocumentModel.setDate(new java.util.Date((Long.parseLong(streamDataModel.getDate()))));
+                streamDocumentModel.setDate(Date.from(Instant.ofEpochMilli(Long.parseLong(streamDataModel.getDate()))));
                 streamDocumentModel.setGame(streamDataModel.getGame());
 
                 streamDocumentModel.setDuration(MediaPlaylistParser.getTotalSec(new MediaPlaylistDownloader().
