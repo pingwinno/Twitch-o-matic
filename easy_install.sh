@@ -4,11 +4,11 @@ cd /tmp
 
 ### installing Twitch-o-matic
 
-FILE=/usr/local/twitch-o-matic/Twitch-o-matic.jar
+FILE=/usr/local/twitch-o-matic/twitch-o-matic.jar
 if [ -f $FILE ]; then
   echo "tom installed. Updating...."
   git clone https://github.com/pingwinno/Twitch-o-matic.git
-  cd ./Twitch-o-matic
+  cd ./twitch-o-matic
   mvn package
 else
 ### installing dependencies
@@ -16,8 +16,8 @@ else
   apt update
   apt upgrade -y
   apt install -y maven git jsvc
-  git clone https://github.com/pingwinno/Twitch-o-matic.git
-  cd ./Twitch-o-matic
+  git clone https://github.com/pingwinno/twitch-o-matic.git
+  cd ./twitch-o-matic
   mvn package
   adduser --system --no-create-home --group tom-daemon
   mkdir /usr/local/twitch-o-matic/
@@ -32,14 +32,14 @@ else
 fi
 
 
-mv ./target/Twitch-o-matic.jar /usr/local/twitch-o-matic/
+mv ./target/twitch-o-matic.jar /usr/local/twitch-o-matic/
 mv twitch-o-matic.sh /usr/local/bin/
 chmod +x /usr/local/bin/twitch-o-matic.sh
 
 
 cp twitch-o-matic.service /etc/systemd/system/twitch-o-matic.service
 cd ../
-rm -rf Twitch-o-matic
+rm -rf twitch-o-matic
 chmod 644 /etc/systemd/system/twitch-o-matic.service
 systemctl daemon-reload
 systemctl enable twitch-o-matic.service
