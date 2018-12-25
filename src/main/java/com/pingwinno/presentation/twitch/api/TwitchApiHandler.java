@@ -7,6 +7,7 @@ import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.RecordStatusGetter;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.VodDownloader;
+import com.pingwinno.domain.sqlite.handlers.SqliteStatusDataHandler;
 import com.pingwinno.infrastructure.HashHandler;
 import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
@@ -78,33 +79,37 @@ public class TwitchApiHandler {
                 log.info("check for duplicate notification");
                 if (notificationModel.getType().equals("live")) {
                     if (streamMetadata.getVodId() != null) {
-                        int counter = 0;
-                        while (RecordStatusGetter.getRecordStatus(streamMetadata.getVodId()).equals("recorded")) {
-                            Thread.sleep(200 * 1000);
-                            log.warn("vod is not created yet... cycle " + counter);
-                            counter++;
-                            if (counter > 6) {
-                                throw new StreamNotFoundExeption("new vod not found");
-                            }
-                        }
-                    streamMetadata.setUuid(StorageHelper.getUuidName());
-
-                    new RecordStatusList().addStatus
-                            (new StatusDataModel(streamMetadata.getVodId(), StartedBy.WEBHOOK, DateConverter.convert(LocalDateTime.now()),
-                                    State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
-
-                    log.info("Try to start record");
-                    VodDownloader vodDownloader = new VodDownloader();
-
                         new Thread(() -> {
                             try {
-                                if (DateConverter.convert(notificationModel.getStarted_at()).equals(streamMetadata.getDate())) {
-                                    log.warn("date equals: {} {}", notificationModel.getStarted_at(), streamMetadata.getDate());
+                                int counter = 0;
+                                while (RecordStatusGetter.getRecordStatus(streamMetadata.getVodId()).equals("recorded")) {
+                                    Thread.sleep(200 * 1000);
+                                    log.warn("vod is not created yet... cycle " + counter);
+                                    counter++;
+                                    if (counter > 6) {
+                                        throw new StreamNotFoundExeption("new vod not found");
+                                    }
                                 }
-                                vodDownloader.initializeDownload(streamMetadata);
-                            } catch (SQLException e) {
-                                log.error("DB error {} ",e);
+                                if ((new SqliteStatusDataHandler().search("vodId", "vodId", streamMetadata.getVodId()) == null)) {
+                                    streamMetadata.setUuid(StorageHelper.getUuidName());
+
+                                    new RecordStatusList().addStatus
+                                            (new StatusDataModel(streamMetadata.getVodId(), StartedBy.WEBHOOK, DateConverter.convert(LocalDateTime.now()),
+                                                    State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
+
+                                    log.info("Try to start record");
+                                    VodDownloader vodDownloader = new VodDownloader();
+
+
+                                    vodDownloader.initializeDownload(streamMetadata);
+                                } else log.warn("Stream duplicate. Skip...");
+                            } catch (SQLException | IOException | InterruptedException e) {
+                                log.error("DB error {} ", e);
+                            } catch (StreamNotFoundExeption streamNotFoundExeption) {
+                                streamNotFoundExeption.printStackTrace();
                             }
+
+
                         }).start();
 
                         String startedAt = notificationModel.getStarted_at();

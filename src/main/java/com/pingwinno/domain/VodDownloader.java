@@ -215,6 +215,9 @@ public class VodDownloader {
                 (connection.getContentLengthLong() != Files.size((Paths.get(streamFolderPath + "/" + fileName))))) {
 
             try (InputStream in = website.openStream()) {
+                if (fileName.contains("muted")) {
+                    fileName = fileName.replace("-muted", "");
+                }
                 Files.copy(in, Paths.get(streamFolderPath + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
                 if (Integer.parseInt(fileName.replaceAll(".ts", ""))%10 == 0) {
                     log.info(fileName + " complete");
@@ -227,9 +230,7 @@ public class VodDownloader {
     }
 
     private void downloadFile(String url, String fileName) throws IOException {
-        if (fileName.contains("muted")) {
-            fileName = fileName.replace("_muted", "");
-        }
+
         try (InputStream in = new URL(url).openStream()) {
             Files.copy(in, Paths.get(streamFolderPath + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
             log.info(fileName + " complete");

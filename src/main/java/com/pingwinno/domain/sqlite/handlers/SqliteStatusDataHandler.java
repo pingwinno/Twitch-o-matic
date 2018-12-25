@@ -105,14 +105,14 @@ public class SqliteStatusDataHandler extends SqliteHandler {
         }
     }
 
-    public LinkedList<String> search(String searchRow, String resultRow){
+    public LinkedList<String> search(String searchRow, String resultRow, String value) {
         String sql = "SELECT " + resultRow + " FROM streams_status WHERE " + searchRow + " = ?";
         LinkedList<String> searchResult = new LinkedList<>();
         try (Connection conn = this.connect();
              PreparedStatement pstmt  = conn.prepareStatement(sql)){
 
             // set the value
-            pstmt.setString(1,searchRow);
+            pstmt.setString(1, value);
             //
             ResultSet rs  = pstmt.executeQuery();
 
