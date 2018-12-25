@@ -48,12 +48,12 @@ public class VodMetadataHelper {
         JSONObject dataObj =
                 new JSONObject(EntityUtils.toString(httpSeviceHelper.getService(httpGet, true)));
         StreamExtendedDataModel streamMetadata = new StreamExtendedDataModel();
-
+        log.trace("{}", dataObj);
         if (!dataObj.toString().equals("")) {
             try {
                 streamMetadata.setVodId(vodId);
                 streamMetadata.setTitle(dataObj.get("title").toString());
-                streamMetadata.setUser(dataObj.get("name").toString());
+                streamMetadata.setUser(dataObj.getJSONObject("channel").get("name").toString());
                 streamMetadata.setDate(DateConverter.convert(dataObj.get("recorded_at").toString()));
 
                 streamMetadata.setPreviewUrl((dataObj.getJSONObject("preview").get("large")).toString());

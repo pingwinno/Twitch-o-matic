@@ -52,10 +52,9 @@ public class VodDownloader {
         vodId = streamDataModel.getVodId();
 
         try {
-            if (RecordStatusGetter.getRecordStatus(vodId).equals("recording")) {
+            if (RecordStatusGetter.isRecording(vodId)) {
                 threadsNumber = 2;
                 log.info("Wait for creating vod...");
-                Thread.sleep(200 * 1000);
             } else {
                 threadsNumber = 10;
             }
@@ -154,59 +153,55 @@ public class VodDownloader {
     }
 
     private void recordCycle() throws IOException, InterruptedException, URISyntaxException, SQLException, StreamNotFoundExeption {
-        if (!RecordStatusGetter.getRecordStatus(vodId).equals("")) {
-            while (RecordStatusGetter.getRecordStatus(vodId).equals("recording")) {
-                refreshDownload();
-                Thread.sleep(20 * 1000);
-            }
-            log.info("Finalize record...");
 
-            log.info("Wait for renewing playlist");
-            Thread.sleep(50 * 1000);
-            log.info("End of list. Downloading last chunks");
-            this.refreshDownload();
-
-            log.debug("Download preview");
-            downloadFile(VodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), "preview.jpg");
-            log.debug("Download m3u8");
-            MediaPlaylistWriter.write(new MediaPlaylistDownloader().getMediaPlaylist(MasterPlaylistParser.parse
-                    (new MasterPlaylistDownloader().getPlaylist(vodId))), streamFolderPath);
-            try {
-                log.debug("write to local db");
-                SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
-                sqliteHandler.insert(streamDataModel);
-            } catch (Exception e) {
-                log.warn("Write to db failed. Skip.");
-                log.warn("Stacktrace {}", e);
-            }
-            if (!SettingsProperties.getMongoDBAddress().equals("")) {
-                log.info("write to remote db");
-                LinkedList<PreviewModel> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, chunks);
-                LinkedList<PreviewModel> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, chunks);
-
-                StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
-                streamDocumentModel.setUuid(streamDataModel.getUuid().toString());
-                streamDocumentModel.setTitle(streamDataModel.getTitle());
-                streamDocumentModel.setDate(Date.from(Instant.ofEpochMilli(Long.parseLong(streamDataModel.getDate()))));
-                streamDocumentModel.setGame(streamDataModel.getGame());
-
-                streamDocumentModel.setDuration(MediaPlaylistParser.getTotalSec(new MediaPlaylistDownloader().
-                        getMediaPlaylist(MasterPlaylistParser.parse(new MasterPlaylistDownloader().getPlaylist(vodId)))));
-                streamDocumentModel.setAnimatedPreviews(animatedPreview);
-                streamDocumentModel.setTimelinePreviews(timelinePreview);
-
-                DataBaseHandler.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
-                log.info("Complete");
-            }
-
-            stopRecord();
-            new RecordStatusList().changeState(uuid, State.COMPLETE);
-        } else {
-            new RecordStatusList().changeState(uuid, State.ERROR);
-            log.error("Getting status failed. Stop cycle...");
-            stopRecord();
+        while (RecordStatusGetter.isRecording(vodId)) {
+            refreshDownload();
+            Thread.sleep(20 * 1000);
         }
+        log.info("Finalize record...");
+
+        log.info("Wait for renewing playlist");
+        Thread.sleep(50 * 1000);
+        log.info("End of list. Downloading last chunks");
+        this.refreshDownload();
+
+        log.debug("Download preview");
+        downloadFile(VodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), "preview.jpg");
+        log.debug("Download m3u8");
+        MediaPlaylistWriter.write(new MediaPlaylistDownloader().getMediaPlaylist(MasterPlaylistParser.parse
+                (new MasterPlaylistDownloader().getPlaylist(vodId))), streamFolderPath);
+        try {
+            log.debug("write to local db");
+            SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
+            sqliteHandler.insert(streamDataModel);
+        } catch (Exception e) {
+            log.warn("Write to db failed. Skip.");
+            log.warn("Stacktrace {}", e);
+        }
+        if (!SettingsProperties.getMongoDBAddress().equals("")) {
+            log.info("write to remote db");
+            LinkedList<PreviewModel> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, chunks);
+            LinkedList<PreviewModel> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, chunks);
+
+            StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
+            streamDocumentModel.setUuid(streamDataModel.getUuid().toString());
+            streamDocumentModel.setTitle(streamDataModel.getTitle());
+            streamDocumentModel.setDate(Date.from(Instant.ofEpochMilli(Long.parseLong(streamDataModel.getDate()))));
+            streamDocumentModel.setGame(streamDataModel.getGame());
+
+            streamDocumentModel.setDuration(MediaPlaylistParser.getTotalSec(new MediaPlaylistDownloader().
+                    getMediaPlaylist(MasterPlaylistParser.parse(new MasterPlaylistDownloader().getPlaylist(vodId)))));
+            streamDocumentModel.setAnimatedPreviews(animatedPreview);
+            streamDocumentModel.setTimelinePreviews(timelinePreview);
+
+            DataBaseHandler.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
+            log.info("Complete");
+        }
+
+        stopRecord();
+        new RecordStatusList().changeState(uuid, State.COMPLETE);
     }
+
 
     private void downloadChunk(String streamPath, String fileName) throws IOException {
         URL website = new URL(streamPath + "/" + fileName);

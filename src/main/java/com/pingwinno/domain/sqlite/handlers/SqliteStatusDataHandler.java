@@ -49,7 +49,7 @@ public class SqliteStatusDataHandler extends SqliteHandler {
             preparedStatement.setString(2, statusDataModel.getState().toString());
             preparedStatement.setString(3, statusDataModel.getDate());
             preparedStatement.setString(4, statusDataModel.getStartedBy().toString());
-            preparedStatement.setString(5, statusDataModel.getVodId());
+            preparedStatement.setString(6, statusDataModel.getVodId());
             preparedStatement.setString(5, statusDataModel.getUser());
             preparedStatement.executeUpdate();
 
@@ -60,7 +60,7 @@ public class SqliteStatusDataHandler extends SqliteHandler {
     }
 
     public LinkedList<StatusDataModel> selectAll() throws SQLException {
-        String sqlQuery = "SELECT uuid, state, date, startedBy, vodId FROM streams_status";
+        String sqlQuery = "SELECT uuid, state, date, startedBy, vodId, user FROM streams_status";
         LinkedList<StatusDataModel> streams = new LinkedList<>();
         try (Connection conn = this.connect();
              Statement stmt = conn.createStatement();
@@ -95,8 +95,9 @@ public class SqliteStatusDataHandler extends SqliteHandler {
             pstmt.setString(1, dataModel.getVodId());
             pstmt.setString(2, dataModel.getDate());
             pstmt.setString(3, dataModel.getStartedBy().toString());
-            pstmt.setString(4, dataModel.getState().toString());
-            pstmt.setString(5, dataModel.getUser());
+            pstmt.setString(4, dataModel.getUser());
+            pstmt.setString(5, dataModel.getState().toString());
+
             pstmt.setString(6, dataModel.getUuid().toString());
             // update
             pstmt.executeUpdate();

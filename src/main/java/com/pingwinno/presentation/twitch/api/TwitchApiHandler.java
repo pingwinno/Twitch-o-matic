@@ -62,7 +62,8 @@ public class TwitchApiHandler {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response handleStreamNotification(String stringDataModel
-            , @HeaderParam("X-Hub-Signature") String signature, @PathParam("user") String user) throws IOException, InterruptedException, SQLException, StreamNotFoundExeption {
+            , @HeaderParam("X-Hub-Signature") String signature, @PathParam("user") String user) throws IOException,
+            InterruptedException, SQLException, StreamNotFoundExeption {
         log.debug("Incoming stream up/down notification");
 
         if (HashHandler.compare(signature, stringDataModel)) {
@@ -73,24 +74,31 @@ public class TwitchApiHandler {
             if (notificationArray.length > 0) {
                 log.info("Stream is up");
                 NotificationDataModel notificationModel = notificationArray[0];
-                StreamExtendedDataModel streamMetadata = VodMetadataHelper.getLastVod(user);
 
-                //check for notification duplicate
-                log.info("check for duplicate notification");
+
                 if (notificationModel.getType().equals("live")) {
-                    if (streamMetadata.getVodId() != null) {
+                    if (VodMetadataHelper.getLastVod(user).getVodId() != null) {
                         new Thread(() -> {
                             try {
+                                StreamExtendedDataModel streamMetadata = VodMetadataHelper.getLastVod(user);
                                 int counter = 0;
-                                while (RecordStatusGetter.getRecordStatus(streamMetadata.getVodId()).equals("recorded")) {
-                                    Thread.sleep(200 * 1000);
+                                log.trace(streamMetadata.toString());
+                                while (!RecordStatusGetter.isRecording(streamMetadata.getVodId())) {
+                                    log.trace("vodId: {}", streamMetadata.getVodId());
+                                    streamMetadata = VodMetadataHelper.getLastVod(user);
+                                    log.info("waiting for creating vod...");
+                                    Thread.sleep(20 * 1000);
                                     log.warn("vod is not created yet... cycle " + counter);
                                     counter++;
-                                    if (counter > 6) {
+                                    if (counter > 60) {
                                         throw new StreamNotFoundExeption("new vod not found");
                                     }
                                 }
-                                if ((new SqliteStatusDataHandler().search("vodId", "vodId", streamMetadata.getVodId()) == null)) {
+                                for (String id : new SqliteStatusDataHandler().search("vodId", "vodId", streamMetadata.getVodId())) {
+                                    log.trace(id);
+                                }
+
+                                if (!new SqliteStatusDataHandler().search("vodId", "vodId", streamMetadata.getVodId()).contains(streamMetadata.getVodId())) {
                                     streamMetadata.setUuid(StorageHelper.getUuidName());
 
                                     new RecordStatusList().addStatus
@@ -100,7 +108,8 @@ public class TwitchApiHandler {
                                     log.info("Try to start record");
                                     VodDownloader vodDownloader = new VodDownloader();
 
-
+                                    //check for notification duplicate
+                                    log.info("check for duplicate notification");
                                     vodDownloader.initializeDownload(streamMetadata);
                                 } else log.warn("Stream duplicate. Skip...");
                             } catch (SQLException | IOException | InterruptedException e) {
