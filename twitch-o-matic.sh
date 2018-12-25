@@ -3,7 +3,7 @@
 # Setup variables
 EXEC=/usr/bin/jsvc
 JAVA_HOME="$( readlink -f "$( which java )" | sed "s:bin/.*$::" )"
-CLASS_PATH="/usr/share/java/commons-daemon.jar":"/usr/local/twitch-o-matic/Twitch-o-matic.jar"
+CLASS_PATH="/usr/share/java/commons-daemon.jar":"/usr/local/twitch-o-matic/twitch-o-matic.jar"
 CLASS=com.pingwinno.Main
 USER=tom-daemon
 PID=/tmp/tom.pid
