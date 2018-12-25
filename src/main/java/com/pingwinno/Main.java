@@ -39,7 +39,10 @@ public class Main implements Daemon {
         }
         try {
             log.debug("initialize db");
-            new SqliteStreamDataHandler().initializeDB();
+            for (String user : SettingsProperties.getUser()) {
+                user = user.trim();
+                new SqliteStreamDataHandler().initializeDB(user);
+            }
             new SqliteStatusDataHandler().initializeDB();
         } catch (SQLException e) {
             log.error("DB initialization failed {} ", e);

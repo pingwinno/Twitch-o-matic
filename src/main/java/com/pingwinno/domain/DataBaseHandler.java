@@ -10,9 +10,9 @@ public class DataBaseHandler {
 
     static private org.slf4j.Logger log = LoggerFactory.getLogger(DataBaseHandler.class);
 
-    public static void writeToRemoteDB(StreamDocumentModel streamDocumentModel) {
+    public static void writeToRemoteDB(StreamDocumentModel streamDocumentModel, String user) {
         log.debug("Write to remote db...");
-        JacksonDBCollection<StreamDocumentModel, String> coll = JacksonDBCollection.wrap(MongoDBHandler.getCollection(),
+        JacksonDBCollection<StreamDocumentModel, String> coll = JacksonDBCollection.wrap(MongoDBHandler.getCollection(user),
                 StreamDocumentModel.class,
                 String.class);
         WriteResult<StreamDocumentModel, String> result = coll.insert(streamDocumentModel);

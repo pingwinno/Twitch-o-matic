@@ -43,11 +43,12 @@ public class VodDownloader {
     private StreamExtendedDataModel streamDataModel;
     private int threadsNumber = 1;
     private UUID uuid;
-    public void initializeDownload(StreamExtendedDataModel streamDataModel) throws SQLException {
 
+
+    public void initializeDownload(StreamExtendedDataModel streamDataModel) throws SQLException {
         this.streamDataModel = streamDataModel;
         uuid = streamDataModel.getUuid();
-        streamFolderPath = SettingsProperties.getRecordedStreamPath() + uuid.toString();
+        streamFolderPath = SettingsProperties.getRecordedStreamPath() + streamDataModel.getUser() + uuid.toString();
         vodId = streamDataModel.getVodId();
 
         try {
@@ -194,7 +195,7 @@ public class VodDownloader {
                 streamDocumentModel.setAnimatedPreviews(animatedPreview);
                 streamDocumentModel.setTimelinePreviews(timelinePreview);
 
-                DataBaseHandler.writeToRemoteDB(streamDocumentModel);
+                DataBaseHandler.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
                 log.info("Complete");
             }
 

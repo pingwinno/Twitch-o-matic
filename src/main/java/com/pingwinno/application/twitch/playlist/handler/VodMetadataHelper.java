@@ -53,6 +53,7 @@ public class VodMetadataHelper {
             try {
                 streamMetadata.setVodId(vodId);
                 streamMetadata.setTitle(dataObj.get("title").toString());
+                streamMetadata.setUser(dataObj.get("name").toString());
                 streamMetadata.setDate(DateConverter.convert(dataObj.get("recorded_at").toString()));
 
                 streamMetadata.setPreviewUrl((dataObj.getJSONObject("preview").get("large")).toString());

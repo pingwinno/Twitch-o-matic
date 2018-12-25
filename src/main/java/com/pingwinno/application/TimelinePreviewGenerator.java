@@ -16,7 +16,7 @@ import java.util.LinkedList;
 public class TimelinePreviewGenerator {
     public static LinkedList<PreviewModel> generate(StreamExtendedDataModel model, LinkedHashSet<ChunkModel> chunksSet)
             throws IOException {
-        Files.createDirectories(Paths.get(SettingsProperties.getRecordedStreamPath() + model.getUuid() +
+        Files.createDirectories(Paths.get(SettingsProperties.getRecordedStreamPath() + model.getUser() + model.getUuid() +
                 "/timeline_preview/"));
         LinkedList<PreviewModel> previewList = new LinkedList<>();
         ArrayList<ChunkModel> chunks = new ArrayList<>(chunksSet);
@@ -25,8 +25,8 @@ public class TimelinePreviewGenerator {
         for (ChunkModel chunkModel : chunks) {
 
             PostDownloadHandler.handleDownloadedStream("ffmpeg", "-i",
-                    SettingsProperties.getRecordedStreamPath() + model.getUuid() + "/" + chunkModel.getChunkName(),
-                    "-s", "256x144", "-vframes", "1", SettingsProperties.getRecordedStreamPath() + model.getUuid() +
+                    SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() + "/" + chunkModel.getChunkName(),
+                    "-s", "256x144", "-vframes", "1", SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() +
                             "/timeline_preview/preview" + chunkNum + ".jpg", "-y");
             PreviewModel previewModel = new PreviewModel();
             previewModel.setSrc("preview" + chunkNum + ".jpg");

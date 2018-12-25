@@ -17,14 +17,14 @@ public class AnimatedPreviewGenerator {
     public static LinkedList<PreviewModel> generate(StreamExtendedDataModel model, LinkedHashSet<ChunkModel> chunksSet) throws IOException {
         LinkedList<PreviewModel> previewList = new LinkedList<>();
         ArrayList<ChunkModel> chunks = new ArrayList<>(chunksSet);
-        Files.createDirectories(Paths.get(SettingsProperties.getRecordedStreamPath() + model.getUuid() +
+        Files.createDirectories(Paths.get(SettingsProperties.getRecordedStreamPath() + model.getUser() + model.getUuid() +
                 "/animated_preview/"));
         if (chunks.size() > 10) {
             int chunkNum = chunks.size() / 10;
             int addNum = chunkNum;
             for (int i = 0; i < 9; i++) {
                 PostDownloadHandler.handleDownloadedStream("ffmpeg", "-i",
-                        SettingsProperties.getRecordedStreamPath() + model.getUuid() + "/" + chunks.get(chunkNum).getChunkName(),
+                        SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() + "/" + chunks.get(chunkNum).getChunkName(),
                         "-s", "640x360", "-vframes", "1", SettingsProperties.getRecordedStreamPath() + model.getUuid() +
                                 "/animated_preview/preview" + i + ".jpg", "-y");
                 chunkNum = chunkNum + addNum;
@@ -39,7 +39,7 @@ public class AnimatedPreviewGenerator {
             int chunkNum = chunks.size();
             for (int i = 0; i < chunkNum; i++) {
                 PostDownloadHandler.handleDownloadedStream("ffmpeg", "-i",
-                        SettingsProperties.getRecordedStreamPath() + model.getUuid() + "/" + chunks.get(chunkNum).getChunkName(),
+                        SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() + "/" + chunks.get(chunkNum).getChunkName(),
                         "-s", "640x360", "-vframes", "1", SettingsProperties.getRecordedStreamPath() + model.getUuid() +
                                 "/animated_preview/preview" + i + ".jpg", "-y");
                 chunkNum = chunkNum + i;

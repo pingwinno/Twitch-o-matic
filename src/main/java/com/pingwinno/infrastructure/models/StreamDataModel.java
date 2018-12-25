@@ -13,18 +13,28 @@ public class StreamDataModel {
     private String title;
     @JsonProperty
     private String game;
+    @JsonProperty
+    private String user;
 
-    public StreamDataModel(UUID uuid, String date, String title, String game) {
+    public StreamDataModel(UUID uuid, String date, String title, String game, String user) {
 
         this.uuid = uuid;
         this.title = title;
         this.date = date;
         this.game = game;
     }
-    public StreamDataModel(){
+
+    public StreamDataModel() {
 
     }
 
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
 
     public String getGame() {
         return game;
@@ -38,7 +48,7 @@ public class StreamDataModel {
         return date;
     }
 
-    public void setDate (String date) {
+    public void setDate(String date) {
         this.date = date;
     }
 
@@ -50,6 +60,17 @@ public class StreamDataModel {
         this.title = title;
     }
 
+    @Override
+    public String toString() {
+        return "StreamDataModel{" +
+                "uuid=" + uuid +
+                ", date='" + date + '\'' +
+                ", title='" + title + '\'' +
+                ", game='" + game + '\'' +
+                ", user='" + user + '\'' +
+                '}';
+    }
+
     public UUID getUuid() {
         return uuid;
     }
@@ -59,7 +80,4 @@ public class StreamDataModel {
     }
 
 
-    public String toString() {
-        return ("uuid:" + uuid + ", date:" + date + ", title:" + title + ", game:" + game);
-    }
 }

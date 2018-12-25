@@ -9,16 +9,18 @@ public class StreamExtendedDataModel extends StreamDataModel {
     private String previewUrl;
     private boolean skipMuted;
 
+
     public StreamExtendedDataModel() {
         super();
     }
 
-    public StreamExtendedDataModel(UUID uuid, String date, String title, String game, String vodId, String previewUrl, boolean skipMuted) {
-        super(uuid, date, title, game);
+    public StreamExtendedDataModel(UUID uuid, String date, String title, String game, String user, String vodId, String previewUrl, boolean skipMuted) {
+        super(uuid, date, title, game, user);
         this.vodId = vodId;
         this.previewUrl = previewUrl;
         this.skipMuted = skipMuted;
     }
+
 
     public boolean isSkipMuted() {
         return skipMuted;
@@ -36,6 +38,15 @@ public class StreamExtendedDataModel extends StreamDataModel {
         this.vodId = vodId;
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + "StreamExtendedDataModel{" +
+                "vodId='" + vodId + '\'' +
+                ", previewUrl='" + previewUrl + '\'' +
+                ", skipMuted=" + skipMuted +
+                '}';
+    }
+
     public String getPreviewUrl() {
         return previewUrl;
     }
@@ -44,10 +55,5 @@ public class StreamExtendedDataModel extends StreamDataModel {
         this.previewUrl = previewUrl;
     }
 
-    @Override
-    public String toString() {
-        return ("uuid:" + super.getUuid() + ", date:" + super.getDate() + "," +
-                " title:" + super.getTitle() + ", game:" + super.getGame() +
-                " , vod id:" + vodId + " , preview URL:" + previewUrl + " , skipMuted" + skipMuted);
-    }
+
 }

@@ -4,11 +4,11 @@ package com.pingwinno.presentation.twitch.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.application.DateConverter;
 import com.pingwinno.application.StorageHelper;
+import com.pingwinno.application.twitch.playlist.handler.RecordStatusGetter;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.HashHandler;
 import com.pingwinno.infrastructure.RecordStatusList;
-import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.StartedBy;
 import com.pingwinno.infrastructure.enums.State;
@@ -28,13 +28,12 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 
-@Path("/handler")
+@Path("/handler/{user}")
 public class TwitchApiHandler {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
-    private static String lastVodId;
     
     @GET
-    public Response getSubscriptionQuery(@Context UriInfo info) {
+    public Response getSubscriptionQuery(@Context UriInfo info, @PathParam("user") String user) {
         Response response = null;
         log.debug("Incoming challenge request");
         if (info != null) {
@@ -52,7 +51,7 @@ public class TwitchApiHandler {
                 String hubChallenge = info.getQueryParameters().getFirst("hub.challenge");
                 response = Response.status(Response.Status.OK).entity(hubChallenge).build();
                 log.debug("Subscription complete {} hub.challenge is:{}", hubMode, hubChallenge);
-                log.info(" Twith-o-matic started. Waiting for stream up");
+                log.info(" Twith-o-matic started for {}. Waiting for stream up", user);
             }
         } else log.warn("Subscription query is not correct. Try restart Twitch-o-matic.");
 
@@ -62,7 +61,7 @@ public class TwitchApiHandler {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response handleStreamNotification(String stringDataModel
-            , @HeaderParam("X-Hub-Signature") String signature) throws IOException, InterruptedException, SQLException, StreamNotFoundExeption {
+            , @HeaderParam("X-Hub-Signature") String signature, @PathParam("user") String user) throws IOException, InterruptedException, SQLException, StreamNotFoundExeption {
         log.debug("Incoming stream up/down notification");
 
         if (HashHandler.compare(signature, stringDataModel)) {
@@ -73,16 +72,26 @@ public class TwitchApiHandler {
             if (notificationArray.length > 0) {
                 log.info("Stream is up");
                 NotificationDataModel notificationModel = notificationArray[0];
-                StreamExtendedDataModel streamMetadata = VodMetadataHelper.getLastVod(SettingsProperties.getUser());
+                StreamExtendedDataModel streamMetadata = VodMetadataHelper.getLastVod(user);
+
                 //check for notification duplicate
                 log.info("check for duplicate notification");
                 if (notificationModel.getType().equals("live")) {
                     if (streamMetadata.getVodId() != null) {
+                        int counter = 0;
+                        while (RecordStatusGetter.getRecordStatus(streamMetadata.getVodId()).equals("recorded")) {
+                            Thread.sleep(200 * 1000);
+                            log.warn("vod is not created yet... cycle " + counter);
+                            counter++;
+                            if (counter > 6) {
+                                throw new StreamNotFoundExeption("new vod not found");
+                            }
+                        }
                     streamMetadata.setUuid(StorageHelper.getUuidName());
 
                     new RecordStatusList().addStatus
                             (new StatusDataModel(streamMetadata.getVodId(), StartedBy.WEBHOOK, DateConverter.convert(LocalDateTime.now()),
-                                    State.INITIALIZE, streamMetadata.getUuid()));
+                                    State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
 
                     log.info("Try to start record");
                     VodDownloader vodDownloader = new VodDownloader();
