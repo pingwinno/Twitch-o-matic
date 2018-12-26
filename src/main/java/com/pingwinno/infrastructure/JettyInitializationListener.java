@@ -24,7 +24,7 @@ public class JettyInitializationListener implements LifeCycle.Listener {
         SubscriptionQueryModel json;
         try {
             HashHandler.generateKey();
-            for (String user : SettingsProperties.getUser()) {
+            for (String user : SettingsProperties.getUsers()) {
                 user = user.trim();
                 json = new SubscriptionQueryModel("subscribe",
                         "https://api.twitch.tv/helix/streams?user_id=" +

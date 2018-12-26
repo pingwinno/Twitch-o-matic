@@ -80,10 +80,10 @@ public class SettingsProperties {
         return managementServerPort;
     }
 
-    public static String[] getUser() {
+    public static String[] getUsers() {
         String[] user = null;
         try {
-            user = getProperties().getProperty("User").split(",");
+            user = getProperties().getProperty("User").trim().split(",");
         } catch (IOException e) {
             log.error("Can't read User. {}", e);
             System.exit(1);

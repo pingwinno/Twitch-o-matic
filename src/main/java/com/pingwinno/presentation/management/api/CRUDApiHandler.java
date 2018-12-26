@@ -165,10 +165,22 @@ public class CRUDApiHandler {
     @Path("/streams/{user}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getStatusList(@PathParam("user") String user) {
+    public Response getStreamsList(@PathParam("user") String user) {
         try {
             return Response.status(Response.Status.OK)
                     .entity(new ObjectMapper().writeValueAsString(new SqliteStreamDataHandler().selectAll(user))).build();
+        } catch (JsonProcessingException e) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @Path("/users")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUsersList() {
+        try {
+            return Response.status(Response.Status.OK)
+                    .entity(new ObjectMapper().writeValueAsString(SettingsProperties.getUsers())).build();
         } catch (JsonProcessingException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
