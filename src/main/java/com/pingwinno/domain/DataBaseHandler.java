@@ -20,5 +20,12 @@ public class DataBaseHandler {
 
     }
 
+    public static boolean isExist(StreamDocumentModel streamDocumentModel, String user) {
+        JacksonDBCollection<StreamDocumentModel, String> coll = JacksonDBCollection.wrap(MongoDBHandler.getCollection(user),
+                StreamDocumentModel.class,
+                String.class);
+        return (coll.findOneById(streamDocumentModel.getUuid()) == null);
+    }
+
 
 }

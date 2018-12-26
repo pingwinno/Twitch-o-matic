@@ -54,12 +54,12 @@ public class SqliteStatusDataHandler extends SqliteHandler {
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("Can't insert {}. {}", statusDataModel, e);
         }
         log.info("insert streams_status data complete");
     }
 
-    public LinkedList<StatusDataModel> selectAll() throws SQLException {
+    public LinkedList<StatusDataModel> selectAll() {
         String sqlQuery = "SELECT uuid, state, date, startedBy, vodId, user FROM streams_status";
         LinkedList<StatusDataModel> streams = new LinkedList<>();
         try (Connection conn = this.connect();

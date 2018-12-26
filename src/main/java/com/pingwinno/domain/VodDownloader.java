@@ -194,7 +194,9 @@ public class VodDownloader {
             streamDocumentModel.setAnimatedPreviews(animatedPreview);
             streamDocumentModel.setTimelinePreviews(timelinePreview);
 
-            DataBaseHandler.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
+            if (DataBaseHandler.isExist(streamDocumentModel, streamDataModel.getUser())) {
+                DataBaseHandler.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
+            }
             log.info("Complete");
         }
 

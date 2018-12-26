@@ -9,7 +9,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.sql.SQLException;
 
 @Path("/status_api")
 public class StatusApiHandler {
@@ -20,7 +19,7 @@ public class StatusApiHandler {
         try {
             return Response.status(Response.Status.OK)
                     .entity(new ObjectMapper().writeValueAsString(new SqliteStatusDataHandler().selectAll())).build();
-        } catch (JsonProcessingException | SQLException e) {
+        } catch (JsonProcessingException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }
