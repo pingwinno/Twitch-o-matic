@@ -48,7 +48,7 @@ public class VodDownloader {
     public void initializeDownload(StreamExtendedDataModel streamDataModel) throws SQLException {
         this.streamDataModel = streamDataModel;
         uuid = streamDataModel.getUuid();
-        streamFolderPath = SettingsProperties.getRecordedStreamPath() + streamDataModel.getUser() + uuid.toString();
+        streamFolderPath = SettingsProperties.getRecordedStreamPath() + streamDataModel.getUser() + "/" + uuid.toString();
         vodId = streamDataModel.getVodId();
 
         try {
