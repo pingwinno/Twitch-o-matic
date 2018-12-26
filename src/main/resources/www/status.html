@@ -57,7 +57,7 @@
 
     function write() {
         $("#table").empty();
-        $.getJSON(path + "status", function (data) {
+        $.getJSON(path + "status_list", function (data) {
             data.sort(function (a, b) {
                 var first = new Date(a["date"].replace('T', ' ').replace('Z', ''));
                 var second = new Date(b["date"].replace('T', ' ').replace('Z', ''));
