@@ -129,7 +129,7 @@ public class CRUDApiHandler {
         return response;
     }
 
-    @Path("{user}/{uuid}")
+    @Path("/{user}/{uuid}")
     @DELETE
     public Response deleteStream(@PathParam("uuid") String uuid, @PathParam("user") String user, @QueryParam("delete_media") String deleteMedia) {
 
