@@ -17,7 +17,7 @@ public class AnimatedPreviewGenerator {
     public static LinkedList<PreviewModel> generate(StreamExtendedDataModel model, LinkedHashSet<ChunkModel> chunksSet) throws IOException {
         LinkedList<PreviewModel> previewList = new LinkedList<>();
         ArrayList<ChunkModel> chunks = new ArrayList<>(chunksSet);
-        Files.createDirectories(Paths.get(SettingsProperties.getRecordedStreamPath() + model.getUser() + model.getUuid() +
+        Files.createDirectories(Paths.get(SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() +
                 "/animated_preview/"));
         if (chunks.size() > 10) {
             int chunkNum = chunks.size() / 10;

@@ -26,11 +26,7 @@ public class Main implements Daemon {
 
         org.slf4j.Logger log = LoggerFactory.getLogger(Main.class.getName());
 
-        try {
-            RecoveryRecordHandler.recoverUncompletedRecordTask();
-        } catch (SQLException | IOException | InterruptedException | IllegalStateException ignore) {
-            log.error("Can't recover list {}");
-        }
+
         if (!SettingsProperties.getMongoDBAddress().trim().equals("")) {
             log.info("Connect to MongoDB...");
             MongoDBHandler.connect();
@@ -65,6 +61,12 @@ public class Main implements Daemon {
             new Thread(ManagementServer::start).start();
         } else {
             log.info("Management server is disabled");
+        }
+
+        try {
+            RecoveryRecordHandler.recoverUncompletedRecordTask();
+        } catch (SQLException | IOException | InterruptedException | IllegalStateException ignore) {
+            log.error("Can't recover list {}");
         }
     }
 

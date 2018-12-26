@@ -16,7 +16,7 @@ import java.util.LinkedList;
 public class TimelinePreviewGenerator {
     public static LinkedList<PreviewModel> generate(StreamExtendedDataModel model, LinkedHashSet<ChunkModel> chunksSet)
             throws IOException {
-        Files.createDirectories(Paths.get(SettingsProperties.getRecordedStreamPath() + model.getUser() + model.getUuid() +
+        Files.createDirectories(Paths.get(SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() +
                 "/timeline_preview/"));
         LinkedList<PreviewModel> previewList = new LinkedList<>();
         ArrayList<ChunkModel> chunks = new ArrayList<>(chunksSet);
