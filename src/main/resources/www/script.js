@@ -1,11 +1,22 @@
 var path = window.location.origin+"/management_api/";
+var user = "";
+
+$.getJSON(path + "users", function (data) {
+    jQuery.each(data, function (index, value) {
+        $("#userSelect").append("<option>" + value + "</option>");
+    });
+    user = $("#userSelect option:selected").text();
+    write(user);
+});
+
 function write() {
     $("#table").empty();
-    $.getJSON(path + "streams", function (data) {
+    $.getJSON(path + "streams/" + user, function (data) {
         data.sort(function (a, b) {
-        return (b["date"] > a["date"]) ? 1 : ((b["date"] < a["date"]) ? -1 : 0);
+            return (b["date"] > a["date"]) ? 1 : ((b["date"] < a["date"]) ? -1 : 0);
         });
         jQuery.each(data, function (index, value) {
+
             $("#table").append(
                 "<tr>" +
                 "<th scope='row'>" + value.uuid + "</th>" +
@@ -14,7 +25,7 @@ function write() {
                 "<td><textarea style='height:75px;' class='form-control' " +
                 "onchange='titleReWrite(this)' " +
                 "id='" + value.uuid + "Date' readonly>" + value.date + "</textarea>" +
-                "<label>" + timeConverter(value.date) + "</label></td>" +
+                "<label id='" + value.uuid + "CD'>" + timeConverter(value.date) + "</label></td>" +
 
                 "<td><textarea style='height:115px;' class='form-control' id='" + value.uuid + "Game' readonly>" + value.game + " </textarea></td>" +
                 "<td class='form text-right'>" +
@@ -53,10 +64,9 @@ function search(sender) {
     }
 }
 
-write();
-
 function titleReWrite(sender) {
-    sender.parentElement.lastChild.innerHTML = timeConverter(sender.value.trim());
+    var label = sender.parentElement.lastChild;
+    label.innerHTML = timeConverter(sender.value.trim());
 }
 
 function edit(sender, uuid) {
@@ -93,7 +103,8 @@ function confirmEddition(sender, uuid, prevData) {
             uuid: uuid,
             date: Date.value,
             title: Title.value,
-            game: Game.value
+            game: Game.value,
+            user: user
         };
 
         $.ajax({
@@ -109,9 +120,9 @@ function confirmEddition(sender, uuid, prevData) {
         Game.value = prevData.game;
     }
 }
-
+//done
 function deleteStrem(uuid) {
-    axios.delete(path + uuid, {
+    axios.delete(path + user + "/" + uuid, {
         params: {
             deleteMedia: document.getElementById(uuid + "Media").checked
         }
@@ -122,8 +133,8 @@ function deleteStrem(uuid) {
 function validateMain() {
     var data = {
         uuid: document.getElementById("validateUUID").value,
-        vodId: document.getElementById("validateVOD").value,
-        skipMuted: document.getElementById("validateSkipMuted").checked
+        skipMuted: document.getElementById("validateSkipMuted").checked,
+        vodId: document.getElementById("validateVOD").value
     };
 
     $.ajax({
@@ -133,7 +144,6 @@ function validateMain() {
         dataType: "json",
         contentType: "application/json; charset=utf-8"
     });
-    write();
 }
 
 function validate(uuid) {
@@ -146,8 +156,8 @@ function validate(uuid) {
 
     var data = {
         uuid: uuid,
-        vodId: vodId,
-        skipMuted: document.getElementById(uuid + "Mute").checked
+        skipMuted: document.getElementById(uuid + "Mute").checked,
+        vodId: vodId
     };
 
     $.ajax({
@@ -157,7 +167,6 @@ function validate(uuid) {
         dataType: "json",
         contentType: "application/json; charset=utf-8"
     });
-    write();
 }
 
 function add() {

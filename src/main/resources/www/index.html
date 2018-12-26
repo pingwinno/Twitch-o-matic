@@ -27,7 +27,6 @@
         textarea {
             resize: none;
         }
-
     </style>
 </head>
 <body>
@@ -45,6 +44,17 @@
             </ul>
         </div>
     </nav>
+    <div class="form-group container p-3">
+        <label for="userSelect">Выбери свою стримершу:</label>
+        <select class="form-control" id="userSelect">я</select>
+        <script>
+            $("#userSelect").change(function () {
+                user = $("#userSelect option:selected").text();
+                write(user);
+            });
+
+        </script>
+    </div>
     <div class='container p-3'>
         <b>Add</b>
         <table class='table table-bordered'>

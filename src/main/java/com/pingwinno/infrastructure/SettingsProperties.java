@@ -81,14 +81,14 @@ public class SettingsProperties {
     }
 
     public static String[] getUsers() {
-        String[] user = null;
+        String[] users = null;
         try {
-            user = getProperties().getProperty("User").trim().split(",");
+            users = getProperties().getProperty("User").replace(" ", "").split(",");
         } catch (IOException e) {
             log.error("Can't read User. {}", e);
             System.exit(1);
         }
-        return user;
+        return users;
     }
 
     public static String getRecordedStreamPath() {

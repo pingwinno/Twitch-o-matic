@@ -131,7 +131,7 @@ public class CRUDApiHandler {
 
     @Path("{user}/{uuid}")
     @DELETE
-    public Response deleteStream(@PathParam("uuid") String uuid, @PathParam("user") String user, @QueryParam("delete_media") String deleteMedia) {
+    public Response deleteStream(@PathParam("uuid") String uuid, @PathParam("user") String user, @QueryParam("deleteMedia") String deleteMedia) {
 
         SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
         sqliteHandler.delete(uuid, user);

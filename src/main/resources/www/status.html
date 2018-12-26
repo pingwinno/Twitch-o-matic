@@ -16,6 +16,9 @@
             integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49'></script>
     <script src='bootstrap.min.js' crossorigin='anonymous'
             integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy'></script>
+
+    <script src='axios.js'></script>
+
     <title>Status</title>
 </head>
 <body>
@@ -28,7 +31,7 @@
                     <a class="nav-link" href="index.html">Management</a>
                 </li>
                 <li class="nav-item active">
-                    <a class="nav-link" href="#">Status</a>
+                    <a class="nav-link" href="#">Link</a>
                 </li>
             </ul>
         </div>
@@ -50,17 +53,19 @@
     </div>
 </div>
 <script type="application/javascript">
-    var path = window.location.origin+"/status_api/";
+    var path = "http://localhost:12345/";
 
     function write() {
         $("#table").empty();
-        $.getJSON(path + "status_list", function (data) {
+        $.getJSON(path + "status", function (data) {
             data.sort(function (a, b) {
                 var first = new Date(a["date"].replace('T', ' ').replace('Z', ''));
                 var second = new Date(b["date"].replace('T', ' ').replace('Z', ''));
                 return (second > first) ? 1 : (second < first) ? -1 : 0;
             });
             jQuery.each(data, function (index, value) {
+                var a = value.date.replace('T', ' ').replace('Z', '');
+                console.log(a, new Date(a));
                 $("#table").append(
                     "<tr>" +
                     "<th scope='row'>" + value.uuid + "</th>" +
@@ -92,7 +97,6 @@
     }
 
     write();
-
 </script>
 </body>
 </html>
