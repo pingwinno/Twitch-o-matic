@@ -83,7 +83,8 @@ public class SettingsProperties {
     public static String[] getUsers() {
         String[] users = null;
         try {
-            users = getProperties().getProperty("User").replace(" ", "").split(",");
+            users = getProperties().getProperty("User").toLowerCase().
+                    replace(" ", "").split(",");
         } catch (IOException e) {
             log.error("Can't read User. {}", e);
             System.exit(1);

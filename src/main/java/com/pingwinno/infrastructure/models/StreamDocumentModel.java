@@ -1,10 +1,13 @@
 package com.pingwinno.infrastructure.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.pingwinno.infrastructure.DocumentModelSerializer;
 
 import java.util.Date;
 import java.util.LinkedList;
 
+@JsonSerialize(using = DocumentModelSerializer.class)
 public class StreamDocumentModel {
 
     @JsonProperty("_id")
@@ -13,8 +16,8 @@ public class StreamDocumentModel {
     private String title;
     private String game;
     private long duration;
-    private LinkedList<PreviewModel> animatedPreviews;
-    private LinkedList<PreviewModel> timelinePreviews;
+    private LinkedList<AnimatedPreviewModel> animatedPreviews;
+    private LinkedList<TimelinePreviewModel> timelinePreviews;
 
     public String getUuid() {
         return uuid;
@@ -57,22 +60,22 @@ public class StreamDocumentModel {
     }
 
     @JsonProperty("animated_preview")
-    public LinkedList<PreviewModel> getAnimatedPreviews() {
+    public LinkedList<AnimatedPreviewModel> getAnimatedPreviews() {
         return animatedPreviews;
     }
 
     @JsonProperty("animated_preview")
-    public void setAnimatedPreviews(LinkedList<PreviewModel> animatedPreviews) {
+    public void setAnimatedPreviews(LinkedList<AnimatedPreviewModel> animatedPreviews) {
         this.animatedPreviews = animatedPreviews;
     }
 
     @JsonProperty("timeline_preview")
-    public LinkedList<PreviewModel> getTimelinePreviews() {
+    public LinkedList<TimelinePreviewModel> getTimelinePreviews() {
         return timelinePreviews;
     }
 
     @JsonProperty("timeline_preview")
-    public void setTimelinePreviews(LinkedList<PreviewModel> timelinePreviews) {
+    public void setTimelinePreviews(LinkedList<TimelinePreviewModel> timelinePreviews) {
         this.timelinePreviews = timelinePreviews;
     }
 

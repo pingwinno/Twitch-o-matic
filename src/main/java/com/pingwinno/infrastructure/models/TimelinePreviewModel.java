@@ -1,14 +1,11 @@
 package com.pingwinno.infrastructure.models;
 
-
-public class PreviewModel {
+//@JsonSerialize(using = PreviewModelSerializer.class)
+public class TimelinePreviewModel {
 
     private int index;
-    private String src;
 
-    public void setSrc(String src) {
-        this.src = src;
-    }
+    private LinkModel src;
 
     public int getIndex() {
         return index;
@@ -19,8 +16,12 @@ public class PreviewModel {
 
     }
 
-    public String getsrc() {
+    public LinkModel getLink() {
         return src;
+    }
+
+    public void setLink(LinkModel src) {
+        this.src = src;
     }
 
 

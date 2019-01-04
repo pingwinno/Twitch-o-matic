@@ -8,10 +8,7 @@ import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.State;
-import com.pingwinno.infrastructure.models.ChunkModel;
-import com.pingwinno.infrastructure.models.PreviewModel;
-import com.pingwinno.infrastructure.models.StreamDocumentModel;
-import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
+import com.pingwinno.infrastructure.models.*;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
@@ -180,8 +177,8 @@ public class VodDownloader {
         }
         if (!SettingsProperties.getMongoDBAddress().equals("")) {
             log.info("write to remote db");
-            LinkedList<PreviewModel> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, chunks);
-            LinkedList<PreviewModel> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, chunks);
+            LinkedList<AnimatedPreviewModel> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, chunks);
+            LinkedList<TimelinePreviewModel> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, chunks);
 
             StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
             streamDocumentModel.setUuid(streamDataModel.getUuid().toString());

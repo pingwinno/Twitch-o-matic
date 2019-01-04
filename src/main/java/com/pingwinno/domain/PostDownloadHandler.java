@@ -21,7 +21,7 @@ public class PostDownloadHandler {
             String line = " ";
             while (line != null) {
                 line = r.readLine();
-                log.info(line);
+                log.trace(line);
             }
         } catch (IOException e) {
             log.error("Can't run command. Exception: {}", e);

@@ -1,9 +1,12 @@
 package com.pingwinno.domain;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.models.StreamDocumentModel;
 import org.mongojack.JacksonDBCollection;
-import org.mongojack.WriteResult;
 import org.slf4j.LoggerFactory;
 
 public class DataBaseHandler {
@@ -15,7 +18,14 @@ public class DataBaseHandler {
         JacksonDBCollection<StreamDocumentModel, String> coll = JacksonDBCollection.wrap(MongoDBHandler.getCollection(user),
                 StreamDocumentModel.class,
                 String.class);
-        WriteResult<StreamDocumentModel, String> result = coll.insert(streamDocumentModel);
+        DBObject obj = null;
+        try {
+            obj = (DBObject) JSON.parse(new ObjectMapper().writeValueAsString(streamDocumentModel));
+        } catch (JsonProcessingException e) {
+            log.error("parse error {}", e);
+        }
+
+        MongoDBHandler.getCollection(user).insert(obj);
         log.trace("Remote db endpoint: {}", SettingsProperties.getMongoDBAddress());
 
     }
