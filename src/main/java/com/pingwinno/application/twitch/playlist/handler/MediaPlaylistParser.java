@@ -24,7 +24,7 @@ public class MediaPlaylistParser {
                 if (skipMuted && !chunk.contains("muted")) {
 
                     chunks.add(new ChunkModel(chunk, Double.parseDouble(replace)));
-                } else {
+                } else if (!skipMuted) {
 
                     chunks.add(new ChunkModel(chunk, Double.parseDouble(replace)));
                 }

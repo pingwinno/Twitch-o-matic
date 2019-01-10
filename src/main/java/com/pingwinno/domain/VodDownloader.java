@@ -76,7 +76,7 @@ public class VodDownloader {
             vodId = streamDataModel.getVodId();
 
             String m3u8Link = MasterPlaylistParser.parse(
-                    masterPlaylistDownloader.getPlaylist(vodId));
+                    masterPlaylistDownloader.getPlaylist(vodId), SettingsProperties.getStreamQuality());
             //if stream  exist
             if (m3u8Link != null) {
                 String streamPath = StreamPathExtractor.extract(m3u8Link);
@@ -112,7 +112,7 @@ public class VodDownloader {
         boolean status = false;
         try {
             String m3u8Link = MasterPlaylistParser.parse(
-                    masterPlaylistDownloader.getPlaylist(vodId));
+                    masterPlaylistDownloader.getPlaylist(vodId), SettingsProperties.getStreamQuality());
             String streamPath = StreamPathExtractor.extract(m3u8Link);
 
             LinkedHashSet<ChunkModel> refreshedPlaylist =
@@ -168,7 +168,7 @@ public class VodDownloader {
         downloadFile(VodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), "preview.jpg");
         log.debug("Download m3u8");
         MediaPlaylistWriter.write(new MediaPlaylistDownloader().getMediaPlaylist(MasterPlaylistParser.parse
-                (new MasterPlaylistDownloader().getPlaylist(vodId))), streamFolderPath);
+                (new MasterPlaylistDownloader().getPlaylist(vodId), SettingsProperties.getStreamQuality())), streamFolderPath);
         try {
             log.debug("write to local db");
             SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
@@ -189,7 +189,8 @@ public class VodDownloader {
             streamDocumentModel.setGame(streamDataModel.getGame());
 
             streamDocumentModel.setDuration(MediaPlaylistParser.getTotalSec(new MediaPlaylistDownloader().
-                    getMediaPlaylist(MasterPlaylistParser.parse(new MasterPlaylistDownloader().getPlaylist(vodId)))));
+                    getMediaPlaylist(MasterPlaylistParser.parse(new MasterPlaylistDownloader().
+                            getPlaylist(vodId), SettingsProperties.getStreamQuality()))));
             streamDocumentModel.setAnimatedPreviews(animatedPreview);
             streamDocumentModel.setTimelinePreviews(timelinePreview);
 
