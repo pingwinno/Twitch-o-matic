@@ -108,8 +108,8 @@ public class VodDownloader {
         }
     }
 
-    synchronized private void refreshDownload() throws InterruptedException, SQLException {
-        boolean status;
+    synchronized private boolean refreshDownload() throws InterruptedException, SQLException {
+        boolean status = false;
         try {
             String m3u8Link = MasterPlaylistParser.parse(
                     masterPlaylistDownloader.getPlaylist(vodId));
@@ -132,7 +132,7 @@ public class VodDownloader {
                             try {
                                 new RecordStatusList().changeState(uuid, State.ERROR);
                             } catch (SQLException e1) {
-                                log.error("{}",e1);
+                                log.error("{}", e1);
                             }
                             log.error("Chunk download error. {}", e);
                         }
@@ -147,6 +147,7 @@ public class VodDownloader {
             log.error("Vod downloader refresh failed. {}", e);
             stopRecord();
         }
+        return status;
     }
 
     private void recordCycle() throws IOException, InterruptedException, URISyntaxException, SQLException, StreamNotFoundExeption {
@@ -156,12 +157,13 @@ public class VodDownloader {
             Thread.sleep(20 * 1000);
         }
         log.info("Finalize record...");
-
-        log.info("Wait for renewing playlist");
-        Thread.sleep(40 * 1000);
+        int counter = 0;
+        while ((!this.refreshDownload()) && (counter <= 10)) {
+            log.info("Wait for renewing playlist");
+            Thread.sleep(5 * 1000);
+            counter++;
+        }
         log.info("End of list. Downloading last chunks");
-        this.refreshDownload();
-
         log.debug("Download preview");
         downloadFile(VodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), "preview.jpg");
         log.debug("Download m3u8");
@@ -213,7 +215,7 @@ public class VodDownloader {
                     fileName = fileName.replace("-muted", "");
                 }
                 Files.copy(in, Paths.get(streamFolderPath + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
-                if (Integer.parseInt(fileName.replaceAll(".ts", ""))%10 == 0) {
+                if (Integer.parseInt(fileName.replaceAll(".ts", "")) % 10 == 0) {
                     log.info(fileName + " complete");
                 }
                 log.trace(fileName + " complete");
