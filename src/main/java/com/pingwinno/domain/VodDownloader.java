@@ -160,7 +160,7 @@ public class VodDownloader {
         int counter = 0;
         while ((!this.refreshDownload()) && (counter <= 10)) {
             log.info("Wait for renewing playlist");
-            Thread.sleep(5 * 1000);
+            Thread.sleep(10 * 1000);
             counter++;
         }
         log.info("End of list. Downloading last chunks");

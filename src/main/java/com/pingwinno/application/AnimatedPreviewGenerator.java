@@ -37,7 +37,7 @@ public class AnimatedPreviewGenerator {
 
         } else {
             int chunkNum = chunks.size();
-            for (int i = 0; i < chunkNum; i++) {
+            for (int i = 0; i < chunkNum - 1; i++) {
                 PostDownloadHandler.handleDownloadedStream("ffmpeg", "-i",
                         SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() + "/" + chunks.get(chunkNum).getChunkName(),
                         "-s", "640x360", "-vframes", "1", SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() +
