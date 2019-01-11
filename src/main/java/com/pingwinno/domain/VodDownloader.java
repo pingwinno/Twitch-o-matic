@@ -57,6 +57,7 @@ public class VodDownloader {
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
+            new RecordStatusList().changeState(uuid, State.ERROR);
         }
         try {
             new RecordStatusList().changeState(uuid, State.RUNNING);
@@ -89,7 +90,12 @@ public class VodDownloader {
                         try {
                             downloadChunk(streamPath, chunkName);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            try {
+                                new RecordStatusList().changeState(uuid, State.ERROR);
+                            } catch (SQLException e1) {
+                                log.error("{}", e1);
+                            }
+                            log.error("Chunk download error. {}", e);
                         }
                     };
                     executorService.execute(runnable);
@@ -104,6 +110,7 @@ public class VodDownloader {
             this.recordCycle();
         } catch (IOException | URISyntaxException | InterruptedException | SQLException | StreamNotFoundExeption e) {
             log.error("Vod downloader initialization failed. {}", e);
+            new RecordStatusList().changeState(uuid, State.ERROR);
             stopRecord();
         }
     }
@@ -145,6 +152,7 @@ public class VodDownloader {
             executorService.awaitTermination(10, TimeUnit.MINUTES);
         } catch (IOException | URISyntaxException e) {
             log.error("Vod downloader refresh failed. {}", e);
+            new RecordStatusList().changeState(uuid, State.ERROR);
             stopRecord();
         }
         return status;
