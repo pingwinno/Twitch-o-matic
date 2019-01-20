@@ -183,9 +183,8 @@ public class VodDownloader {
             log.debug("write to local db");
             SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
             sqliteHandler.insert(streamDataModel);
-        } catch (Exception e) {
+        } catch (Exception ignore) {
             log.warn("Write to db failed. Skip.");
-            log.warn("Stacktrace {}", e);
         }
 
         LinkedList<AnimatedPreviewModel> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, chunks);
