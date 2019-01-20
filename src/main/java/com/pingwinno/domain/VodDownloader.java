@@ -166,11 +166,13 @@ public class VodDownloader {
         }
         log.info("Finalize record...");
         int counter = 0;
-        while ((!this.refreshDownload()) && (counter <= 0)) {
+        while ((!this.refreshDownload()) && (counter <= 10)) {
             log.info("Wait for renewing playlist");
             Thread.sleep(10 * 1000);
             counter++;
         }
+        Thread.sleep(100 * 1000);
+        refreshDownload();
         log.info("End of list. Downloading last chunks");
         log.debug("Download preview");
         downloadFile(VodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), "preview.jpg");
@@ -186,20 +188,20 @@ public class VodDownloader {
             log.warn("Stacktrace {}", e);
         }
 
-            LinkedList<AnimatedPreviewModel> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, chunks);
-            LinkedList<TimelinePreviewModel> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, chunks);
+        LinkedList<AnimatedPreviewModel> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, chunks);
+        LinkedList<TimelinePreviewModel> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, chunks);
 
-            StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
-            streamDocumentModel.setUuid(streamDataModel.getUuid().toString());
-            streamDocumentModel.setTitle(streamDataModel.getTitle());
-            streamDocumentModel.setDate(Date.from(Instant.ofEpochMilli(Long.parseLong(streamDataModel.getDate()))));
-            streamDocumentModel.setGame(streamDataModel.getGame());
+        StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
+        streamDocumentModel.setUuid(streamDataModel.getUuid().toString());
+        streamDocumentModel.setTitle(streamDataModel.getTitle());
+        streamDocumentModel.setDate(Date.from(Instant.ofEpochMilli(Long.parseLong(streamDataModel.getDate()))));
+        streamDocumentModel.setGame(streamDataModel.getGame());
 
-            streamDocumentModel.setDuration(MediaPlaylistParser.getTotalSec(new MediaPlaylistDownloader().
-                    getMediaPlaylist(MasterPlaylistParser.parse(new MasterPlaylistDownloader().
-                            getPlaylist(vodId), SettingsProperties.getStreamQuality()))));
-            streamDocumentModel.setAnimatedPreviews(animatedPreview);
-            streamDocumentModel.setTimelinePreviews(timelinePreview);
+        streamDocumentModel.setDuration(MediaPlaylistParser.getTotalSec(new MediaPlaylistDownloader().
+                getMediaPlaylist(MasterPlaylistParser.parse(new MasterPlaylistDownloader().
+                        getPlaylist(vodId), SettingsProperties.getStreamQuality()))));
+        streamDocumentModel.setAnimatedPreviews(animatedPreview);
+        streamDocumentModel.setTimelinePreviews(timelinePreview);
         if (!SettingsProperties.getMongoDBAddress().equals("")) {
             log.info("write to remote db");
             if (DataBaseHandler.isExist(streamDocumentModel, streamDataModel.getUser())) {
