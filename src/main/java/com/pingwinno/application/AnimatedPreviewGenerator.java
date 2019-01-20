@@ -24,7 +24,7 @@ public class AnimatedPreviewGenerator {
         Files.createDirectories(Paths.get(pathString + "/animated_preview/"));
         if (chunks.size() > 10) {
             int chunkNum = 0;
-            int offset = chunkNum;
+            int offset = chunks.size() / 10;
             for (int i = 0; i < 10; i++) {
                 String path = pathString + "/" + chunks.get(chunkNum).getChunkName();
                 log.trace(path);

@@ -15,14 +15,15 @@ public class FrameGrabber {
         FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(path);
         grabber.start();
         log.trace("started");
-        Frame rawFrame = grabber.grab();
+        Frame rawFrame = grabber.grabImage();
         BufferedImage frame = new Java2DFrameConverter().getBufferedImage(rawFrame);
+
         log.trace("grabbed {}", frame.toString());
 
         grabber.stop();
 
 
-        return frame;
+        return FrameResize.resize(frame,width, height);
     }
 
 }

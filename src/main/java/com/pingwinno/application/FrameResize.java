@@ -7,7 +7,7 @@ public class FrameResize {
     public static BufferedImage resize(BufferedImage frame, int newWidth, int newHeight) {
         int oldWidth = frame.getWidth();
         int oldHeight = frame.getHeight();
-        BufferedImage resizedFrame = new BufferedImage(newWidth, newWidth, frame.getType());
+        BufferedImage resizedFrame = new BufferedImage(newWidth, newHeight, frame.getType());
         Graphics2D drawler = resizedFrame.createGraphics();
         drawler.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                 RenderingHints.VALUE_INTERPOLATION_BILINEAR);

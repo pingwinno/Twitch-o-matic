@@ -166,7 +166,7 @@ public class VodDownloader {
         }
         log.info("Finalize record...");
         int counter = 0;
-        while ((!this.refreshDownload()) && (counter <= 10)) {
+        while ((!this.refreshDownload()) && (counter <= 0)) {
             log.info("Wait for renewing playlist");
             Thread.sleep(10 * 1000);
             counter++;
@@ -185,8 +185,7 @@ public class VodDownloader {
             log.warn("Write to db failed. Skip.");
             log.warn("Stacktrace {}", e);
         }
-        if (!SettingsProperties.getMongoDBAddress().equals("")) {
-            log.info("write to remote db");
+
             LinkedList<AnimatedPreviewModel> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, chunks);
             LinkedList<TimelinePreviewModel> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, chunks);
 
@@ -201,7 +200,8 @@ public class VodDownloader {
                             getPlaylist(vodId), SettingsProperties.getStreamQuality()))));
             streamDocumentModel.setAnimatedPreviews(animatedPreview);
             streamDocumentModel.setTimelinePreviews(timelinePreview);
-
+        if (!SettingsProperties.getMongoDBAddress().equals("")) {
+            log.info("write to remote db");
             if (DataBaseHandler.isExist(streamDocumentModel, streamDataModel.getUser())) {
                 DataBaseHandler.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
             }
