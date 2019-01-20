@@ -1,11 +1,13 @@
 package com.pingwinno.application;
 
-import com.pingwinno.domain.PostDownloadHandler;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.models.AnimatedPreviewModel;
 import com.pingwinno.infrastructure.models.ChunkModel;
 import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
+import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -14,20 +16,21 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 
 public class AnimatedPreviewGenerator {
+    private static org.slf4j.Logger log = LoggerFactory.getLogger(AnimatedPreviewGenerator.class.getName());
     public static LinkedList<AnimatedPreviewModel> generate(StreamExtendedDataModel model, LinkedHashSet<ChunkModel> chunksSet) throws IOException {
         LinkedList<AnimatedPreviewModel> previewList = new LinkedList<>();
         ArrayList<ChunkModel> chunks = new ArrayList<>(chunksSet);
-        Files.createDirectories(Paths.get(SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() +
-                "/animated_preview/"));
+        String pathString = SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid();
+        Files.createDirectories(Paths.get(pathString + "/animated_preview/"));
         if (chunks.size() > 10) {
-            int chunkNum = chunks.size() / 10;
-            int addNum = 0;
+            int chunkNum = 0;
+            int offset = chunkNum;
             for (int i = 0; i < 10; i++) {
-                PostDownloadHandler.handleDownloadedStream("ffmpeg", "-i",
-                        SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() + "/" + chunks.get(chunkNum).getChunkName(),
-                        "-s", "640x360", "-vframes", "1", SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() +
-                                "/animated_preview/preview" + i + ".jpg", "-y");
-                chunkNum = chunkNum + addNum;
+                String path = pathString + "/" + chunks.get(chunkNum).getChunkName();
+                log.trace(path);
+                ImageIO.write(FrameGrabber.getFrame(path, 640, 360),
+                        "jpeg", new File(pathString + "/animated_preview/preview" + i + ".jpg"));
+                chunkNum += offset;
                 AnimatedPreviewModel animatedPreviewModel = new AnimatedPreviewModel();
                 animatedPreviewModel.setSrc("preview" + i + ".jpg");
                 animatedPreviewModel.setIndex(i);
@@ -36,13 +39,13 @@ public class AnimatedPreviewGenerator {
             return previewList;
 
         } else {
-            int chunkNum = chunks.size();
-            for (int i = 0; i < chunkNum - 1; i++) {
-                PostDownloadHandler.handleDownloadedStream("ffmpeg", "-i",
-                        SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() + "/" + chunks.get(chunkNum).getChunkName(),
-                        "-s", "640x360", "-vframes", "1", SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() +
-                                "/animated_preview/preview" + i + ".jpg", "-y");
-                chunkNum = chunkNum + i;
+            int chunkNum = 0;
+            for (int i = 0; i < chunks.size(); i++) {
+                String path = pathString + "/" + chunks.get(chunkNum).getChunkName();
+                log.trace(path);
+                ImageIO.write(FrameGrabber.getFrame(path, 640, 360),
+                        "jpeg", new File(pathString + "/animated_preview/preview" + i + ".jpg"));
+                chunkNum += i;
                 AnimatedPreviewModel animatedPreviewModel = new AnimatedPreviewModel();
                 animatedPreviewModel.setSrc("preview" + i + ".jpg");
                 animatedPreviewModel.setIndex(i);

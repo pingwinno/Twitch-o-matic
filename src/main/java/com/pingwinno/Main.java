@@ -26,7 +26,6 @@ public class Main implements Daemon {
 
         org.slf4j.Logger log = LoggerFactory.getLogger(Main.class.getName());
 
-
         if (!SettingsProperties.getMongoDBAddress().trim().equals("")) {
             log.info("Connect to MongoDB...");
             MongoDBHandler.connect();
