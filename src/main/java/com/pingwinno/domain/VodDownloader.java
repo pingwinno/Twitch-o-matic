@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -87,16 +88,7 @@ public class VodDownloader {
                 for (ChunkModel chunk : chunks) {
                     String chunkName = chunk.getChunkName();
                     Runnable runnable = () -> {
-                        try {
                             downloadChunk(streamPath, chunkName);
-                        } catch (IOException e) {
-                            try {
-                                new RecordStatusList().changeState(uuid, State.ERROR);
-                            } catch (SQLException e1) {
-                                log.error("{}", e1);
-                            }
-                            log.error("Chunk download error. {}", e);
-                        }
                     };
                     executorService.execute(runnable);
                 }
@@ -133,16 +125,7 @@ public class VodDownloader {
                 if (status) {
                     String chunkName = chunk.getChunkName();
                     Runnable runnable = () -> {
-                        try {
-                            downloadChunk(streamPath, chunkName);
-                        } catch (IOException e) {
-                            try {
-                                new RecordStatusList().changeState(uuid, State.ERROR);
-                            } catch (SQLException e1) {
-                                log.error("{}", e1);
-                            }
-                            log.error("Chunk download error. {}", e);
-                        }
+                        downloadChunk(streamPath, chunkName);
                     };
                     executorService.execute(runnable);
                 }
@@ -214,24 +197,39 @@ public class VodDownloader {
     }
 
 
-    private void downloadChunk(String streamPath, String fileName) throws IOException {
-        URL website = new URL(streamPath + "/" + fileName);
-        URLConnection connection = website.openConnection();
-        if ((!Files.exists(Paths.get(streamFolderPath + "/" + fileName))) ||
-                (connection.getContentLengthLong() != Files.size((Paths.get(streamFolderPath + "/" + fileName))))) {
+    private void downloadChunk(String streamPath, String fileName) {
+        URL website = null;
+        int failsCounter = 0;
+        try {
+            website = new URL(streamPath + "/" + fileName);
 
-            try (InputStream in = website.openStream()) {
-                if (fileName.contains("muted")) {
-                    fileName = fileName.replace("-muted", "");
+            URLConnection connection = website.openConnection();
+            if ((!Files.exists(Paths.get(streamFolderPath + "/" + fileName))) ||
+                    (connection.getContentLengthLong() != Files.size((Paths.get(streamFolderPath + "/" + fileName))))) {
+
+                try (InputStream in = website.openStream()) {
+                    if (fileName.contains("muted")) {
+                        fileName = fileName.replace("-muted", "");
+                    }
+                    Files.copy(in, Paths.get(streamFolderPath + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
+                    if (Integer.parseInt(fileName.replaceAll(".ts", "")) % 10 == 0) {
+                        log.info(fileName + " complete");
+                    }
+                    log.trace(fileName + " complete");
                 }
-                Files.copy(in, Paths.get(streamFolderPath + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
-                if (Integer.parseInt(fileName.replaceAll(".ts", "")) % 10 == 0) {
-                    log.info(fileName + " complete");
-                }
-                log.trace(fileName + " complete");
+            } else {
+                log.trace("Chunk {} exist. Skipping...");
             }
-        } else {
-            log.info("Chunk exist. Skipping...");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            failsCounter++;
+            log.warn("Download failed");
+            if (failsCounter < 6) {
+                log.info("Retry...");
+                downloadChunk(streamPath, fileName);
+            }
+
         }
     }
 

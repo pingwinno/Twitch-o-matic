@@ -16,23 +16,33 @@ public class HttpSeviceHelper {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
     private CloseableHttpClient client;
     private CloseableHttpResponse response;
+    private int failsCount = 0;
 
-    public HttpEntity getService(HttpGet httpGet, boolean sslVerifyEnable) throws IOException, InterruptedException {
-
+    public HttpEntity getService(HttpGet httpGet, boolean sslVerifyEnable) throws IOException {
         if (sslVerifyEnable) {
             client = HttpClients.createDefault();
         } else {
             //ignore SSL because on usher.twitch.tv its broken
             client = HttpClients.custom().setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
         }
-        response = client.execute(httpGet);
-        //System.out.println(EntityUtils.toString(response.getEntity()));
-        log.debug("Request response: {}", response.getStatusLine());
-
+        try {
+            response = client.execute(httpGet);
+        } catch (IOException e) {
+            if (failsCount < 6) {
+                this.failsCount++;
+                log.warn("request failed. Retry...");
+                this.getService(httpGet, sslVerifyEnable);
+                log.trace("Request response: {}", response.getStatusLine());
+            } else {
+                log.error("Request failed more than 5 times. Close connection");
+                throw new IOException();
+            }
+        }
         return response.getEntity();
+
     }
 
-    public HttpEntity getService(HttpPost httpPost, boolean sslVerifyEnable) throws IOException, InterruptedException {
+    public HttpEntity getService(HttpPost httpPost, boolean sslVerifyEnable) throws IOException {
 
         if (sslVerifyEnable) {
             client = HttpClients.createDefault();
@@ -40,10 +50,21 @@ public class HttpSeviceHelper {
             //ignore SSL because on usher.twitch.tv its broken
             client = HttpClients.custom().setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE).build();
         }
-        response = client.execute(httpPost);
-        log.debug("Request response: {}", response.getStatusLine());
-
+        try {
+            response = client.execute(httpPost);
+        } catch (IOException e) {
+            if (failsCount < 6) {
+                this.failsCount++;
+                log.warn("request failed. Retry...");
+                this.getService(httpPost, sslVerifyEnable);
+                log.trace("Request response: {}", response.getStatusLine());
+            } else {
+                log.error("Request failed more than 5 times. Close connection");
+                throw new IOException();
+            }
+        }
         return response.getEntity();
+
     }
 
     public void close() throws IOException {
