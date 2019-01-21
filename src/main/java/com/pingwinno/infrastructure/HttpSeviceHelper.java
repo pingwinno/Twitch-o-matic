@@ -18,7 +18,7 @@ public class HttpSeviceHelper {
     private CloseableHttpResponse response;
     private int failsCount = 0;
 
-    public HttpEntity getService(HttpGet httpGet, boolean sslVerifyEnable) throws IOException {
+    public HttpEntity getService(HttpGet httpGet, boolean sslVerifyEnable) throws IOException, InterruptedException {
         if (sslVerifyEnable) {
             client = HttpClients.createDefault();
         } else {
@@ -31,6 +31,7 @@ public class HttpSeviceHelper {
             if (failsCount < 6) {
                 this.failsCount++;
                 log.warn("request failed. Retry...");
+                Thread.sleep(5000);
                 this.getService(httpGet, sslVerifyEnable);
                 log.trace("Request response: {}", response.getStatusLine());
             } else {
@@ -42,7 +43,7 @@ public class HttpSeviceHelper {
 
     }
 
-    public HttpEntity getService(HttpPost httpPost, boolean sslVerifyEnable) throws IOException {
+    public HttpEntity getService(HttpPost httpPost, boolean sslVerifyEnable) throws IOException, InterruptedException {
 
         if (sslVerifyEnable) {
             client = HttpClients.createDefault();
@@ -56,6 +57,7 @@ public class HttpSeviceHelper {
             if (failsCount < 6) {
                 this.failsCount++;
                 log.warn("request failed. Retry...");
+                Thread.sleep(5000);
                 this.getService(httpPost, sslVerifyEnable);
                 log.trace("Request response: {}", response.getStatusLine());
             } else {

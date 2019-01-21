@@ -47,7 +47,7 @@ public class SubscriptionRequestTimer extends TimerTask {
             httpSeviceHelper.getService(httpPost, true);
             log.debug("Waiting for hub.challenge request");
             httpSeviceHelper.close();
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             log.error("Subscription timer request failed. {}", e);
         }
     }

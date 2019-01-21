@@ -88,7 +88,11 @@ public class VodDownloader {
                 for (ChunkModel chunk : chunks) {
                     String chunkName = chunk.getChunkName();
                     Runnable runnable = () -> {
+                        try {
                             downloadChunk(streamPath, chunkName);
+                        } catch (InterruptedException e) {
+                            log.error("Download failed. {}", e);
+                        }
                     };
                     executorService.execute(runnable);
                 }
@@ -125,7 +129,11 @@ public class VodDownloader {
                 if (status) {
                     String chunkName = chunk.getChunkName();
                     Runnable runnable = () -> {
-                        downloadChunk(streamPath, chunkName);
+                        try {
+                            downloadChunk(streamPath, chunkName);
+                        } catch (InterruptedException e) {
+                            log.error("Download failed. {}", e);
+                        }
                     };
                     executorService.execute(runnable);
                 }
@@ -197,7 +205,7 @@ public class VodDownloader {
     }
 
 
-    private void downloadChunk(String streamPath, String fileName) {
+    private void downloadChunk(String streamPath, String fileName) throws InterruptedException {
         URL website = null;
         int failsCounter = 0;
         try {
@@ -227,6 +235,7 @@ public class VodDownloader {
             log.warn("Download failed");
             if (failsCounter < 6) {
                 log.info("Retry...");
+                Thread.sleep(5000);
                 downloadChunk(streamPath, fileName);
             }
 
