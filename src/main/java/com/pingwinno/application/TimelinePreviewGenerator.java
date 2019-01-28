@@ -29,7 +29,7 @@ public class TimelinePreviewGenerator {
         double frameTime = 0.0;
         for (ChunkModel chunkModel : chunks) {
             ImageIO.write(FrameGrabber.getFrame(pathString +
-                            "/" + chunks.get(chunkNum).getChunkName(), 256, 144),
+                            "/" + chunks.get(chunkNum).getChunkName().replace("-muted", ""), 256, 144),
                     "jpeg", new File(pathString + "/timeline_preview/preview" + chunkNum + ".jpg"));
             TimelinePreviewModel timelinePreviewModel = new TimelinePreviewModel();
             LinkModel linkModel = new LinkModel();
