@@ -207,18 +207,21 @@ public class VodDownloader {
 
     private void downloadChunk(String streamPath, String fileName) throws InterruptedException {
         URL website = null;
-        int failsCounter = 0;
+        URLConnection connection;
         try {
             website = new URL(streamPath + "/" + fileName);
 
-            URLConnection connection = website.openConnection();
+            if (fileName.contains("muted")) {
+                fileName = fileName.replace("-muted", "");
+            }
+
+            connection = website.openConnection();
+
             if ((!Files.exists(Paths.get(streamFolderPath + "/" + fileName))) ||
-                    (connection.getContentLengthLong() != Files.size((Paths.get(streamFolderPath + "/" + fileName))))) {
+                    (connection.getContentLengthLong() > Files.size((Paths.get(streamFolderPath + "/" + fileName))))) {
 
                 try (InputStream in = website.openStream()) {
-                    if (fileName.contains("muted")) {
-                        fileName = fileName.replace("-muted", "");
-                    }
+
                     Files.copy(in, Paths.get(streamFolderPath + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
                     if (Integer.parseInt(fileName.replaceAll(".ts", "")) % 10 == 0) {
                         log.info(fileName + " complete");
@@ -231,14 +234,7 @@ public class VodDownloader {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            failsCounter++;
             log.warn("Download failed");
-            if (failsCounter < 6) {
-                log.info("Retry...");
-                Thread.sleep(5000);
-                downloadChunk(streamPath, fileName);
-            }
-
         }
     }
 
