@@ -149,8 +149,11 @@ public class VodDownloader {
     }
 
     private void recordCycle() throws IOException, InterruptedException, SQLException {
-        while (RecordThreadSupervisor.isRunning(uuid)) {
+        while (RecordThreadSupervisor.isRunning(uuid)) mainCycle:{
             while (RecordStatusGetter.isRecording(vodId)) {
+                if (!RecordThreadSupervisor.isRunning(uuid)) {
+                    break mainCycle;
+                }
                 refreshDownload();
                 Thread.sleep(20 * 1000);
             }
