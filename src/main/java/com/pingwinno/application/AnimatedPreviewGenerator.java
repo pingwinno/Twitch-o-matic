@@ -26,7 +26,8 @@ public class AnimatedPreviewGenerator {
             int chunkNum = 0;
             int offset = chunks.size() / 10;
             for (int i = 0; i < 10; i++) {
-                String path = pathString + "/" + chunks.get(chunkNum).getChunkName();
+                String path = pathString +
+                        "/" + chunks.get(chunkNum).getChunkName().replace("-muted", "");
                 log.trace(path);
                 ImageIO.write(FrameGrabber.getFrame(path, 640, 360),
                         "jpeg", new File(pathString + "/animated_preview/preview" + i + ".jpg"));
@@ -41,7 +42,8 @@ public class AnimatedPreviewGenerator {
         } else {
             int chunkNum = 0;
             for (int i = 0; i < chunks.size(); i++) {
-                String path = pathString + "/" + chunks.get(chunkNum).getChunkName();
+                String path = pathString +
+                        "/" + chunks.get(chunkNum).getChunkName().replace("-muted", "");
                 log.trace(path);
                 ImageIO.write(FrameGrabber.getFrame(path, 640, 360),
                         "jpeg", new File(pathString + "/animated_preview/preview" + i + ".jpg"));

@@ -1,6 +1,7 @@
 package com.pingwinno.domain;
 
 import com.pingwinno.application.AnimatedPreviewGenerator;
+import com.pingwinno.application.FrameGrabber;
 import com.pingwinno.application.TimelinePreviewGenerator;
 import com.pingwinno.application.twitch.playlist.handler.*;
 import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
@@ -11,6 +12,8 @@ import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.*;
 import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -104,7 +107,7 @@ public class VodDownloader {
                 stopRecord();
             }
             this.recordCycle();
-        } catch (IOException | URISyntaxException | InterruptedException | SQLException | StreamNotFoundExeption e) {
+        } catch (IOException | URISyntaxException | InterruptedException | SQLException e) {
             log.error("Vod downloader initialization failed. {}", e);
             new RecordStatusList().changeState(uuid, State.ERROR);
             stopRecord();
@@ -149,7 +152,7 @@ public class VodDownloader {
         return status;
     }
 
-    private void recordCycle() throws IOException, InterruptedException, URISyntaxException, SQLException, StreamNotFoundExeption {
+    private void recordCycle() throws IOException, InterruptedException, SQLException {
 
         while (RecordStatusGetter.isRecording(vodId)) {
             refreshDownload();
@@ -166,10 +169,17 @@ public class VodDownloader {
         refreshDownload();
         log.info("End of list. Downloading last chunks");
         log.debug("Download preview");
-        downloadFile(VodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), "preview.jpg");
+        try {
+            downloadFile(VodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), "preview.jpg");
+
+        } catch (StreamNotFoundExeption e) {
+            int streamLength = chunks.size() / 2;
+            ImageIO.write(FrameGrabber.getFrame(streamFolderPath + "/" + streamLength + ".ts", 640, 360),
+                    "jpeg", new File(streamFolderPath + "/preview.jpg"));
+
+        }
         log.debug("Download m3u8");
-        MediaPlaylistWriter.write(new MediaPlaylistDownloader().getMediaPlaylist(MasterPlaylistParser.parse
-                (new MasterPlaylistDownloader().getPlaylist(vodId), SettingsProperties.getStreamQuality())), streamFolderPath);
+        MediaPlaylistWriter.write(chunks, streamFolderPath);
         try {
             log.debug("write to local db");
             SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
@@ -187,9 +197,7 @@ public class VodDownloader {
         streamDocumentModel.setDate(Date.from(Instant.ofEpochMilli(Long.parseLong(streamDataModel.getDate()))));
         streamDocumentModel.setGame(streamDataModel.getGame());
 
-        streamDocumentModel.setDuration(MediaPlaylistParser.getTotalSec(new MediaPlaylistDownloader().
-                getMediaPlaylist(MasterPlaylistParser.parse(new MasterPlaylistDownloader().
-                        getPlaylist(vodId), SettingsProperties.getStreamQuality()))));
+        streamDocumentModel.setDuration(chunks.size() * 10);
         streamDocumentModel.setAnimatedPreviews(animatedPreview);
         streamDocumentModel.setTimelinePreviews(timelinePreview);
         if (!SettingsProperties.getMongoDBAddress().equals("")) {
