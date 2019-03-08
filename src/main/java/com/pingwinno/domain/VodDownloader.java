@@ -17,10 +17,7 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -113,33 +110,47 @@ public class VodDownloader {
         }
     }
 
-    synchronized private boolean refreshDownload() throws InterruptedException, SQLException {
+    private boolean refreshDownload() throws InterruptedException, SQLException {
         boolean status = false;
         try {
-            String m3u8Link = MasterPlaylistParser.parse(
-                    masterPlaylistDownloader.getPlaylist(vodId), SettingsProperties.getStreamQuality());
-
-            String streamPath = StreamPathExtractor.extract(m3u8Link);
-
-            LinkedHashSet<ChunkModel> refreshedPlaylist =
-                    MediaPlaylistParser.getChunks(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
-
-            executorService = Executors.newFixedThreadPool(threadsNumber);
-            for (ChunkModel chunk : refreshedPlaylist) {
-
-                status = chunks.add(chunk);
-                log.trace("status: {}, chunk: {}", status, chunk.getChunkName());
-                if (status) {
-                    String chunkName = chunk.getChunkName();
-                    Runnable runnable = () -> {
-                        downloadChunk(streamPath, chunkName);
-                    };
-                    executorService.execute(runnable);
+            String m3u8Link = null;
+            int counter = 0;
+            //TODO Find out what the problem is
+            do {
+                try {
+                    m3u8Link = MasterPlaylistParser.parse(
+                            masterPlaylistDownloader.getPlaylist(vodId), SettingsProperties.getStreamQuality());
+                } catch (UnknownHostException ignored) {
+                    counter++;
+                    log.warn("UnknownHostException. cycle:{} \n Stacktrace{}", counter, ignored);
                 }
 
+            } while (m3u8Link == null && counter < 10);
+            if (m3u8Link != null) {
+                String streamPath = StreamPathExtractor.extract(m3u8Link);
+
+                LinkedHashSet<ChunkModel> refreshedPlaylist =
+                        MediaPlaylistParser.getChunks(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
+
+                executorService = Executors.newFixedThreadPool(threadsNumber);
+                for (ChunkModel chunk : refreshedPlaylist) {
+
+                    status = chunks.add(chunk);
+                    log.trace("status: {}, chunk: {}", status, chunk.getChunkName());
+                    if (status) {
+                        String chunkName = chunk.getChunkName();
+                        Runnable runnable = () -> {
+                            downloadChunk(streamPath, chunkName);
+                        };
+                        executorService.execute(runnable);
+                    }
+
+                }
+                executorService.shutdown();
+                executorService.awaitTermination(10, TimeUnit.MINUTES);
+            } else {
+                log.warn("UnknownHostException again. Why? I don't give a fuck.");
             }
-            executorService.shutdown();
-            executorService.awaitTermination(10, TimeUnit.MINUTES);
         } catch (IOException | URISyntaxException e) {
             log.error("Vod downloader refresh failed. {}", e);
             new RecordStatusList().changeState(uuid, State.ERROR);
