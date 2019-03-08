@@ -6,6 +6,7 @@ import com.pingwinno.application.TimelinePreviewGenerator;
 import com.pingwinno.application.twitch.playlist.handler.*;
 import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
 import com.pingwinno.infrastructure.RecordStatusList;
+import com.pingwinno.infrastructure.RecordThreadSupervisor;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.State;
@@ -44,6 +45,7 @@ public class VodDownloader {
     private StreamExtendedDataModel streamDataModel;
     private int threadsNumber = 1;
     private UUID uuid;
+    private ExecutorService executorService;
 
 
     public void initializeDownload(StreamExtendedDataModel streamDataModel) throws SQLException {
@@ -102,6 +104,7 @@ public class VodDownloader {
                 log.error("vod id with id {} not found. Close downloader thread...", vodId);
                 stopRecord();
             }
+            RecordThreadSupervisor.addFlag(uuid);
             this.recordCycle();
         } catch (IOException | URISyntaxException | InterruptedException | SQLException e) {
             log.error("Vod downloader initialization failed. {}", e);
@@ -121,7 +124,7 @@ public class VodDownloader {
             LinkedHashSet<ChunkModel> refreshedPlaylist =
                     MediaPlaylistParser.getChunks(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
 
-            ExecutorService executorService = Executors.newFixedThreadPool(threadsNumber);
+            executorService = Executors.newFixedThreadPool(threadsNumber);
             for (ChunkModel chunk : refreshedPlaylist) {
 
                 status = chunks.add(chunk);
@@ -146,63 +149,64 @@ public class VodDownloader {
     }
 
     private void recordCycle() throws IOException, InterruptedException, SQLException {
-
-        while (RecordStatusGetter.isRecording(vodId)) {
-            refreshDownload();
-            Thread.sleep(20 * 1000);
-        }
-        log.info("Finalize record...");
-        int counter = 0;
-        while ((!this.refreshDownload()) && (counter <= 10)) {
-            log.info("Wait for renewing playlist");
-            Thread.sleep(10 * 1000);
-            counter++;
-        }
-        Thread.sleep(100 * 1000);
-        refreshDownload();
-        log.info("End of list. Downloading last chunks");
-        log.debug("Download preview");
-        try {
-            downloadFile(VodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), "preview.jpg");
-
-        } catch (StreamNotFoundExeption e) {
-            int streamLength = chunks.size() / 2;
-            ImageIO.write(FrameGrabber.getFrame(streamFolderPath + "/" + streamLength + ".ts", 640, 360),
-                    "jpeg", new File(streamFolderPath + "/preview.jpg"));
-
-        }
-        log.debug("Download m3u8");
-        MediaPlaylistWriter.write(chunks, streamFolderPath);
-        try {
-            log.debug("write to local db");
-            SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
-            sqliteHandler.insert(streamDataModel);
-        } catch (Exception ignore) {
-            log.warn("Write to db failed. Skip.");
-        }
-
-        LinkedList<AnimatedPreviewModel> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, chunks);
-        LinkedList<TimelinePreviewModel> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, chunks);
-
-        StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
-        streamDocumentModel.setUuid(streamDataModel.getUuid().toString());
-        streamDocumentModel.setTitle(streamDataModel.getTitle());
-        streamDocumentModel.setDate(Date.from(Instant.ofEpochMilli(Long.parseLong(streamDataModel.getDate()))));
-        streamDocumentModel.setGame(streamDataModel.getGame());
-
-        streamDocumentModel.setDuration(chunks.size() * 10);
-        streamDocumentModel.setAnimatedPreviews(animatedPreview);
-        streamDocumentModel.setTimelinePreviews(timelinePreview);
-        if (!SettingsProperties.getMongoDBAddress().equals("")) {
-            log.info("write to remote db");
-            if (DataBaseHandler.isExist(streamDocumentModel, streamDataModel.getUser())) {
-                DataBaseHandler.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
+        while (RecordThreadSupervisor.isRunning(uuid)) {
+            while (RecordStatusGetter.isRecording(vodId)) {
+                refreshDownload();
+                Thread.sleep(20 * 1000);
             }
-            log.info("Complete");
-        }
+            log.info("Finalize record...");
+            int counter = 0;
+            while ((!this.refreshDownload()) && (counter <= 10)) {
+                log.info("Wait for renewing playlist");
+                Thread.sleep(10 * 1000);
+                counter++;
+            }
+            Thread.sleep(100 * 1000);
+            refreshDownload();
+            log.info("End of list. Downloading last chunks");
+            log.debug("Download preview");
+            try {
+                downloadFile(VodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), "preview.jpg");
 
+            } catch (StreamNotFoundExeption e) {
+                int streamLength = chunks.size() / 2;
+                ImageIO.write(FrameGrabber.getFrame(streamFolderPath + "/" + streamLength + ".ts", 640, 360),
+                        "jpeg", new File(streamFolderPath + "/preview.jpg"));
+
+            }
+            log.debug("Download m3u8");
+            MediaPlaylistWriter.write(chunks, streamFolderPath);
+            try {
+                log.debug("write to local db");
+                SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
+                sqliteHandler.insert(streamDataModel);
+            } catch (Exception ignore) {
+                log.warn("Write to db failed. Skip.");
+            }
+
+            LinkedList<AnimatedPreviewModel> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, chunks);
+            LinkedList<TimelinePreviewModel> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, chunks);
+
+            StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
+            streamDocumentModel.setUuid(streamDataModel.getUuid().toString());
+            streamDocumentModel.setTitle(streamDataModel.getTitle());
+            streamDocumentModel.setDate(Date.from(Instant.ofEpochMilli(Long.parseLong(streamDataModel.getDate()))));
+            streamDocumentModel.setGame(streamDataModel.getGame());
+
+            streamDocumentModel.setDuration(chunks.size() * 10);
+            streamDocumentModel.setAnimatedPreviews(animatedPreview);
+            streamDocumentModel.setTimelinePreviews(timelinePreview);
+            if (!SettingsProperties.getMongoDBAddress().equals("")) {
+                log.info("write to remote db");
+                if (DataBaseHandler.isExist(streamDocumentModel, streamDataModel.getUser())) {
+                    DataBaseHandler.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
+                }
+                log.info("Complete");
+            }
+            RecordThreadSupervisor.changeFlag(uuid, false);
+            new RecordStatusList().changeState(uuid, State.COMPLETE);
+        }
         stopRecord();
-        new RecordStatusList().changeState(uuid, State.COMPLETE);
     }
 
 
@@ -251,6 +255,9 @@ public class VodDownloader {
         try {
             log.info("Stop record");
             log.info("Closing vod downloader...");
+            if (!executorService.isShutdown()) {
+                executorService.shutdownNow();
+            }
             masterPlaylistDownloader.close();
             mediaPlaylistDownloader.close();
             if (SettingsProperties.getExecutePostDownloadCommand()) {

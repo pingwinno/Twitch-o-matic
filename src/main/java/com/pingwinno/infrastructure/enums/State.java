@@ -4,5 +4,6 @@ public enum State {
     INITIALIZE,
     RUNNING,
     COMPLETE,
-    ERROR
+    ERROR,
+    STOPPED
 }
