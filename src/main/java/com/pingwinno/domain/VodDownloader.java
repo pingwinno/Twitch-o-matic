@@ -91,11 +91,7 @@ public class VodDownloader {
                 for (ChunkModel chunk : chunks) {
                     String chunkName = chunk.getChunkName();
                     Runnable runnable = () -> {
-                        try {
-                            downloadChunk(streamPath, chunkName);
-                        } catch (InterruptedException e) {
-                            log.error("Download failed. {}", e);
-                        }
+                        downloadChunk(streamPath, chunkName);
                     };
                     executorService.execute(runnable);
                 }
@@ -119,7 +115,7 @@ public class VodDownloader {
         try {
             String m3u8Link = MasterPlaylistParser.parse(
                     masterPlaylistDownloader.getPlaylist(vodId), SettingsProperties.getStreamQuality());
-           
+
             String streamPath = StreamPathExtractor.extract(m3u8Link);
 
             LinkedHashSet<ChunkModel> refreshedPlaylist =
@@ -133,11 +129,7 @@ public class VodDownloader {
                 if (status) {
                     String chunkName = chunk.getChunkName();
                     Runnable runnable = () -> {
-                        try {
-                            downloadChunk(streamPath, chunkName);
-                        } catch (InterruptedException e) {
-                            log.error("Download failed. {}", e);
-                        }
+                        downloadChunk(streamPath, chunkName);
                     };
                     executorService.execute(runnable);
                 }
@@ -214,8 +206,8 @@ public class VodDownloader {
     }
 
 
-    private void downloadChunk(String streamPath, String fileName) throws InterruptedException {
-        URL website = null;
+    private void downloadChunk(String streamPath, String fileName) {
+        URL website;
         URLConnection connection;
         try {
             website = new URL(streamPath + "/" + fileName);
