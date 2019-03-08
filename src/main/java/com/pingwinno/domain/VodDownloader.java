@@ -209,6 +209,7 @@ public class VodDownloader {
             RecordThreadSupervisor.changeFlag(uuid, false);
             new RecordStatusList().changeState(uuid, State.COMPLETE);
         }
+        log.info("Task stopped manually");
         stopRecord();
     }
 
