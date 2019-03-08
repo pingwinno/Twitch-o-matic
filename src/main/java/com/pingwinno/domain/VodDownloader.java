@@ -119,6 +119,7 @@ public class VodDownloader {
         try {
             String m3u8Link = MasterPlaylistParser.parse(
                     masterPlaylistDownloader.getPlaylist(vodId), SettingsProperties.getStreamQuality());
+           
             String streamPath = StreamPathExtractor.extract(m3u8Link);
 
             LinkedHashSet<ChunkModel> refreshedPlaylist =

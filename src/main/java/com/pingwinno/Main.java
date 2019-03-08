@@ -62,11 +62,8 @@ public class Main implements Daemon {
             log.info("Management server is disabled");
         }
 
-        try {
-            RecoveryRecordHandler.recoverUncompletedRecordTask();
-        } catch (SQLException | IOException | InterruptedException | IllegalStateException ignore) {
-            log.error("Can't recover list {}");
-        }
+        new Thread(RecoveryRecordHandler::recoverUncompletedRecordTask).start();
+
     }
 
     @Override

@@ -16,7 +16,7 @@ import java.util.LinkedList;
 public class RecoveryRecordHandler {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(RecoveryRecordHandler.class.getName());
 
-    public static void recoverUncompletedRecordTask() throws SQLException, IOException, InterruptedException {
+    public static void recoverUncompletedRecordTask() {
         log.debug("Recovering uncompleted task...");
         LinkedList<StatusDataModel> dataModels = new SqliteStatusDataHandler().selectAll();
 
@@ -32,6 +32,8 @@ public class RecoveryRecordHandler {
                     } catch (StreamNotFoundExeption streamNotFoundExeption) {
                         log.warn("Stream {} not found. Delete stream...", dataModel.getVodId());
                         new SqliteStatusDataHandler().delete(dataModel.getUuid().toString());
+                    } catch (InterruptedException | IOException | SQLException e) {
+                        log.error("Can't recover stream recording {}", e);
                     }
 
                 }
