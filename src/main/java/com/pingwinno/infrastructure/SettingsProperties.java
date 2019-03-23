@@ -151,6 +151,16 @@ public class SettingsProperties {
         return mongoDBAddress;
     }
 
+    public static String getMongoDBName() {
+        String mongoDBName = null;
+        try {
+            mongoDBName = getProperties().getProperty("MongoDBName");
+        } catch (IOException e) {
+            log.error("Can't read MongoDBName. {}", e);
+        }
+        return mongoDBName;
+    }
+
     public static String getSqliteFile() {
         String sqliteFile = null;
         try {

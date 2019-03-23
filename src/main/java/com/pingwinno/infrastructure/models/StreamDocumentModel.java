@@ -4,20 +4,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.pingwinno.infrastructure.DocumentModelSerializer;
 
-import java.util.Date;
-import java.util.LinkedList;
+import java.util.Map;
 
 @JsonSerialize(using = DocumentModelSerializer.class)
 public class StreamDocumentModel {
 
     @JsonProperty("_id")
     private String uuid;
-    private Date date;
+    private long date;
     private String title;
     private String game;
     private long duration;
-    private LinkedList<AnimatedPreviewModel> animatedPreviews;
-    private LinkedList<TimelinePreviewModel> timelinePreviews;
+    private Map<Integer, String> animatedPreviews;
+    private Map<Integer, String> timelinePreviews;
 
     public String getUuid() {
         return uuid;
@@ -27,11 +26,11 @@ public class StreamDocumentModel {
         this.uuid = uuid;
     }
 
-    public Date getDate() {
+    public long getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(long date) {
         this.date = date;
     }
 
@@ -60,22 +59,22 @@ public class StreamDocumentModel {
     }
 
     @JsonProperty("animated_preview")
-    public LinkedList<AnimatedPreviewModel> getAnimatedPreviews() {
+    public Map<Integer, String> getAnimatedPreviews() {
         return animatedPreviews;
     }
 
     @JsonProperty("animated_preview")
-    public void setAnimatedPreviews(LinkedList<AnimatedPreviewModel> animatedPreviews) {
+    public void setAnimatedPreviews(Map<Integer, String> animatedPreviews) {
         this.animatedPreviews = animatedPreviews;
     }
 
     @JsonProperty("timeline_preview")
-    public LinkedList<TimelinePreviewModel> getTimelinePreviews() {
+    public Map<Integer, String> getTimelinePreviews() {
         return timelinePreviews;
     }
 
     @JsonProperty("timeline_preview")
-    public void setTimelinePreviews(LinkedList<TimelinePreviewModel> timelinePreviews) {
+    public void setTimelinePreviews(Map<Integer, String> timelinePreviews) {
         this.timelinePreviews = timelinePreviews;
     }
 

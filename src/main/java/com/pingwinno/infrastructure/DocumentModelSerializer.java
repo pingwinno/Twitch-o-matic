@@ -4,9 +4,9 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.pingwinno.infrastructure.models.StreamDocumentModel;
-import com.pingwinno.infrastructure.models.TimelinePreviewModel;
 
 import java.io.IOException;
+import java.util.Map;
 
 public class DocumentModelSerializer extends StdSerializer<StreamDocumentModel> {
 
@@ -34,8 +34,8 @@ public class DocumentModelSerializer extends StdSerializer<StreamDocumentModel> 
 
 
         jsonGenerator.writeObjectFieldStart("timeline_preview");
-        for (TimelinePreviewModel newPreviewModel : streamDocumentModel.getTimelinePreviews()) {
-            jsonGenerator.writeObjectField(Integer.toString(newPreviewModel.getIndex()), newPreviewModel.getLink());
+        for (Map.Entry<Integer, String> preview : streamDocumentModel.getTimelinePreviews().entrySet()) {
+            jsonGenerator.writeObjectField(Integer.toString(preview.getKey()), preview.getValue());
         }
 
         jsonGenerator.writeEndObject();

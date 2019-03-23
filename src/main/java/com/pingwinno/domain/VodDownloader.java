@@ -10,7 +10,8 @@ import com.pingwinno.infrastructure.RecordThreadSupervisor;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.State;
-import com.pingwinno.infrastructure.models.*;
+import com.pingwinno.infrastructure.models.StreamDocumentModel;
+import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
@@ -23,10 +24,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
-import java.time.Instant;
-import java.util.Date;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,7 +35,7 @@ public class VodDownloader {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
     private MasterPlaylistDownloader masterPlaylistDownloader = new MasterPlaylistDownloader();
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
-    private LinkedHashSet<ChunkModel> chunks = new LinkedHashSet<>();
+    private LinkedHashMap<String, Double> mainPlaylist = new LinkedHashMap<>();
     private String streamFolderPath;
     private String vodId;
     private StreamExtendedDataModel streamDataModel;
@@ -84,11 +83,11 @@ public class VodDownloader {
             //if stream  exist
             if (m3u8Link != null) {
                 String streamPath = StreamPathExtractor.extract(m3u8Link);
-                chunks = MediaPlaylistParser.getChunks(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
+                mainPlaylist = MediaPlaylistParser.getChunks(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
                 ExecutorService executorService = Executors.newFixedThreadPool(threadsNumber);
 
-                for (ChunkModel chunk : chunks) {
-                    String chunkName = chunk.getChunkName();
+                for (Map.Entry<String, Double> chunk : mainPlaylist.entrySet()) {
+                    String chunkName = chunk.getKey();
                     Runnable runnable = () -> {
                         downloadChunk(streamPath, chunkName);
                     };
@@ -120,34 +119,38 @@ public class VodDownloader {
                 try {
                     m3u8Link = MasterPlaylistParser.parse(
                             masterPlaylistDownloader.getPlaylist(vodId), SettingsProperties.getStreamQuality());
-                } catch (UnknownHostException ignored) {
+                } catch (UnknownHostException e) {
                     counter++;
-                    log.warn("UnknownHostException. cycle:{} \n Stacktrace{}", counter, ignored);
+                    log.warn("UnknownHostException. cycle:{} \n Stacktrace{}", counter, e);
                 }
 
             } while (m3u8Link == null && counter < 10);
+
             if (m3u8Link != null) {
                 String streamPath = StreamPathExtractor.extract(m3u8Link);
 
-                LinkedHashSet<ChunkModel> refreshedPlaylist =
+                LinkedHashMap<String, Double> refreshedPlaylist =
                         MediaPlaylistParser.getChunks(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
 
                 executorService = Executors.newFixedThreadPool(threadsNumber);
-                for (ChunkModel chunk : refreshedPlaylist) {
 
-                    status = chunks.add(chunk);
-                    log.trace("status: {}, chunk: {}", status, chunk.getChunkName());
-                    if (status) {
-                        String chunkName = chunk.getChunkName();
+                status = mainPlaylist.equals(refreshedPlaylist);
+                if (status) {
+                    for (Map.Entry<String, Double> chunk : refreshedPlaylist.entrySet()) {
+
+                        log.trace("status: {}, chunk: {}", status, chunk.getKey());
+
+                        String chunkName = chunk.getKey();
                         Runnable runnable = () -> {
                             downloadChunk(streamPath, chunkName);
                         };
                         executorService.execute(runnable);
                     }
 
+
+                    executorService.shutdown();
+                    executorService.awaitTermination(10, TimeUnit.MINUTES);
                 }
-                executorService.shutdown();
-                executorService.awaitTermination(10, TimeUnit.MINUTES);
             } else {
                 log.warn("UnknownHostException again. Why? I don't give a fuck.");
             }
@@ -175,21 +178,21 @@ public class VodDownloader {
                 Thread.sleep(10 * 1000);
                 counter++;
             }
-            Thread.sleep(100 * 1000);
+            //Thread.sleep(100 * 1000);
             refreshDownload();
-            log.info("End of list. Downloading last chunks");
+            log.info("End of list. Downloading last mainPlaylist");
             log.debug("Download preview");
             try {
                 downloadFile(VodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), "preview.jpg");
 
             } catch (StreamNotFoundExeption e) {
-                int streamLength = chunks.size() / 2;
+                int streamLength = mainPlaylist.size() / 2;
                 ImageIO.write(FrameGrabber.getFrame(streamFolderPath + "/" + streamLength + ".ts", 640, 360),
                         "jpeg", new File(streamFolderPath + "/preview.jpg"));
 
             }
             log.debug("Download m3u8");
-            MediaPlaylistWriter.write(chunks, streamFolderPath);
+            MediaPlaylistWriter.write(mainPlaylist, streamFolderPath);
             try {
                 log.debug("write to local db");
                 SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
@@ -198,23 +201,23 @@ public class VodDownloader {
                 log.warn("Write to db failed. Skip.");
             }
 
-            LinkedList<AnimatedPreviewModel> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, chunks);
-            LinkedList<TimelinePreviewModel> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, chunks);
+            LinkedHashMap<Integer, String> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, mainPlaylist);
+            LinkedHashMap<Integer, String> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, mainPlaylist);
 
             StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
             streamDocumentModel.setUuid(streamDataModel.getUuid().toString());
             streamDocumentModel.setTitle(streamDataModel.getTitle());
-            streamDocumentModel.setDate(Date.from(Instant.ofEpochMilli(Long.parseLong(streamDataModel.getDate()))));
+            streamDocumentModel.setDate(Long.parseLong(streamDataModel.getDate()));
             streamDocumentModel.setGame(streamDataModel.getGame());
 
-            streamDocumentModel.setDuration(chunks.size() * 10);
+            streamDocumentModel.setDuration(mainPlaylist.size() * 10);
             streamDocumentModel.setAnimatedPreviews(animatedPreview);
             streamDocumentModel.setTimelinePreviews(timelinePreview);
             if (!SettingsProperties.getMongoDBAddress().equals("")) {
                 log.info("write to remote db");
-                if (DataBaseHandler.isExist(streamDocumentModel, streamDataModel.getUser())) {
+                //  if (DataBaseHandler.isExist(streamDocumentModel, streamDataModel.getUser())) {
                     DataBaseHandler.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
-                }
+                //   }
                 log.info("Complete");
             }
             RecordThreadSupervisor.changeFlag(uuid, false);
