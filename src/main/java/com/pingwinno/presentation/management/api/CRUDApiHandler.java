@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.application.DateConverter;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
+import com.pingwinno.domain.MongoDBHandler;
 import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
 import com.pingwinno.infrastructure.RecordStatusList;
@@ -14,6 +15,7 @@ import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.StartedBy;
 import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.*;
+import org.bson.Document;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
@@ -24,6 +26,12 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Projections.fields;
+import static com.mongodb.client.model.Projections.include;
+import static com.mongodb.client.model.Updates.combine;
+import static com.mongodb.client.model.Updates.set;
 
 @Path("/management_api")
 public class CRUDApiHandler {
@@ -148,16 +156,13 @@ public class CRUDApiHandler {
         return Response.accepted().build();
     }
 
-    @Path("/update")
+    @Path("/update/{user}/{uuid}")
     @POST
-    public Response updateStream(StreamDataModel dataModel) {
-        SqliteStreamDataHandler sqliteStreamDataHandler = new SqliteStreamDataHandler();
-        try {
-            sqliteStreamDataHandler.update(dataModel);
-        } catch (SQLException e) {
-            log.error("update failed { }", e);
-            return Response.notModified().build();
-        }
+    public Response updateStream(@PathParam("user") String user, @PathParam("uuid") String uuid, StreamDataModel dataModel) {
+
+        MongoDBHandler.getCollection(user, Document.class).updateOne(eq("_id", uuid),
+                combine(set("date", dataModel.getDate()), set("title", dataModel.getTitle()), set("game", dataModel.getGame())));
+
         return Response.ok().build();
 
     }
@@ -167,9 +172,14 @@ public class CRUDApiHandler {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStreamsList(@PathParam("user") String user) {
         try {
+            log.trace(new ObjectMapper().writeValueAsString(MongoDBHandler.getCollection(user, Document.class).
+                    find().projection(fields(include("title", "date", "game")))));
             return Response.status(Response.Status.OK)
-                    .entity(new ObjectMapper().writeValueAsString(new SqliteStreamDataHandler().selectAll(user))).build();
+                    .entity(new ObjectMapper().writeValueAsString(MongoDBHandler.getCollection(user, Document.class).
+                            find().projection(fields(include("title", "date", "game"))))
+                            .replaceAll("_id", "uuid")).build();
         } catch (JsonProcessingException e) {
+            log.error("{}", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
     }

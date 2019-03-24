@@ -9,15 +9,15 @@ public class RecordThreadSupervisor {
     private RecordThreadSupervisor() {
     }
 
-    public static boolean isRunning(UUID uuid) {
+    public synchronized static boolean isRunning(UUID uuid) {
         return threadsList.get(uuid);
     }
 
-    public static void addFlag(UUID uuid) {
+    public synchronized static void addFlag(UUID uuid) {
         threadsList.put(uuid, true);
     }
 
-    public static void changeFlag(UUID uuid, boolean flag) {
+    public synchronized static void changeFlag(UUID uuid, boolean flag) {
         threadsList.replace(uuid, flag);
     }
 

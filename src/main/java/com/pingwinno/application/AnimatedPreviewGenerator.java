@@ -36,6 +36,7 @@ public class AnimatedPreviewGenerator {
 
         } else {
             int chunkNum = 0;
+            log.trace("{}", chunks.size());
             for (int i = 0; i < chunks.size(); i++) {
                 String path = pathString +
                         "/" + chunks.get(chunkNum).replace("-muted", "");

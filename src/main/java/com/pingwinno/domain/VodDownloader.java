@@ -49,6 +49,7 @@ public class VodDownloader {
         uuid = streamDataModel.getUuid();
         streamFolderPath = SettingsProperties.getRecordedStreamPath() + streamDataModel.getUser() + "/" + uuid.toString();
         vodId = streamDataModel.getVodId();
+        RecordThreadSupervisor.addFlag(uuid);
 
         try {
             if (RecordStatusGetter.isRecording(vodId)) {
@@ -100,7 +101,6 @@ public class VodDownloader {
                 log.error("vod id with id {} not found. Close downloader thread...", vodId);
                 stopRecord();
             }
-            RecordThreadSupervisor.addFlag(uuid);
             this.recordCycle();
         } catch (IOException | URISyntaxException | InterruptedException | SQLException e) {
             log.error("Vod downloader initialization failed. {}", e);
@@ -134,22 +134,24 @@ public class VodDownloader {
 
                 executorService = Executors.newFixedThreadPool(threadsNumber);
 
-                status = mainPlaylist.equals(refreshedPlaylist);
+                status = !mainPlaylist.equals(refreshedPlaylist);
+                log.trace("status: {}", status);
                 if (status) {
-                    for (Map.Entry<String, Double> chunk : refreshedPlaylist.entrySet()) {
+                    refreshedPlaylist.forEach((chunkName, time) -> {
 
-                        log.trace("status: {}, chunk: {}", status, chunk.getKey());
-
-                        String chunkName = chunk.getKey();
-                        Runnable runnable = () -> {
-                            downloadChunk(streamPath, chunkName);
-                        };
-                        executorService.execute(runnable);
-                    }
-
+                        if (!mainPlaylist.containsKey(chunkName)) {
+                            log.trace("chunk: {}", chunkName);
+                            Runnable runnable = () -> {
+                                downloadChunk(streamPath, chunkName);
+                            };
+                            executorService.execute(runnable);
+                        }
+                    });
 
                     executorService.shutdown();
                     executorService.awaitTermination(10, TimeUnit.MINUTES);
+                    mainPlaylist.clear();
+                    mainPlaylist.putAll(refreshedPlaylist);
                 }
             } else {
                 log.warn("UnknownHostException again. Why? I don't give a fuck.");
@@ -178,7 +180,7 @@ public class VodDownloader {
                 Thread.sleep(10 * 1000);
                 counter++;
             }
-            //Thread.sleep(100 * 1000);
+            Thread.sleep(100 * 1000);
             refreshDownload();
             log.info("End of list. Downloading last mainPlaylist");
             log.debug("Download preview");
@@ -215,22 +217,23 @@ public class VodDownloader {
             streamDocumentModel.setTimelinePreviews(timelinePreview);
             if (!SettingsProperties.getMongoDBAddress().equals("")) {
                 log.info("write to remote db");
-                //  if (DataBaseHandler.isExist(streamDocumentModel, streamDataModel.getUser())) {
-                    DataBaseHandler.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
-                //   }
+                DataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
                 log.info("Complete");
             }
             RecordThreadSupervisor.changeFlag(uuid, false);
             new RecordStatusList().changeState(uuid, State.COMPLETE);
         }
-        log.info("Task stopped manually");
-        stopRecord();
+        if (!RecordThreadSupervisor.isRunning(uuid)) {
+            log.info("Task stopped manually");
+            stopRecord();
+        }
     }
 
 
     private void downloadChunk(String streamPath, String fileName) {
         URL website;
         URLConnection connection;
+
         try {
             website = new URL(streamPath + "/" + fileName);
 
