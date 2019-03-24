@@ -135,7 +135,7 @@ public class VodDownloader {
                 executorService = Executors.newFixedThreadPool(threadsNumber);
 
                 status = !mainPlaylist.equals(refreshedPlaylist);
-                log.trace("status: {}", status);
+                log.trace("Renew playlist status: {}", status);
                 if (status) {
                     refreshedPlaylist.forEach((chunkName, time) -> {
 
@@ -147,6 +147,7 @@ public class VodDownloader {
                             executorService.execute(runnable);
                         }
                     });
+
 
                     executorService.shutdown();
                     executorService.awaitTermination(10, TimeUnit.MINUTES);
