@@ -1,7 +1,7 @@
 package com.pingwinno.application;
 
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
+import com.pingwinno.infrastructure.models.StreamDataModel;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
@@ -15,7 +15,7 @@ import java.util.Map;
 public class TimelinePreviewGenerator {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(TimelinePreviewGenerator.class.getName());
 
-    public static LinkedHashMap<Integer, String> generate(StreamExtendedDataModel model, LinkedHashMap<String, Double> chunksSet)
+    public static LinkedHashMap<Integer, String> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet)
             throws IOException {
         String pathString = SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid();
         Files.createDirectories(Paths.get(SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() +

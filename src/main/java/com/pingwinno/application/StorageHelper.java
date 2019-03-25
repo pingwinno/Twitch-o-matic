@@ -3,9 +3,7 @@ package com.pingwinno.application;
 import com.pingwinno.infrastructure.SettingsProperties;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,7 +11,6 @@ import java.util.UUID;
 
 public class StorageHelper {
     private final static Path STREAMS_PATH = Paths.get(SettingsProperties.getRecordedStreamPath());
-    private final static Path DB_PATH = Paths.get(SettingsProperties.getSqliteFile());
     private static org.slf4j.Logger log = LoggerFactory.getLogger(StorageHelper.class.getName());
 
     private static int checkFreeSpace() throws IOException {
@@ -22,7 +19,7 @@ public class StorageHelper {
     }
 
     private static boolean creatingRecordedPath() throws IOException {
-        return (Files.createDirectories(STREAMS_PATH) != null) && (Files.createDirectories(DB_PATH) != null);
+        return (Files.createDirectories(STREAMS_PATH) != null);
     }
     
     public static boolean initialStorageCheck() throws IOException {
@@ -36,7 +33,7 @@ public class StorageHelper {
             } else {
                 log.info("Success!");
             }
-        } else if (!Files.isWritable(STREAMS_PATH)&& !Files.isWritable(DB_PATH)) {
+        } else if (!Files.isWritable(STREAMS_PATH)) {
             log.warn("Can't write in {}", SettingsProperties.getRecordedStreamPath());
             log.warn("Check permissions or change RecordedStreamPath in config_test.prop");
             pass = false;

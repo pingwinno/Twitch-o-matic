@@ -2,7 +2,7 @@ package com.pingwinno.presentation.management.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pingwinno.domain.sqlite.handlers.SqliteStatusDataHandler;
+import com.pingwinno.domain.sqlite.handlers.JdbcHandler;
 import com.pingwinno.infrastructure.RecordThreadSupervisor;
 
 import javax.ws.rs.*;
@@ -18,7 +18,7 @@ public class StatusApiHandler {
     public Response getStatusList() {
         try {
             return Response.status(Response.Status.OK)
-                    .entity(new ObjectMapper().writeValueAsString(new SqliteStatusDataHandler().selectAll())).build();
+                    .entity(new ObjectMapper().writeValueAsString(new JdbcHandler().selectAll())).build();
         } catch (JsonProcessingException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }

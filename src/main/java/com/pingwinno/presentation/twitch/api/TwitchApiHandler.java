@@ -7,7 +7,7 @@ import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.RecordStatusGetter;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.VodDownloader;
-import com.pingwinno.domain.sqlite.handlers.SqliteStatusDataHandler;
+import com.pingwinno.domain.sqlite.handlers.JdbcHandler;
 import com.pingwinno.infrastructure.HashHandler;
 import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
@@ -15,7 +15,7 @@ import com.pingwinno.infrastructure.enums.StartedBy;
 import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.NotificationDataModel;
 import com.pingwinno.infrastructure.models.StatusDataModel;
-import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
+import com.pingwinno.infrastructure.models.StreamDataModel;
 import com.pingwinno.infrastructure.models.StreamStatusNotificationModel;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +80,7 @@ public class TwitchApiHandler {
                     if (VodMetadataHelper.getLastVod(user).getVodId() != null) {
                         new Thread(() -> {
                             try {
-                                StreamExtendedDataModel streamMetadata = VodMetadataHelper.getLastVod(user);
+                                StreamDataModel streamMetadata = VodMetadataHelper.getLastVod(user);
                                 int counter = 0;
                                 log.trace(streamMetadata.toString());
                                 while (!RecordStatusGetter.isRecording(streamMetadata.getVodId())) {
@@ -94,11 +94,11 @@ public class TwitchApiHandler {
                                         throw new StreamNotFoundExeption("new vod not found");
                                     }
                                 }
-                                for (String id : new SqliteStatusDataHandler().search("vodId", "vodId", streamMetadata.getVodId())) {
+                                for (String id : new JdbcHandler().search("vodId", "vodId", streamMetadata.getVodId())) {
                                     log.trace(id);
                                 }
 
-                                if (!new SqliteStatusDataHandler().search("vodId", "vodId", streamMetadata.getVodId()).contains(streamMetadata.getVodId())) {
+                                if (!new JdbcHandler().search("vodId", "vodId", streamMetadata.getVodId()).contains(streamMetadata.getVodId())) {
                                     streamMetadata.setUuid(StorageHelper.getUuidName());
 
                                     new RecordStatusList().addStatus

@@ -3,7 +3,7 @@ package com.pingwinno.application.twitch.playlist.handler;
 import com.pingwinno.application.DateConverter;
 import com.pingwinno.infrastructure.HttpSeviceHelper;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
-import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
+import com.pingwinno.infrastructure.models.StreamDataModel;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
@@ -16,7 +16,7 @@ import java.io.IOException;
 public class VodMetadataHelper {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(VodMetadataHelper.class.getName());
 
-    public static StreamExtendedDataModel getLastVod(String user) throws IOException, InterruptedException,
+    public static StreamDataModel getLastVod(String user) throws IOException, InterruptedException,
             StreamNotFoundExeption {
 
         HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
@@ -25,7 +25,7 @@ public class VodMetadataHelper {
         httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
         JSONObject jsonObj =
                 new JSONObject(EntityUtils.toString(httpSeviceHelper.getService(httpGet, true)));
-        StreamExtendedDataModel streamMetadata = new StreamExtendedDataModel();
+        StreamDataModel streamMetadata = new StreamDataModel();
         if (jsonObj.getJSONArray("videos") != null) {
             JSONArray params = jsonObj.getJSONArray("videos");
             JSONObject videoObj = params.getJSONObject(0);
@@ -38,7 +38,7 @@ public class VodMetadataHelper {
         return streamMetadata;
         }
 
-    public static StreamExtendedDataModel getVodMetadata(String vodId) throws IOException,
+    public static StreamDataModel getVodMetadata(String vodId) throws IOException,
             InterruptedException, StreamNotFoundExeption {
 
         HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
@@ -47,7 +47,7 @@ public class VodMetadataHelper {
         httpGet.addHeader("Accept","application/vnd.twitchtv.v5+json");
         JSONObject dataObj =
                 new JSONObject(EntityUtils.toString(httpSeviceHelper.getService(httpGet, true)));
-        StreamExtendedDataModel streamMetadata = new StreamExtendedDataModel();
+        StreamDataModel streamMetadata = new StreamDataModel();
         log.trace("{}", dataObj);
         if (!dataObj.toString().equals("")) {
             try {

@@ -1,5 +1,6 @@
 package com.pingwinno.domain.sqlite.handlers;
 
+import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.enums.StartedBy;
 import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.StatusDataModel;
@@ -9,29 +10,39 @@ import java.sql.*;
 import java.util.LinkedList;
 import java.util.UUID;
 
-public class SqliteStatusDataHandler extends SqliteHandler {
+public class JdbcHandler {
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
+
+    Connection connect() {
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection(
+                    "jdbc:h2:~/status", SettingsProperties.getH2User(), SettingsProperties.getH2Password());
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return conn;
+    }
 
     public void initializeDB() throws SQLException {
 
         String createStatusTable = "CREATE TABLE IF NOT EXISTS streams_status (\n"
-                + "	uuid PRIMARY KEY NOT NULL,\n"
-                + "	vodId NOT NULL,\n"
-                + "	date NOT NULL,\n"
-                + " startedBy NOT NULL,\n"
-                + " user NOT NULL,\n"
-                + " state NOT NULL\n"
+                + " uuid UUID PRIMARY KEY NOT NULL,\n"
+                + " vodId INT NOT NULL,\n"
+                + " date TIMESTAMP NOT NULL,\n"
+                + " startedBy VARCHAR NOT NULL,\n"
+                + " user VARCHAR NOT NULL,\n"
+                + " state VARCHAR NOT NULL\n"
                 + ");";
         String createStatusIndex = "CREATE UNIQUE INDEX idx_status_uuid ON streams_status(uuid);";
 
-        try (Connection connection = super.connect();
+        try (Connection connection = connect();
              Statement statement = connection.createStatement()) {
             statement.execute(createStatusTable);
             try {
                 statement.execute(createStatusIndex);
-            }
-            catch (SQLException e){
+            } catch (SQLException e) {
                 log.info("Index exists");
             }
             log.info("Table create complete");
@@ -42,7 +53,7 @@ public class SqliteStatusDataHandler extends SqliteHandler {
     public void insert(StatusDataModel statusDataModel) {
         String sqlQuery = "INSERT INTO streams_status(uuid,state,date,startedBy,user,vodId) VALUES(?,?,?,?,?,?)";
         log.info("insert streams_status data...");
-        try (Connection connection = super.connect();
+        try (Connection connection = connect();
 
              PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
             preparedStatement.setString(1, statusDataModel.getUuid().toString());
@@ -84,7 +95,7 @@ public class SqliteStatusDataHandler extends SqliteHandler {
     public void update(StatusDataModel dataModel) {
         String sql = "UPDATE streams_status SET vodId = ?, date = ?, startedBy = ?, user = ?, state = ? WHERE uuid = ?;";
 
-        try (Connection conn = super.connect();
+        try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             log.trace(dataModel.getVodId());
             log.trace(dataModel.getDate());
@@ -110,12 +121,12 @@ public class SqliteStatusDataHandler extends SqliteHandler {
         String sql = "SELECT " + resultRow + " FROM streams_status WHERE " + searchRow + " = ?";
         LinkedList<String> searchResult = new LinkedList<>();
         try (Connection conn = this.connect();
-             PreparedStatement pstmt  = conn.prepareStatement(sql)){
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             // set the value
             pstmt.setString(1, value);
             //
-            ResultSet rs  = pstmt.executeQuery();
+            ResultSet rs = pstmt.executeQuery();
 
             // loop through the result set
             while (rs.next()) {

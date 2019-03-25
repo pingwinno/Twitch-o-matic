@@ -5,6 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.UUID;
 
 public class StreamDataModel {
+
+
+    private String vodId;
+    private String previewUrl;
+    private boolean skipMuted;
     @JsonProperty
     private UUID uuid;
     @JsonProperty
@@ -15,14 +20,6 @@ public class StreamDataModel {
     private String game;
     @JsonProperty
     private String user;
-
-    public StreamDataModel(UUID uuid, String date, String title, String game, String user) {
-
-        this.uuid = uuid;
-        this.title = title;
-        this.date = date;
-        this.game = game;
-    }
 
     public StreamDataModel() {
 
@@ -60,10 +57,22 @@ public class StreamDataModel {
         this.title = title;
     }
 
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
+
+
     @Override
     public String toString() {
         return "StreamDataModel{" +
-                "uuid=" + uuid +
+                "vodId='" + vodId + '\'' +
+                ", previewUrl='" + previewUrl + '\'' +
+                ", skipMuted=" + skipMuted +
+                ", uuid=" + uuid +
                 ", date='" + date + '\'' +
                 ", title='" + title + '\'' +
                 ", game='" + game + '\'' +
@@ -71,12 +80,29 @@ public class StreamDataModel {
                 '}';
     }
 
-    public UUID getUuid() {
-        return uuid;
+    public boolean isSkipMuted() {
+        return skipMuted;
     }
 
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
+    public void setSkipMuted(boolean skipMuted) {
+        this.skipMuted = skipMuted;
+    }
+
+    public String getVodId() {
+        return vodId;
+    }
+
+    public void setVodId(String vodId) {
+        this.vodId = vodId;
+    }
+
+
+    public String getPreviewUrl() {
+        return previewUrl;
+    }
+
+    public void setPreviewUrl(String previewUrl) {
+        this.previewUrl = previewUrl;
     }
 
 

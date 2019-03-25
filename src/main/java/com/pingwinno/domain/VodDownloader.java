@@ -4,14 +4,13 @@ import com.pingwinno.application.AnimatedPreviewGenerator;
 import com.pingwinno.application.FrameGrabber;
 import com.pingwinno.application.TimelinePreviewGenerator;
 import com.pingwinno.application.twitch.playlist.handler.*;
-import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
 import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.RecordThreadSupervisor;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.State;
+import com.pingwinno.infrastructure.models.StreamDataModel;
 import com.pingwinno.infrastructure.models.StreamDocumentModel;
-import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
@@ -38,13 +37,13 @@ public class VodDownloader {
     private LinkedHashMap<String, Double> mainPlaylist = new LinkedHashMap<>();
     private String streamFolderPath;
     private String vodId;
-    private StreamExtendedDataModel streamDataModel;
+    private StreamDataModel streamDataModel;
     private int threadsNumber = 1;
     private UUID uuid;
     private ExecutorService executorService;
 
 
-    public void initializeDownload(StreamExtendedDataModel streamDataModel) throws SQLException {
+    public void initializeDownload(StreamDataModel streamDataModel) throws SQLException {
         this.streamDataModel = streamDataModel;
         uuid = streamDataModel.getUuid();
         streamFolderPath = SettingsProperties.getRecordedStreamPath() + streamDataModel.getUser() + "/" + uuid.toString();
@@ -196,13 +195,6 @@ public class VodDownloader {
             }
             log.debug("Download m3u8");
             MediaPlaylistWriter.write(mainPlaylist, streamFolderPath);
-            try {
-                log.debug("write to local db");
-                SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
-                sqliteHandler.insert(streamDataModel);
-            } catch (Exception ignore) {
-                log.warn("Write to db failed. Skip.");
-            }
 
             LinkedHashMap<Integer, String> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, mainPlaylist);
             LinkedHashMap<Integer, String> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, mainPlaylist);
@@ -282,9 +274,6 @@ public class VodDownloader {
             }
             masterPlaylistDownloader.close();
             mediaPlaylistDownloader.close();
-            if (SettingsProperties.getExecutePostDownloadCommand()) {
-                PostDownloadHandler.handleDownloadedStream();
-            }
         } catch (IOException e) {
             new RecordStatusList().changeState(uuid, State.ERROR);
             log.error("VoD downloader unexpectedly stop. {}", e);

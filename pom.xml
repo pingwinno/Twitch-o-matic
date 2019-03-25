@@ -159,6 +159,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-plus</artifactId>
+            <version>9.4.12.v20180830</version>
+        </dependency>
+
+        <dependency>
             <groupId>commons-daemon</groupId>
             <artifactId>commons-daemon</artifactId>
             <version>1.1.0</version>
@@ -226,8 +232,15 @@
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
-            <version>3.25.2</version>
+            <version>3.27.2.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.199</version>
+        </dependency>
+
 
     </dependencies>
 

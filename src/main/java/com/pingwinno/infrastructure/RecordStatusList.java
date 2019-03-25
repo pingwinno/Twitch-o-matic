@@ -1,6 +1,6 @@
 package com.pingwinno.infrastructure;
 
-import com.pingwinno.domain.sqlite.handlers.SqliteStatusDataHandler;
+import com.pingwinno.domain.sqlite.handlers.JdbcHandler;
 import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.StatusDataModel;
 import org.slf4j.LoggerFactory;
@@ -14,7 +14,7 @@ public class RecordStatusList {
     private static final int LIST_SIZE = 100;
     private static LinkedList<StatusDataModel> statusList = new LinkedList<>();
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
-    private static SqliteStatusDataHandler dataHandler = new SqliteStatusDataHandler();
+    private static JdbcHandler dataHandler = new JdbcHandler();
 
     public RecordStatusList() throws SQLException {
         statusList = dataHandler.selectAll();

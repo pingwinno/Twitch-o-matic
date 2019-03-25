@@ -8,22 +8,24 @@ import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.MongoDBHandler;
 import com.pingwinno.domain.VodDownloader;
-import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
 import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.StartedBy;
 import com.pingwinno.infrastructure.enums.State;
-import com.pingwinno.infrastructure.models.*;
+import com.pingwinno.infrastructure.models.AddDataModel;
+import com.pingwinno.infrastructure.models.StatusDataModel;
+import com.pingwinno.infrastructure.models.StreamDataModel;
+import com.pingwinno.infrastructure.models.ValidationDataModel;
+import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 
@@ -42,7 +44,7 @@ public class CRUDApiHandler {
     @Produces(MediaType.TEXT_HTML)
     public Response startRecord(AddDataModel dataModel) {
         Response response;
-        StreamExtendedDataModel streamMetadata = null;
+        StreamDataModel streamMetadata = null;
         try {
             log.trace("type: {}", dataModel.getType());
             log.trace("value: {}", dataModel.getValue());
@@ -56,7 +58,7 @@ public class CRUDApiHandler {
                 if (streamMetadata.getVodId() != null) {
 
                     streamMetadata.setUuid(StorageHelper.getUuidName());
-                    StreamExtendedDataModel finalStreamMetadata = streamMetadata;
+                    StreamDataModel finalStreamMetadata = streamMetadata;
                     streamMetadata.setSkipMuted(dataModel.isSkipMuted());
 
                     new RecordStatusList().addStatus
@@ -67,7 +69,7 @@ public class CRUDApiHandler {
                         try {
                             vodDownloader.initializeDownload(finalStreamMetadata);
                         } catch (SQLException e) {
-                            log.error("DB error {} ",e);
+                            log.error("DB error {} ", e);
                         }
                     }).start();
 
@@ -93,7 +95,7 @@ public class CRUDApiHandler {
     @Produces(MediaType.TEXT_HTML)
     public Response validateRecord(ValidationDataModel dataModel) {
         Response response;
-        StreamExtendedDataModel streamMetadata = null;
+        StreamDataModel streamMetadata = null;
         try {
             log.trace("vodId: {}", dataModel.getVodId());
             log.trace("uuid: {}", dataModel.getUuid());
@@ -105,7 +107,7 @@ public class CRUDApiHandler {
                 if (streamMetadata.getVodId() != null) {
 
                     streamMetadata.setUuid(dataModel.getUuid());
-                    StreamExtendedDataModel finalStreamMetadata = streamMetadata;
+                    StreamDataModel finalStreamMetadata = streamMetadata;
                     streamMetadata.setSkipMuted(dataModel.isSkipMuted());
 
                     new RecordStatusList().addStatus
@@ -116,7 +118,7 @@ public class CRUDApiHandler {
                         try {
                             vodDownloader.initializeDownload(finalStreamMetadata);
                         } catch (SQLException e) {
-                            log.error("DB error {} ",e);
+                            log.error("DB error {} ", e);
                         }
                     }).start();
 
@@ -141,12 +143,11 @@ public class CRUDApiHandler {
     @DELETE
     public Response deleteStream(@PathParam("uuid") String uuid, @PathParam("user") String user, @QueryParam("deleteMedia") String deleteMedia) {
 
-        SqliteStreamDataHandler sqliteHandler = new SqliteStreamDataHandler();
-        sqliteHandler.delete(uuid, user);
+        MongoDBHandler.getCollection(user, Document.class).deleteOne(new Document("_id", uuid));
         log.info("delete stream {}", uuid);
         if (deleteMedia.equals("true")) {
             try {
-                Files.delete(Paths.get(SettingsProperties.getRecordedStreamPath() + uuid));
+                FileUtils.deleteDirectory(new File(SettingsProperties.getRecordedStreamPath() + "" + user + "/" + uuid));
             } catch (IOException e) {
                 log.error("can't delete media {] ", e);
                 return Response.notModified().build();

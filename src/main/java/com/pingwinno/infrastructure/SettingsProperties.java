@@ -103,16 +103,16 @@ public class SettingsProperties {
         return recordedStreamPath;
     }
 
-    public static boolean getExecutePostDownloadCommand() {
-        boolean executePostDownloadCommand = false;
+    public static boolean h2ConsoleIsEnabled() {
+        boolean h2ConsoleIsEnabled = false;
         try {
-            if (getProperties().getProperty("ExecutePostDownloadCommand").equals("true")) {
-                executePostDownloadCommand = true;
+            if (getProperties().getProperty("h2ConsoleIsEnabled").equals("true")) {
+                h2ConsoleIsEnabled = true;
             }
         } catch (IOException e) {
-            log.error("Can't read ExecutePostDownloadCommand.", e);
+            log.error("Can't read h2ConsoleIsEnabled.", e);
         }
-        return executePostDownloadCommand;
+        return h2ConsoleIsEnabled;
     }
 
     public static String getCommandArgs() {
@@ -161,15 +161,32 @@ public class SettingsProperties {
         return mongoDBName;
     }
 
-    public static String getSqliteFile() {
-        String sqliteFile = null;
+
+    public static String getH2User() {
+        String h2User = null;
         try {
-            sqliteFile = getProperties().getProperty("SqliteFile");
+            if ((h2User = getProperties().getProperty("H2User")).trim().equals("")) {
+                h2User = "someUser";
+            }
         } catch (IOException e) {
-            log.error("Can't read SqliteFile. {}", e);
+            log.error("Can't read H2User. {}", e);
             System.exit(1);
         }
-        return sqliteFile;
+        return h2User;
+    }
+
+    public static String getH2Password() {
+        String h2Password = null;
+        try {
+            if ((h2Password = getProperties().getProperty("H2Password")).trim().equals("")) {
+                h2Password = "wy4c5j7yw457g";
+            }
+            ;
+        } catch (IOException e) {
+            log.error("Can't read H2Password. {}", e);
+            System.exit(1);
+        }
+        return h2Password;
     }
 }
 

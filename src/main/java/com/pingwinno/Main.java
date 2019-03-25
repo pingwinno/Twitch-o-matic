@@ -6,8 +6,7 @@ import com.pingwinno.application.StorageHelper;
 import com.pingwinno.domain.MongoDBHandler;
 import com.pingwinno.domain.servers.ManagementServer;
 import com.pingwinno.domain.servers.TwitchServer;
-import com.pingwinno.domain.sqlite.handlers.SqliteStatusDataHandler;
-import com.pingwinno.domain.sqlite.handlers.SqliteStreamDataHandler;
+import com.pingwinno.domain.sqlite.handlers.JdbcHandler;
 import com.pingwinno.infrastructure.SettingsProperties;
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
@@ -21,10 +20,12 @@ public class Main implements Daemon {
 
     static org.slf4j.Logger log = LoggerFactory.getLogger(Main.class.getName());
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, SQLException {
         Main.class.getResourceAsStream("log4j2.json");
 
         org.slf4j.Logger log = LoggerFactory.getLogger(Main.class.getName());
+        //use if direct connection to h2 needed
+        // org.h2.tools.Server.createWebServer(new String[]{"-web","-webAllowOthers","-webPort","7071"}).start();
 
         if (!SettingsProperties.getMongoDBAddress().trim().equals("")) {
             log.info("Connect to MongoDB...");
@@ -34,11 +35,7 @@ public class Main implements Daemon {
         }
         try {
             log.debug("initialize db");
-            for (String user : SettingsProperties.getUsers()) {
-                user = user.trim();
-                new SqliteStreamDataHandler().initializeDB(user);
-            }
-            new SqliteStatusDataHandler().initializeDB();
+            new JdbcHandler().initializeDB();
         } catch (SQLException e) {
             log.error("DB initialization failed {} ", e);
         }
@@ -75,7 +72,11 @@ public class Main implements Daemon {
     @Override
     public void start() throws InterruptedException {
         log.info("starting...");
-        main(null);
+        try {
+            main(null);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

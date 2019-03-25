@@ -1,7 +1,7 @@
 package com.pingwinno.application;
 
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.models.StreamExtendedDataModel;
+import com.pingwinno.infrastructure.models.StreamDataModel;
 import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
@@ -15,7 +15,7 @@ import java.util.LinkedHashMap;
 public class AnimatedPreviewGenerator {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(AnimatedPreviewGenerator.class.getName());
 
-    public static LinkedHashMap<Integer, String> generate(StreamExtendedDataModel model, LinkedHashMap<String, Double> chunksSet) throws IOException {
+    public static LinkedHashMap<Integer, String> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet) throws IOException {
         LinkedHashMap<Integer, String> previewList = new LinkedHashMap<>();
         ArrayList<String> chunks = new ArrayList<>(chunksSet.keySet());
         String pathString = SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid();
