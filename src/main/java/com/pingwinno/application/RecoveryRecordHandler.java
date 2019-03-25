@@ -1,8 +1,8 @@
 package com.pingwinno.application;
 
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
+import com.pingwinno.domain.JdbcHandler;
 import com.pingwinno.domain.VodDownloader;
-import com.pingwinno.domain.sqlite.handlers.JdbcHandler;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.StatusDataModel;

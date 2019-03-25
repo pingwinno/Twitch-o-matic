@@ -1,4 +1,4 @@
-package com.pingwinno.domain.sqlite.handlers;
+package com.pingwinno.domain;
 
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.enums.StartedBy;

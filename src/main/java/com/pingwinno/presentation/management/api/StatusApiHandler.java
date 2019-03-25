@@ -2,7 +2,7 @@ package com.pingwinno.presentation.management.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pingwinno.domain.sqlite.handlers.JdbcHandler;
+import com.pingwinno.domain.JdbcHandler;
 import com.pingwinno.infrastructure.RecordThreadSupervisor;
 
 import javax.ws.rs.*;

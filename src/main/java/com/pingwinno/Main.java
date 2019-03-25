@@ -3,10 +3,10 @@ package com.pingwinno;
 
 import com.pingwinno.application.RecoveryRecordHandler;
 import com.pingwinno.application.StorageHelper;
+import com.pingwinno.domain.JdbcHandler;
 import com.pingwinno.domain.MongoDBHandler;
 import com.pingwinno.domain.servers.ManagementServer;
 import com.pingwinno.domain.servers.TwitchServer;
-import com.pingwinno.domain.sqlite.handlers.JdbcHandler;
 import com.pingwinno.infrastructure.SettingsProperties;
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;

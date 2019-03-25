@@ -1,6 +1,6 @@
 package com.pingwinno.infrastructure;
 
-import com.pingwinno.domain.sqlite.handlers.JdbcHandler;
+import com.pingwinno.domain.JdbcHandler;
 import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.StatusDataModel;
 import org.slf4j.LoggerFactory;
