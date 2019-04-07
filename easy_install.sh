@@ -19,11 +19,8 @@ else
   git clone https://github.com/pingwinno/twitch-o-matic.git
   cd ./twitch-o-matic
   mvn package
-  adduser --system --no-create-home --group tom-daemon
+  adduser --system --group tom-daemon
   mkdir /usr/local/twitch-o-matic/
-  mkdir /usr/local/twitch-o-matic//db/
-  chown tom-daemon /usr/local/twitch-o-matic//db/
-  chmod u+w /usr/local/twitch-o-matic//db/
   mkdir /var/log/tom/
   chown tom-daemon /var/log/tom/
   chmod u+w /var/log/tom/

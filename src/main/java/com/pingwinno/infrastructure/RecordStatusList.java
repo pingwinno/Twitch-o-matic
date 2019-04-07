@@ -1,11 +1,10 @@
 package com.pingwinno.infrastructure;
 
-import com.pingwinno.domain.JdbcHandler;
+import com.pingwinno.application.JdbcHandler;
 import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.StatusDataModel;
 import org.slf4j.LoggerFactory;
 
-import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.UUID;
@@ -16,27 +15,27 @@ public class RecordStatusList {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
     private static JdbcHandler dataHandler = new JdbcHandler();
 
-    public RecordStatusList() throws SQLException {
+    public RecordStatusList() {
         statusList = dataHandler.selectAll();
     }
 
 
-    synchronized public void addStatus(StatusDataModel statusDataModel) throws SQLException {
+    synchronized public void addStatus(StatusDataModel statusDataModel) {
         log.trace("add status");
         log.trace("{}", statusDataModel);
         if ((dataHandler.selectAll().size()>LIST_SIZE)) {
             dataHandler.delete(Objects.requireNonNull(statusList.pollFirst()).getUuid().toString());
-
         }
-        dataHandler.insert(statusDataModel);
+        if (dataHandler.search("uuid", "uuid", statusDataModel.getUuid().toString()) == null) {
+            dataHandler.insert(statusDataModel);
+        } else {
+            dataHandler.update(statusDataModel);
+        }
+
         statusList.add(statusDataModel);
     }
 
-    synchronized public LinkedList<StatusDataModel> getStatusList() {
-        return new LinkedList<>(statusList);
-    }
-
-    synchronized public void changeState(UUID uuid, State state) throws SQLException {
+    synchronized public void changeState(UUID uuid, State state) {
         statusList = dataHandler.selectAll();
        StatusDataModel updatedDataModel = statusList.get(statusList.indexOf(statusList.stream()
                .filter(statusDataModel -> uuid.equals(statusDataModel.getUuid()))
@@ -45,25 +44,4 @@ public class RecordStatusList {
        updatedDataModel.setState(state);
        dataHandler.update(updatedDataModel);
     }
-    synchronized public boolean isExist(String vodId) throws SQLException {
-        boolean isExist ;
-        statusList = dataHandler.selectAll();
-        if (!statusList.isEmpty()) {
-            if (statusList.indexOf(statusList.stream()
-                    .filter(statusDataModel -> vodId.equals(statusDataModel.getVodId()))
-                    .findAny()
-                    .orElse(null)) > 0) {
-                isExist = statusList.get(statusList.indexOf(statusList.stream()
-                        .filter(statusDataModel -> vodId.equals(statusDataModel.getVodId()))
-                        .findAny()
-                        .orElse(null))) != null;
-            }else {
-                isExist =false;
-            }
-        }else {
-            isExist=  false;
-        }
-        return isExist;
-    }
-
 }

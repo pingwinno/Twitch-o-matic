@@ -1,9 +1,9 @@
 package com.pingwinno;
 
 
+import com.pingwinno.application.JdbcHandler;
 import com.pingwinno.application.RecoveryRecordHandler;
 import com.pingwinno.application.StorageHelper;
-import com.pingwinno.domain.JdbcHandler;
 import com.pingwinno.domain.MongoDBHandler;
 import com.pingwinno.domain.servers.ManagementServer;
 import com.pingwinno.domain.servers.TwitchServer;
@@ -20,7 +20,7 @@ public class Main implements Daemon {
 
     static org.slf4j.Logger log = LoggerFactory.getLogger(Main.class.getName());
 
-    public static void main(String[] args) throws InterruptedException, SQLException {
+    public static void main(String[] args) throws InterruptedException {
         Main.class.getResourceAsStream("log4j2.json");
 
         org.slf4j.Logger log = LoggerFactory.getLogger(Main.class.getName());
@@ -66,22 +66,18 @@ public class Main implements Daemon {
     @Override
     public void init(DaemonContext daemonContext) {
 
-
     }
 
     @Override
     public void start() throws InterruptedException {
         log.info("starting...");
-        try {
-            main(null);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        main(null);
     }
 
     @Override
     public void stop() throws Exception {
         log.info("stopping...");
+        MongoDBHandler.disconnect();
         TwitchServer.stop();
         ManagementServer.stop();
     }

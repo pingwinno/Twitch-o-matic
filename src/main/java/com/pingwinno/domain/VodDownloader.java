@@ -58,7 +58,7 @@ public class VodDownloader {
                 threadsNumber = 10;
             }
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            log.error("Can't start record. {}", e);
             new RecordStatusList().changeState(uuid, State.ERROR);
         }
         try {

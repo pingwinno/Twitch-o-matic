@@ -30,7 +30,6 @@ public class RestExceptionMapper implements ExceptionMapper<Throwable> {
         if (exception instanceof WebApplicationException) {
             return ((WebApplicationException) exception).getResponse().getStatus();
         }
-
         return Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
     }
 
@@ -39,6 +38,7 @@ public class RestExceptionMapper implements ExceptionMapper<Throwable> {
      */
     private Object getEntity(Throwable exception) {
         // return stack trace for debugging (probably don't want this in prod...)
+        log.error("REST exeption {}", exception);
         StringWriter errorMsg = new StringWriter();
         exception.printStackTrace(new PrintWriter(errorMsg));
         return errorMsg.toString();

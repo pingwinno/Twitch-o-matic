@@ -83,7 +83,7 @@ public class CRUDApiHandler {
             } else {
                 response = Response.status(Response.Status.NOT_ACCEPTABLE).build();
             }
-        } catch (IOException | InterruptedException | SQLException | StreamNotFoundExeption e) {
+        } catch (IOException | InterruptedException | StreamNotFoundExeption e) {
             response = Response.status(500, e.toString()).build();
             log.error("Can't start record {}", e);
         }
@@ -94,49 +94,53 @@ public class CRUDApiHandler {
     @POST
     @Produces(MediaType.TEXT_HTML)
     public Response validateRecord(ValidationDataModel dataModel) {
-        Response response;
-        StreamDataModel streamMetadata = null;
-        try {
-            log.trace("vodId: {}", dataModel.getVodId());
-            log.trace("uuid: {}", dataModel.getUuid());
+        if (!(dataModel.getVodId().trim().equals("") && dataModel.getUuid() == null)) {
+            Response response;
+            StreamDataModel streamMetadata;
+            try {
+                log.trace("vodId: {}", dataModel.getVodId());
+                log.trace("uuid: {}", dataModel.getUuid());
 
-            streamMetadata = VodMetadataHelper.getVodMetadata(dataModel.getVodId());
+                streamMetadata = VodMetadataHelper.getVodMetadata(dataModel.getVodId());
 
-            if (streamMetadata != null) {
-                VodDownloader vodDownloader = new VodDownloader();
-                if (streamMetadata.getVodId() != null) {
+                if (streamMetadata != null) {
+                    VodDownloader vodDownloader = new VodDownloader();
+                    if (streamMetadata.getVodId() != null) {
 
-                    streamMetadata.setUuid(dataModel.getUuid());
-                    StreamDataModel finalStreamMetadata = streamMetadata;
-                    streamMetadata.setSkipMuted(dataModel.isSkipMuted());
+                        streamMetadata.setUuid(dataModel.getUuid());
+                        StreamDataModel finalStreamMetadata = streamMetadata;
+                        streamMetadata.setSkipMuted(dataModel.isSkipMuted());
 
-                    new RecordStatusList().addStatus
-                            (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, DateConverter.convert(LocalDateTime.now()),
-                                    State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
+                        new RecordStatusList().addStatus
+                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, DateConverter.convert(LocalDateTime.now()),
+                                        State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
 
-                    new Thread(() -> {
-                        try {
-                            vodDownloader.initializeDownload(finalStreamMetadata);
-                        } catch (SQLException e) {
-                            log.error("DB error {} ", e);
-                        }
-                    }).start();
+                        new Thread(() -> {
+                            try {
+                                vodDownloader.initializeDownload(finalStreamMetadata);
+                            } catch (SQLException e) {
+                                log.error("DB error {} ", e);
+                            }
+                        }).start();
 
-                    String startedAt = streamMetadata.getDate();
-                    log.info("Record started at:{} ", startedAt);
-                    response = Response.accepted().build();
+                        String startedAt = streamMetadata.getDate();
+                        log.info("Record started at:{} ", startedAt);
+                        response = Response.accepted().build();
+                    } else {
+                        log.error("Stream {] not found", dataModel.getVodId());
+                        response = Response.status(Response.Status.NOT_FOUND).build();
+                    }
                 } else {
-                    log.error("Stream {] not found", dataModel.getVodId());
-                    response = Response.status(Response.Status.NOT_FOUND).build();
+                    response = Response.status(Response.Status.NOT_ACCEPTABLE).build();
                 }
-            } else {
-                response = Response.status(Response.Status.NOT_ACCEPTABLE).build();
+            } catch (IOException | InterruptedException | StreamNotFoundExeption e) {
+                response = Response.status(500, e.toString()).build();
+                log.error("Can't start record {}", e);
             }
-        } catch (IOException | InterruptedException | SQLException | StreamNotFoundExeption e) {
-            response = Response.status(500, e.toString()).build();
-            log.error("Can't start record {}", e);
+            return response;
+        } else {
+            return Response.noContent().build();
         }
-        return response;
     }
 
     @Path("{user}/{uuid}")

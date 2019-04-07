@@ -3,10 +3,10 @@ package com.pingwinno.presentation.twitch.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.application.DateConverter;
+import com.pingwinno.application.JdbcHandler;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.RecordStatusGetter;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
-import com.pingwinno.domain.JdbcHandler;
 import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.HashHandler;
 import com.pingwinno.infrastructure.RecordStatusList;

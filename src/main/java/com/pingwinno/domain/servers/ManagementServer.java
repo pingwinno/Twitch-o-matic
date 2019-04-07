@@ -2,6 +2,7 @@ package com.pingwinno.domain.servers;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pingwinno.infrastructure.RestExceptionMapper;
 import com.pingwinno.infrastructure.SettingsProperties;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -12,6 +13,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Application;
+import java.util.LinkedHashMap;
 
 public class ManagementServer {
     private static Server server;
@@ -25,6 +27,11 @@ public class ManagementServer {
         log.debug("Running management server...");
         final Application application = new ResourceConfig()
                 .packages("org.glassfish.jersey.examples.jackson").register(JacksonFeature.class);
+        ResourceConfig config = new ResourceConfig();
+        config.register(new RestExceptionMapper());
+        config.setProperties(new LinkedHashMap<String, Object>() {{
+            put(org.glassfish.jersey.server.ServerProperties.PROCESSING_RESPONSE_ERRORS_ENABLED, true);
+        }});
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         ServletHolder serHol = ctx.addServlet(ServletContainer.class, "/*");

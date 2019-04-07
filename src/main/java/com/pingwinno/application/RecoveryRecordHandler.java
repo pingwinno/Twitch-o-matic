@@ -1,7 +1,6 @@
 package com.pingwinno.application;
 
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
-import com.pingwinno.domain.JdbcHandler;
 import com.pingwinno.domain.VodDownloader;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.State;
@@ -35,7 +34,6 @@ public class RecoveryRecordHandler {
                     } catch (InterruptedException | IOException | SQLException e) {
                         log.error("Can't recover stream recording {}", e);
                     }
-
                 }
             }
         }

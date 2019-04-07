@@ -1,4 +1,4 @@
-package com.pingwinno.domain;
+package com.pingwinno.application;
 
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.enums.StartedBy;
@@ -14,13 +14,13 @@ public class JdbcHandler {
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
-    Connection connect() {
+    private Connection connect() {
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(
                     "jdbc:h2:~/status", SettingsProperties.getH2User(), SettingsProperties.getH2Password());
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            log.error("Can't connect to DB {}", e);
         }
         return conn;
     }
@@ -47,7 +47,6 @@ public class JdbcHandler {
             }
             log.info("Table create complete");
         }
-
     }
 
     public void insert(StatusDataModel statusDataModel) {
@@ -77,7 +76,6 @@ public class JdbcHandler {
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sqlQuery)) {
 
-            // loop through the result set
             while (rs.next()) {
                 StatusDataModel streamDataModel =
                         new StatusDataModel(rs.getString("vodId"),
@@ -87,7 +85,7 @@ public class JdbcHandler {
                 streams.add(streamDataModel);
             }
         } catch (SQLException e) {
-            log.error("{ }", e);
+            log.error("{}", e);
         }
         return streams;
     }
@@ -102,15 +100,14 @@ public class JdbcHandler {
             log.trace(dataModel.getStartedBy().toString());
             log.trace(dataModel.getState().toString());
             log.trace(dataModel.getUuid().toString());
-            // set the corresponding param
+
             pstmt.setString(1, dataModel.getVodId());
             pstmt.setString(2, dataModel.getDate());
             pstmt.setString(3, dataModel.getStartedBy().toString());
             pstmt.setString(4, dataModel.getUser());
             pstmt.setString(5, dataModel.getState().toString());
-
             pstmt.setString(6, dataModel.getUuid().toString());
-            // update
+
             pstmt.executeUpdate();
         } catch (SQLException e) {
             log.error("update failed {}", e);
@@ -123,12 +120,9 @@ public class JdbcHandler {
         try (Connection conn = this.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            // set the value
             pstmt.setString(1, value);
-            //
             ResultSet rs = pstmt.executeQuery();
 
-            // loop through the result set
             while (rs.next()) {
                 searchResult.add(rs.getString(resultRow));
             }
@@ -143,9 +137,7 @@ public class JdbcHandler {
 
         try (Connection conn = this.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
             pstmt.setString(1, uuid);
-
             pstmt.executeUpdate();
             log.debug(uuid + " deleted");
 
@@ -153,5 +145,4 @@ public class JdbcHandler {
             log.error("delete failed {}", e);
         }
     }
-
 }

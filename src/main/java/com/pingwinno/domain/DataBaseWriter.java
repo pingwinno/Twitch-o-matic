@@ -13,7 +13,7 @@ public class DataBaseWriter {
 
     public static void writeToRemoteDB(StreamDocumentModel streamDocumentModel, String user) {
         if (MongoDBHandler.getCollection(user, StreamDocumentModel.class).find(
-                new Document("_id", streamDocumentModel.getUuid())) != null) {
+                new Document("_id", streamDocumentModel.getUuid())) == null) {
             log.debug("Write to remote db...");
             MongoDBHandler.getCollection(user, StreamDocumentModel.class).insertOne(streamDocumentModel);
             log.trace("Remote db endpoint: {}", SettingsProperties.getMongoDBAddress());
