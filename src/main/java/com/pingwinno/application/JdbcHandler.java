@@ -55,12 +55,14 @@ public class JdbcHandler {
         try (Connection connection = connect();
 
              PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
+
             preparedStatement.setString(1, statusDataModel.getUuid().toString());
             preparedStatement.setString(2, statusDataModel.getState().toString());
             preparedStatement.setString(3, statusDataModel.getDate());
             preparedStatement.setString(4, statusDataModel.getStartedBy().toString());
             preparedStatement.setString(6, statusDataModel.getVodId());
             preparedStatement.setString(5, statusDataModel.getUser());
+
             preparedStatement.executeUpdate();
 
         } catch (SQLException e) {
@@ -91,15 +93,12 @@ public class JdbcHandler {
     }
 
     public void update(StatusDataModel dataModel) {
+
         String sql = "UPDATE streams_status SET vodId = ?, date = ?, startedBy = ?, user = ?, state = ? WHERE uuid = ?;";
 
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            log.trace(dataModel.getVodId());
-            log.trace(dataModel.getDate());
-            log.trace(dataModel.getStartedBy().toString());
-            log.trace(dataModel.getState().toString());
-            log.trace(dataModel.getUuid().toString());
+
 
             pstmt.setString(1, dataModel.getVodId());
             pstmt.setString(2, dataModel.getDate());
@@ -130,6 +129,29 @@ public class JdbcHandler {
             log.error(e.toString());
         }
         return searchResult;
+    }
+
+    public LinkedList<StatusDataModel> search(String searchRow, String value) {
+        String sql = "SELECT * FROM streams_status WHERE " + searchRow + " = ?";
+        LinkedList<StatusDataModel> streams = new LinkedList<>();
+        try (Connection conn = this.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, value);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                StatusDataModel streamDataModel =
+                        new StatusDataModel(rs.getString("vodId"),
+                                StartedBy.valueOf(rs.getString("startedBy")),
+                                rs.getString("date"), State.valueOf(rs.getString("state")),
+                                UUID.fromString(rs.getString("uuid")), rs.getString("user"));
+                streams.add(streamDataModel);
+            }
+        } catch (SQLException e) {
+            log.error(e.toString());
+        }
+        return streams;
     }
 
     public void delete(String uuid) {
