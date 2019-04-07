@@ -115,17 +115,6 @@ public class SettingsProperties {
         return h2ConsoleIsEnabled;
     }
 
-    public static String getCommandArgs() {
-        String commandArgs = null;
-        try {
-            commandArgs = getProperties().getProperty("CommandAgrs");
-        } catch (IOException e) {
-            log.error("Can't read CommandAgrs. {}", e);
-
-        }
-        return commandArgs;
-    }
-
     public static String getStreamQuality() {
         String streamQuality;
         try {

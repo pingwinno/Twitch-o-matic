@@ -13,7 +13,6 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Application;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 
 public class ManagementServer {
@@ -36,12 +35,6 @@ public class ManagementServer {
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         ServletHolder serHol = ctx.addServlet(ServletContainer.class, "/*");
-        try {
-            org.h2.tools.Server server = org.h2.tools.Server.createWebServer().start();
-            log.info("h2 console url {}", server.getURL());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
         serHol.setInitOrder(2);
         //Handler package
         serHol.setInitParameter("jersey.config.server.provider.packages",

@@ -58,6 +58,15 @@ public class Main implements Daemon {
         } else {
             log.info("Management server is disabled");
         }
+        if (SettingsProperties.h2ConsoleIsEnabled()) {
+            try {
+                log.info("Starting H2 console...");
+                org.h2.tools.Server server = org.h2.tools.Server.createWebServer().start();
+                log.info("h2 console url {}", server.getURL());
+            } catch (SQLException e) {
+                log.error("Can't start H2 console");
+            }
+        }
 
         new Thread(RecoveryRecordHandler::recoverUncompletedRecordTask).start();
 
