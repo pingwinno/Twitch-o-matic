@@ -1,7 +1,7 @@
 package com.pingwinno.application.twitch.playlist.handler;
 
 import com.pingwinno.application.DateConverter;
-import com.pingwinno.infrastructure.HttpSeviceHelper;
+import com.pingwinno.infrastructure.HttpSevice;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.models.StreamDataModel;
 import org.apache.http.client.methods.HttpGet;
@@ -19,12 +19,12 @@ public class VodMetadataHelper {
     public static StreamDataModel getLastVod(String user) throws IOException, InterruptedException,
             StreamNotFoundExeption {
 
-        HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
+        HttpSevice httpSevice = new HttpSevice();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/channels/" + user +
                 "/videos?limit=1&broadcast_type=archive&sort=time");
         httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
         JSONObject jsonObj =
-                new JSONObject(EntityUtils.toString(httpSeviceHelper.getService(httpGet, true)));
+                new JSONObject(EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity()));
         StreamDataModel streamMetadata = new StreamDataModel();
         if (jsonObj.getJSONArray("videos") != null) {
             JSONArray params = jsonObj.getJSONArray("videos");
@@ -32,7 +32,7 @@ public class VodMetadataHelper {
             String rawVodId = videoObj.get("_id").toString();
             //delete "v" from id field
             streamMetadata = getVodMetadata(rawVodId.substring(0, 0) + rawVodId.substring(1));
-            httpSeviceHelper.close();
+            httpSevice.close();
 
         }
         return streamMetadata;
@@ -41,12 +41,12 @@ public class VodMetadataHelper {
     public static StreamDataModel getVodMetadata(String vodId) throws IOException,
             InterruptedException, StreamNotFoundExeption {
 
-        HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
+        HttpSevice httpSevice = new HttpSevice();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/videos/" + vodId);
         httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
         httpGet.addHeader("Accept","application/vnd.twitchtv.v5+json");
         JSONObject dataObj =
-                new JSONObject(EntityUtils.toString(httpSeviceHelper.getService(httpGet, true)));
+                new JSONObject(EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity()));
         StreamDataModel streamMetadata = new StreamDataModel();
         log.trace("{}", dataObj);
         if (!dataObj.toString().equals("")) {
@@ -60,7 +60,7 @@ public class VodMetadataHelper {
                 if (!dataObj.get("game").toString().equals("")) {
                     streamMetadata.setGame(dataObj.get("game").toString());
                 } else streamMetadata.setGame("");
-                httpSeviceHelper.close();
+                httpSevice.close();
             } catch (IllegalStateException | JSONException e) {
                 log.error("{}", e);
                 throw new StreamNotFoundExeption("Stream " + vodId + "not found");

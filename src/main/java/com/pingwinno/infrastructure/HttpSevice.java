@@ -1,6 +1,5 @@
 package com.pingwinno.infrastructure;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -11,14 +10,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class HttpSeviceHelper {
+public class HttpSevice {
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
     private CloseableHttpClient client;
     private CloseableHttpResponse response;
     private int failsCount = 0;
 
-    public HttpEntity getService(HttpGet httpGet, boolean sslVerifyEnable) throws IOException, InterruptedException {
+    public CloseableHttpResponse getService(HttpGet httpGet, boolean sslVerifyEnable) throws IOException, InterruptedException {
         if (sslVerifyEnable) {
             client = HttpClients.createDefault();
         } else {
@@ -27,23 +26,28 @@ public class HttpSeviceHelper {
         }
         try {
             response = client.execute(httpGet);
+            log.trace("Request response: {}. Called by {}:{}", response.getStatusLine(),
+                    Thread.currentThread().getStackTrace()[2].getClassName(),
+                    Thread.currentThread().getStackTrace()[2].getMethodName());
         } catch (IOException e) {
             if (failsCount < 6) {
                 this.failsCount++;
                 log.warn("request failed. Retry...");
                 Thread.sleep(5000);
                 this.getService(httpGet, sslVerifyEnable);
-                log.trace("Request response: {}", response.getStatusLine());
+                log.trace("Request response: {}. Called by {}:{}", response.getStatusLine(),
+                        Thread.currentThread().getStackTrace()[2].getClassName(),
+                        Thread.currentThread().getStackTrace()[2].getMethodName());
             } else {
                 log.error("Request failed more than 5 times. Close connection");
                 throw new IOException();
             }
         }
-        return response.getEntity();
+        return response;
 
     }
 
-    public HttpEntity getService(HttpPost httpPost, boolean sslVerifyEnable) throws IOException, InterruptedException {
+    public CloseableHttpResponse getService(HttpPost httpPost, boolean sslVerifyEnable) throws IOException, InterruptedException {
 
         if (sslVerifyEnable) {
             client = HttpClients.createDefault();
@@ -53,19 +57,26 @@ public class HttpSeviceHelper {
         }
         try {
             response = client.execute(httpPost);
+            log.trace("Request response: {}. Called by {}:{}", response.getStatusLine(),
+                    Thread.currentThread().getStackTrace()[2].getClassName(),
+                    Thread.currentThread().getStackTrace()[2].getMethodName());
+
         } catch (IOException e) {
             if (failsCount < 6) {
                 this.failsCount++;
                 log.warn("request failed. Retry...");
                 Thread.sleep(5000);
                 this.getService(httpPost, sslVerifyEnable);
-                log.trace("Request response: {}", response.getStatusLine());
+
+                log.trace("Request response: {}. Called by {}:{}", response.getStatusLine(),
+                        Thread.currentThread().getStackTrace()[2].getClassName(),
+                        Thread.currentThread().getStackTrace()[2].getMethodName());
             } else {
                 log.error("Request failed more than 5 times. Close connection");
                 throw new IOException();
             }
         }
-        return response.getEntity();
+        return response;
 
     }
 

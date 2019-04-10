@@ -17,8 +17,5 @@ public class MediaPlaylistDownloader {
         return reader;
     }
 
-    public void close() throws IOException {
-        reader.close();
-    }
 
 }

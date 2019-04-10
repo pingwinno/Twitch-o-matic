@@ -20,6 +20,7 @@ public class MasterPlaylistParser {
                 log.trace(m3u8Link);
             }
         }
+        reader.close();
         return m3u8Link;
     }
 }

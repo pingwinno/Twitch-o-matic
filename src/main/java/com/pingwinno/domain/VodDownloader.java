@@ -101,7 +101,7 @@ public class VodDownloader {
                 stopRecord();
             }
             this.recordCycle();
-        } catch (IOException | URISyntaxException | InterruptedException | SQLException e) {
+        } catch (IOException | URISyntaxException | InterruptedException | SQLException | StreamNotFoundExeption e) {
             log.error("Vod downloader initialization failed. {}", e);
             new RecordStatusList().changeState(uuid, State.ERROR);
             stopRecord();
@@ -156,7 +156,7 @@ public class VodDownloader {
             } else {
                 log.warn("UnknownHostException again. Why? I don't give a fuck.");
             }
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException | StreamNotFoundExeption e) {
             log.error("Vod downloader refresh failed. {}", e);
             new RecordStatusList().changeState(uuid, State.ERROR);
             stopRecord();
@@ -273,7 +273,6 @@ public class VodDownloader {
                 executorService.shutdownNow();
             }
             masterPlaylistDownloader.close();
-            mediaPlaylistDownloader.close();
         } catch (IOException e) {
             new RecordStatusList().changeState(uuid, State.ERROR);
             log.error("VoD downloader unexpectedly stop. {}", e);

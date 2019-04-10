@@ -30,6 +30,7 @@ public class MediaPlaylistParser {
 
             }
         }
+        reader.close();
         return chunks;
     }
 
@@ -43,6 +44,7 @@ public class MediaPlaylistParser {
                 log.trace("Stream duration: {}", time);
             }
         }
+        reader.close();
         return time;
     }
 }

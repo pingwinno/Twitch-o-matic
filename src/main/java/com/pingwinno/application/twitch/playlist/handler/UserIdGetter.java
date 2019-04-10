@@ -1,6 +1,6 @@
 package com.pingwinno.application.twitch.playlist.handler;
 
-import com.pingwinno.infrastructure.HttpSeviceHelper;
+import com.pingwinno.infrastructure.HttpSevice;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
@@ -15,12 +15,12 @@ public class UserIdGetter {
 
     public static String getUserId(String user) throws IOException, InterruptedException {
 
-        HttpSeviceHelper httpSeviceHelper = new HttpSeviceHelper();
+        HttpSevice httpSevice = new HttpSevice();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/helix/users?login=" + user);
         httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
         log.fine(httpGet.toString());
         JSONObject jsonObj =
-                new JSONObject(EntityUtils.toString(httpSeviceHelper.getService(httpGet, true)));
+                new JSONObject(EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity()));
 
         JSONArray params = jsonObj.getJSONArray("data");
         JSONObject dataObj = params.getJSONObject(0);
