@@ -1,24 +1,23 @@
 package com.pingwinno.infrastructure;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class RecordThreadSupervisor {
-    private static volatile HashMap<UUID, Boolean> threadsList = new HashMap<>();
+    private static volatile Map<UUID, RecordThread> threadsList = new ConcurrentHashMap<>();
 
     private RecordThreadSupervisor() {
     }
 
-    public synchronized static boolean isRunning(UUID uuid) {
-        return threadsList.get(uuid);
+
+    public synchronized static void add(UUID uuid, RecordThread recordThread) {
+        threadsList.put(uuid, recordThread);
     }
 
-    public synchronized static void addFlag(UUID uuid) {
-        threadsList.put(uuid, true);
-    }
-
-    public synchronized static void changeFlag(UUID uuid, boolean flag) {
-        threadsList.replace(uuid, flag);
+    public synchronized static void stop(UUID uuid) {
+        threadsList.get(uuid).stop();
+        threadsList.remove(uuid);
     }
 
 }

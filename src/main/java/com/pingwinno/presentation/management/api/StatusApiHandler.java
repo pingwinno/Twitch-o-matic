@@ -27,7 +27,7 @@ public class StatusApiHandler {
     @DELETE
     @Path("/{uuid}")
     public Response stopTask(@PathParam("uuid") String uuid) {
-        RecordThreadSupervisor.changeFlag(UUID.fromString(uuid), false);
+        RecordThreadSupervisor.stop(UUID.fromString(uuid));
         return Response.accepted().build();
     }
 }

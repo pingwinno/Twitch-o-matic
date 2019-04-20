@@ -1,7 +1,7 @@
 package com.pingwinno.application;
 
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
-import com.pingwinno.domain.VodDownloader;
+import com.pingwinno.domain.VodRecorder;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.State;
 import com.pingwinno.infrastructure.models.StatusDataModel;
@@ -9,7 +9,6 @@ import com.pingwinno.infrastructure.models.StreamDataModel;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.LinkedList;
 
 public class RecoveryRecordHandler {
@@ -27,11 +26,11 @@ public class RecoveryRecordHandler {
                         StreamDataModel extendedDataModel;
                         extendedDataModel = VodMetadataHelper.getVodMetadata(dataModel.getVodId());
                         extendedDataModel.setUuid(dataModel.getUuid());
-                        new VodDownloader().initializeDownload(extendedDataModel);
+                        new VodRecorder().start(extendedDataModel);
                     } catch (StreamNotFoundExeption streamNotFoundExeption) {
                         log.warn("Stream {} not found. Delete stream...", dataModel.getVodId());
                         new JdbcHandler().delete(dataModel.getUuid().toString());
-                    } catch (InterruptedException | IOException | SQLException e) {
+                    } catch (InterruptedException | IOException e) {
                         log.error("Can't recover stream recording {}", e);
                     }
                 }

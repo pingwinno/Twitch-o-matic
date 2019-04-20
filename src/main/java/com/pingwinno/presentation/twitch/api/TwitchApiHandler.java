@@ -7,7 +7,7 @@ import com.pingwinno.application.JdbcHandler;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.RecordStatusGetter;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
-import com.pingwinno.domain.VodDownloader;
+import com.pingwinno.domain.VodRecorder;
 import com.pingwinno.infrastructure.HashHandler;
 import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
@@ -106,13 +106,13 @@ public class TwitchApiHandler {
                                                     State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
 
                                     log.info("Try to start record");
-                                    VodDownloader vodDownloader = new VodDownloader();
+                                    VodRecorder vodRecorder = new VodRecorder();
 
                                     //check for notification duplicate
                                     log.info("check for duplicate notification");
-                                    vodDownloader.initializeDownload(streamMetadata);
+                                    vodRecorder.start(streamMetadata);
                                 } else log.warn("Stream duplicate. Skip...");
-                            } catch (SQLException | IOException | InterruptedException e) {
+                            } catch (IOException | InterruptedException e) {
                                 log.error("DB error {} ", e);
                             } catch (StreamNotFoundExeption streamNotFoundExeption) {
                                 streamNotFoundExeption.printStackTrace();

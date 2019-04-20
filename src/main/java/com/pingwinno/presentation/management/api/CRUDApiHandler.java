@@ -7,7 +7,7 @@ import com.pingwinno.application.DateConverter;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.MongoDBHandler;
-import com.pingwinno.domain.VodDownloader;
+import com.pingwinno.domain.VodRecorder;
 import com.pingwinno.infrastructure.RecordStatusList;
 import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
@@ -26,7 +26,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.time.LocalDateTime;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -54,7 +53,7 @@ public class CRUDApiHandler {
                 streamMetadata = VodMetadataHelper.getVodMetadata(dataModel.getValue());
             }
             if (streamMetadata != null) {
-                VodDownloader vodDownloader = new VodDownloader();
+                VodRecorder vodRecorder = new VodRecorder();
                 if (streamMetadata.getVodId() != null) {
 
                     streamMetadata.setUuid(StorageHelper.getUuidName());
@@ -65,13 +64,7 @@ public class CRUDApiHandler {
                             (new StatusDataModel(streamMetadata.getVodId(), StartedBy.MANUAL, DateConverter.convert(LocalDateTime.now()),
                                     State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
 
-                    new Thread(() -> {
-                        try {
-                            vodDownloader.initializeDownload(finalStreamMetadata);
-                        } catch (SQLException e) {
-                            log.error("DB error {} ", e);
-                        }
-                    }).start();
+                    new Thread(() -> vodRecorder.start(finalStreamMetadata)).start();
 
                     String startedAt = streamMetadata.getDate();
                     log.info("Record started at:{} ", startedAt);
@@ -104,7 +97,7 @@ public class CRUDApiHandler {
                 streamMetadata = VodMetadataHelper.getVodMetadata(dataModel.getVodId());
 
                 if (streamMetadata != null) {
-                    VodDownloader vodDownloader = new VodDownloader();
+                    VodRecorder vodRecorder = new VodRecorder();
                     if (streamMetadata.getVodId() != null) {
 
                         streamMetadata.setUuid(dataModel.getUuid());
@@ -115,13 +108,7 @@ public class CRUDApiHandler {
                                 (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, DateConverter.convert(LocalDateTime.now()),
                                         State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
 
-                        new Thread(() -> {
-                            try {
-                                vodDownloader.initializeDownload(finalStreamMetadata);
-                            } catch (SQLException e) {
-                                log.error("DB error {} ", e);
-                            }
-                        }).start();
+                        new Thread(() -> vodRecorder.start(finalStreamMetadata)).start();
 
                         String startedAt = streamMetadata.getDate();
                         log.info("Record started at:{} ", startedAt);
