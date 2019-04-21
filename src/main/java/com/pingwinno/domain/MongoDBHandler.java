@@ -1,7 +1,8 @@
 package com.pingwinno.domain;
 
-import com.mongodb.MongoClient;
-import com.mongodb.ServerAddress;
+
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.pingwinno.infrastructure.SettingsProperties;
@@ -18,8 +19,7 @@ public class MongoDBHandler {
     public static void connect() {
         CodecRegistry registry;
         registry = CodecRegistries.fromCodecs(new StreamDocumentCodec(), new DocumentCodec(), new StringCodec());
-        mongoClient = new MongoClient(
-                new ServerAddress(SettingsProperties.getMongoDBAddress(), 27017));
+        mongoClient = MongoClients.create("mongodb://" + SettingsProperties.getMongoDBAddress());
         String dbName = "streams";
         if (!SettingsProperties.getMongoDBName().trim().isEmpty()) {
             dbName = SettingsProperties.getMongoDBName().trim();
