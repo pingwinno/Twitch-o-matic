@@ -1,132 +1,467 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
-    <!-- Required meta tags -->
-    <meta charset='utf-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
-
-    <!-- Bootstrap CSS -->
-    <link rel='stylesheet' href='bootstrap.min.css' crossorigin='anonymous'
-          integrity='sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO'>
-
-    <script src='axios.js'></script>
-
-    <script src='jquery-3.3.1.min.js' crossorigin='anonymous'
-            integrity='sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8='></script>
-
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src='popper.min.js' crossorigin='anonymous'
-            integrity='sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49'></script>
-    <script src='bootstrap.min.js' crossorigin='anonymous'
-            integrity='sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy'></script>
-
-    <title>Management</title>
-    <script src='script.js'></script>
-    <style>
-        textarea {
-            resize: none;
-        }
-    </style>
+    <title>Management and statuses</title>
+    <link rel="icon" href="./logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
 </head>
 <body>
-<div class='container'>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Management</a>
-        <div class="collapse navbar-collapse">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item active">
-                    <a class="nav-link" href="#">Management</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="status.html">Status</a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-    <div class="form-group container p-3">
-        <label for="userSelect">Выбери свою стримершу:</label>
-        <select class="form-control" id="userSelect">я</select>
-        <script>
-            $("#userSelect").change(function () {
-                user = $("#userSelect option:selected").text();
-                write(user);
-            });
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
 
-        </script>
-    </div>
-    <div class='container p-3'>
-        <b>Add</b>
-        <table class='table table-bordered'>
-            <thead class='thead-dark'>
-            <tr>
-                <th scope='col'>Type</th>
-                <th scope='col'>Value</th>
-                <th scope='col'>Skip muted</th>
-                <th scope='col'>Button</th>
-            </tr>
-            </thead>
-            <tr>
-                <td scope='col' width='80px'>
-                    <input type='radio' name='type'
-                           value='vod' checked> vod<br>
-                    <input type='radio' name='type'
-                           value='user'> user
-                </td>
-                <td scope='col' width='auto'>
-                    <input class='form-control' type='text' name="value" placeholder='value'>
-                </td>
-                <td scope='col' width='130px'>
-                    <input type='checkbox' name="skipMuted"> Skip muted
-                </td>
-                <td scope='col' width='80px'>
-                    <button onclick="add()" class='btn'>Add</button>
-                </td>
-            </tr>
-        </table>
+<div id="app">
+    <v-app dark>
+        <v-container>
+            <v-tabs dark color="cyan" slider-color="yellow">
+                <v-tab>Management</v-tab>
+                <v-tab-item>
+                    <v-card flat>
+                        <v-card-text>
+                            <v-select v-model="streamer" v-on:change="initialize" :items="streamers"
+                                      label="Streamer"></v-select>
+                            <div>
+                                <v-toolbar flat>
+                                    <v-toolbar-title>Streams</v-toolbar-title>
+                                    <v-divider class="mx-2" inset vertical></v-divider>
+                                    <v-spacer></v-spacer>
+                                    <v-text-field
+                                            v-model="search"
+                                            append-icon="search"
+                                            label="Search"
+                                            single-line
+                                            hide-details
+                                    ></v-text-field>
+                                    <v-spacer></v-spacer>
+                                    <v-btn color="primary" @click="openAddition" dark class="mb-2">Add</v-btn>
+                                    <v-btn color="primary" dark @click="openValidation" class="mb-2">Validate</v-btn>
+                                </v-toolbar>
+                                <v-data-table
+                                        hide-actions
+                                        :search="search"
+                                        :headers="headers"
+                                        :items="streams"
+                                        :pagination.sync="pagination"
+                                        class="elevation-1"
+                                >
+                                    <template v-slot:items="props">
+                                        <td width="25%">{{ props.item.uuid }}</td>
+                                        <td width="25%">{{ props.item.title }}</td>
+                                        <td width="15%">{{ props.item.date | date }}</td>
+                                        <td width="15%">{{ props.item.game }}</td>
+                                        <td width="10%">
+                                            <v-icon small @click="openEdition(props.item)">edit</v-icon>
+                                            <v-icon small @click="openDeletion(props.item)" class="mx-1">delete</v-icon>
+                                            <v-icon small @click="openValidation(props.item)">refresh</v-icon>
+                                        </td>
+                                    </template>
+                                    <template v-slot:no-data>
+                                        <v-btn color="primary" @click="initialize">Reset</v-btn>
+                                    </template>
+                                </v-data-table>
+                                <div class="text-xs-center pt-2">
+                                    <v-pagination v-model="pagination.page" :length="pages"/>
+                                </div>
+                            </div>
+                        </v-card-text>
+                    </v-card>
+                </v-tab-item>
 
-        <b>Validate</b>
-        <table class='table table-bordered'>
-            <thead class='thead-dark'>
-            <tr>
-                <th scope='col'>uuid</th>
-                <th scope='col'>vod</th>
-                <th scope='col'>Skip muted</th>
-                <th scope='col'>Button</th>
-            </tr>
-            </thead>
-            <tr>
-                <td scope='col'>
-                    <input class='form-control' type='text' id="validateUUID" placeholder='uuid'>
-                </td>
-                <td scope='col' width='auto'>
-                    <input class='form-control' type='text' id="validateVOD" placeholder='vod'>
-                </td>
-                <td scope='col' width='130px'>
-                    <input type='checkbox' id="validateSkipMuted"> Skip muted
-                </td>
-                <td scope='col' width='80px'>
-                    <button onclick="validateMain()" class='btn'>Validate</button>
-                </td>
-            </tr>
-        </table>
+                <v-tab>Status</v-tab>
+                <v-tab-item>
+                    <v-card flat>
+                        <v-card-text>
+                            <v-toolbar flat>
+                                <v-toolbar-title>Streams</v-toolbar-title>
+                                <v-divider class="mx-2" inset vertical></v-divider>
+                                <v-spacer></v-spacer>
+                                <v-text-field
+                                        v-model="searchStatus"
+                                        append-icon="search"
+                                        label="Search"
+                                        single-line
+                                        hide-details
+                                ></v-text-field>
+                                <v-spacer></v-spacer>
+                            </v-toolbar>
+                            <v-data-table :search="searchStatus" :headers="headersStatus" :items="statuses"
+                                          class="elevation-1">
+                                <template v-slot:items="props">
+                                    <td :class="background(props.item.state)">
+                                        {{ props.item.uuid }}
+                                    </td>
+                                    <td :class="background(props.item.state)">
+                                        {{ props.item.user }}
+                                    </td>
+                                    <td :class="background(props.item.state)">
+                                        {{ props.item.vodId }}
+                                    </td>
+                                    <td :class="background(props.item.state)">
+                                        {{ props.item.date }}
+                                    </td>
+                                    <td :class="background(props.item.state)">
+                                        {{ props.item.startedBy }}
+                                    </td>
+                                    <td :class="background(props.item.state)">
+                                        {{ props.item.state }}
+                                    </td>
+                                    <td :class="background(props.item.state)">
+                                        <v-icon @click="openValidation(props.item)">refresh</v-icon>
+                                        <v-icon @click="openStopping(props.item.uuid)" :disabled="props.item.state !== 'RUNNING'">
+                                            stop
+                                        </v-icon>
+                                    </td>
+                                </template>
+                                <template v-slot:no-data>
+                                    <v-btn color="primary" @click="initialize">
+                                        Reset
+                                    </v-btn>
+                                </template>
+                            </v-data-table>
+                        </v-card-text>
+                    </v-card>
+                </v-tab-item>
+            </v-tabs>
+        </v-container>
 
-        <b>Search</b>
-        <input class='form-control' type='text' onkeyup="search(this)" placeholder='Search by uuid, title and game'>
-        <br>
-        <table class='table table-bordered'>
-            <thead class='thead-dark'>
-            <tr>
-                <th scope='col' width='auto'>uuid</th>
-                <th scope='col' width='auto'>Title</th>
-                <th scope='col' width='auto'>Date</th>
-                <th scope='col' width='175px'>Game</th>
-                <th scope='col' width='225px'>Management</th>
-            </tr>
-            </thead>
-            <tbody id='table'></tbody>
-        </table>
-    </div>
+        <v-dialog v-model="editDialog" max-width="500px">
+            <template v-slot:activator="{ on }">
+                <input type="hidden" v-on="on"/>
+            </template>
+            <v-card>
+                <v-card-title>
+                    <span class="headline">Edit</span>
+                </v-card-title>
+                <v-card-text>
+                    <v-container grid-list-md>
+                        <v-layout wrap>
+                            <v-flex xs12>
+                                <v-text-field v-model="editedData.title" label="Title"></v-text-field>
+                            </v-flex>
+                            <v-flex xs12>
+                                <v-text-field v-model="editedData.date" label="Date"></v-text-field>
+                            </v-flex>
+                            <v-flex xs12>
+                                {{ editedData.date | date }}
+                            </v-flex>
+                            <v-flex xs12>
+                                <v-text-field v-model="editedData.game" label="Genre"></v-text-field>
+                            </v-flex>
+                        </v-layout>
+                    </v-container>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
+                    <v-btn color="blue darken-1" flat @click="edit">Save</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="addDialog" max-width="500px">
+            <template v-slot:activator="{ on }">
+                <input type="hidden" v-on="on"/>
+            </template>
+            <v-card>
+                <v-card-title>
+                    <span class="headline">Add</span>
+                </v-card-title>
+                <v-card-text>
+                    <v-container grid-list-md>
+                        <v-layout wrap>
+                            <v-flex xs12>
+                                <v-radio-group label="Type" v-model="addData.type" :mandatory="false">
+                                    <v-radio label="Vod" value="vod" checked></v-radio>
+                                    <v-radio label="User" value="user"></v-radio>
+                                </v-radio-group>
+                            </v-flex>
+                            <v-flex xs12>
+                                <v-checkbox v-model="addData.skipMuted" label="Skip muted"></v-checkbox>
+                            </v-flex>
+                            <v-flex xs12>
+                                <v-text-field v-model="addData.value" label="Value"></v-text-field>
+                            </v-flex>
+                        </v-layout>
+                    </v-container>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
+                    <v-btn color="blue darken-1" flat @click="add">Add</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="validateDialog" max-width="500px">
+            <template v-slot:activator="{ on }">
+                <input type="hidden" v-on="on"/>
+            </template>
+            <v-card>
+                <v-card-title>
+                    <span class="headline">Validation</span>
+                </v-card-title>
+                <v-card-text>
+                    <v-container grid-list-md>
+                        <v-layout wrap>
+                            <v-flex xs12>
+                                <v-text-field v-model="validateData.uuid" label="id"></v-text-field>
+                            </v-flex>
+                            <v-flex xs12>
+                                <v-text-field v-model="validateData.vodId" label="vod"></v-text-field>
+                            </v-flex>
+                            <v-flex xs12>
+                                <v-checkbox v-model="validateData.skipMuted" label="Skip muted"></v-checkbox>
+                            </v-flex>
+                        </v-layout>
+                    </v-container>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
+                    <v-btn color="blue darken-1" flat @click="validate">Validate</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="deleteDialog" max-width="500px">
+            <template v-slot:activator="{ on }">
+                <input type="hidden" v-on="on"/>
+            </template>
+            <v-card>
+                <v-card-title>
+                    <span class="headline">Delete</span>
+                </v-card-title>
+                <v-card-text>
+                    <v-container grid-list-md>
+                        <v-layout wrap>
+                            <v-flex xs12> Are you sure to delete stream with id: {{ deleteData.uuid }}.</v-flex>
+                            <v-flex xs12>
+                                <v-checkbox v-model="deleteData.deleteMedia" label="Delete media"></v-checkbox>
+                            </v-flex>
+                        </v-layout>
+                    </v-container>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
+                    <v-btn color="blue darken-1" flat @click="deleteItem">Delete</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="stopDialog" max-width="500px">
+            <template v-slot:activator="{ on }">
+                <input type="hidden" v-on="on"/>
+            </template>
+            <v-card>
+                <v-card-title>
+                    <span class="headline">Stop?</span>
+                </v-card-title>
+                <v-card-text>
+                    <v-container grid-list-md>
+                        <v-layout wrap>
+                            <v-flex xs12> Are you sure to stop stream with id: {{ stopUUID }}.</v-flex>
+                        </v-layout>
+                    </v-container>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
+                    <v-btn color="blue darken-1" flat @click="stop">Stop</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+    </v-app>
 </div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            BASE_URL: window.location.origin,
+            search: "",
+            streamers: [],
+            streamer: "",
+            headers: [
+                {text: "id", align: "left", value: "uuid"},
+                {text: "Title", value: "title"},
+                {text: "Date", value: "date"},
+                {text: "Genre", value: "game"},
+                {text: "Actions", value: "name", sortable: false}
+            ],
+            streams: [],
+            pagination: {
+                rowsPerPage: 25,
+                descending: true,
+                sortBy: "date"
+            },
+            pages: 0,
+
+            searchStatus: "",
+            headersStatus: [
+                {text: "id", align: "left", value: "uuid"},
+                {text: "User", value: "user"},
+                {text: "Vod", value: "vodId"},
+                {text: "Date", value: "date"},
+                {text: "Started by", value: "startedBy"},
+                {text: "State", value: "state"},
+                {sortable: false}
+            ],
+            statuses: [],
+
+            addDialog: false,
+            addData: {
+                type: "vod",
+                value: "",
+                skipMuted: false
+            },
+
+            validateDialog: false,
+            validateData: {
+                uuid: "",
+                vodId: "",
+                skipMuted: false
+            },
+
+            editDialog: false,
+            editedData: {
+                uuid: "",
+                title: "",
+                date: 0,
+                game: ""
+            },
+
+            deleteDialog: false,
+            deleteData: {
+                uuid: "",
+                deleteMedia: false
+            },
+
+            stopDialog: false,
+            stopUUID: ""
+        },
+        filters: {
+            date(value) {
+                if (!value) return "";
+                let date = new Date();
+                date.setTime(value);
+                let year = date.getFullYear();
+                let month = date.getMonth() + 1;
+                let day = date.getDate();
+                return `${day < 10 ? 0 : ""}${day}.${month < 10 ? 0 : ""}${month}.${year}`;
+            }
+        },
+        created() {
+            this.$http.get(this.BASE_URL + "/management_api/users").then(response => {
+                this.streamers = response.body;
+                this.streamer = response.body[0];
+                this.initialize();
+            });
+            this.$http.get(this.BASE_URL + "/status_api/status_list").then(r => {
+                this.statuses = r.body;
+            });
+            setInterval(() => {
+                this.$http.get(this.BASE_URL + "/status_api/status_list").then(r => {
+                    this.statuses = r.body;
+                });
+            }, 1000);
+        },
+        methods: {
+            initialize() {
+                this.$http.get(this.BASE_URL + "/management_api/streams/" + this.streamer).then(response => {
+                    this.streams = response.body;
+                    this.pagination.totalItems = response.body.length;
+                    if (this.pagination.rowsPerPage == null || this.pagination.totalItems == null) this.pages = 0;
+                    else this.pages = Math.ceil(this.pagination.totalItems / this.pagination.rowsPerPage);
+                });
+            },
+
+            openEdition(item) {
+                this.editedData = Object.assign({}, item);
+                this.editDialog = true;
+            },
+            edit() {
+                this.$http
+                    .post(`${this.BASE_URL}/management_api/update/${this.streamer}/${this.editedData.uuid}`, this.editedData)
+                    .then(() => {
+                        this.initialize();
+                        this.close();
+                    });
+            },
+            openDeletion(item) {
+                this.deleteData = Object.assign({}, {uuid: item.uuid, deleteMedia: false});
+                this.deleteDialog = true;
+            },
+            deleteItem() {
+                this.$http
+                    .delete(`${this.BASE_URL}/management_api/${this.streamer}/${this.deleteData.uuid}`, {
+                        params: {deleteMedia: this.deleteData.deleteMedia}
+                    })
+                    .then(() => {
+                        this.initialize();
+                        this.close();
+                    });
+            },
+            openAddition() {
+                this.addData = {type: "vod", value: "", skipMuted: false};
+                this.addDialog = true;
+            },
+            add() {
+                this.$http.post(this.BASE_URL + "/management_api/add", this.addData).then();
+                this.initialize();
+                this.close();
+            },
+            openValidation(item) {
+                this.validateData = Object.assign(
+                    {},
+                    {
+                        uuid: item !== undefined ? item.uuid : "",
+                        vodId: item.vodId ? item.vodId : "",
+                        skipMuted: false
+                    }
+                );
+                this.validateDialog = true;
+            },
+            validate() {
+                if (this.validateData.vodId.trim() !== "" || this.validateData.uuid.trim() !== "")
+                    this.$http.post(this.BASE_URL + "/management_api/validate", this.validateData).then(() => {
+                        this.close();
+                    });
+            },
+            close() {
+                this.editDialog = false;
+                this.validateDialog = false;
+                this.addDialog = false;
+                this.deleteDialog = false;
+                this.stopDialog = false;
+            },
+            openStopping(uuid) {
+                this.stopUUID = uuid;
+                this.stopDialog = true;
+            },
+            stop() {
+                this.$http.delete(this.BASE_URL + "/status_api/" + this.stopUUID).then(() => {
+                    this.close();
+                });
+            },
+            background(value) {
+                switch (value) {
+                    case "COMPLETE":
+                        return "green";
+                    case "INITIALIZE":
+                        return "yellow";
+                    case "RUNNING":
+                        return "blue";
+                    case "ERROR":
+                        return "red";
+                    case "STOPPED":
+                        return "black";
+                }
+            }
+        }
+    })
+</script>
 </body>
 </html>
