@@ -4,6 +4,7 @@ package com.pingwinno.presentation.management.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.application.DateConverter;
+import com.pingwinno.application.JdbcHandler;
 import com.pingwinno.application.StorageHelper;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.MongoDBHandler;
@@ -27,6 +28,7 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Projections.fields;
@@ -55,8 +57,14 @@ public class CRUDApiHandler {
             if (streamMetadata != null) {
                 VodRecorder vodRecorder = new VodRecorder();
                 if (streamMetadata.getVodId() != null) {
+                    if (new JdbcHandler().search("vodId", "vodId",
+                            streamMetadata.getVodId()).contains(streamMetadata.getVodId())) {
+                        log.debug("Stream exist. Run validation or delete folder");
+                        return Response.notModified().build();
+                    } else {
+                        streamMetadata.setUuid(StorageHelper.getUuidName());
+                    }
 
-                    streamMetadata.setUuid(StorageHelper.getUuidName());
                     StreamDataModel finalStreamMetadata = streamMetadata;
                     streamMetadata.setSkipMuted(dataModel.isSkipMuted());
 
@@ -164,11 +172,12 @@ public class CRUDApiHandler {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStreamsList(@PathParam("user") String user) {
         try {
+            log.trace(user);
             log.trace(new ObjectMapper().writeValueAsString(MongoDBHandler.getCollection(user, Document.class).
-                    find().projection(fields(include("title", "date", "game")))));
+                    find().projection(fields(include("title", "date", "game"))).into(new ArrayList())));
             return Response.status(Response.Status.OK)
                     .entity(new ObjectMapper().writeValueAsString(MongoDBHandler.getCollection(user, Document.class).
-                            find().projection(fields(include("title", "date", "game"))))
+                            find().projection(fields(include("title", "date", "game"))).into(new ArrayList()))
                             .replaceAll("_id", "uuid")).build();
         } catch (JsonProcessingException e) {
             log.error("{}", e);

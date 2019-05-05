@@ -39,9 +39,11 @@ public class VodRecorder implements RecordThread {
     private ExecutorService executorService;
     private Thread thisTread = Thread.currentThread();
     private boolean isRecordTerminated;
+    StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
 
 
     public void start(StreamDataModel streamDataModel) {
+
         this.streamDataModel = streamDataModel;
         uuid = streamDataModel.getUuid();
         streamFolderPath = SettingsProperties.getRecordedStreamPath() + streamDataModel.getUser() + "/" + uuid.toString();
@@ -60,6 +62,10 @@ public class VodRecorder implements RecordThread {
         }
         try {
             new RecordStatusList().changeState(uuid, State.RUNNING);
+            streamDocumentModel.setUuid(streamDataModel.getUuid().toString());
+            streamDocumentModel.setTitle(streamDataModel.getTitle());
+            streamDocumentModel.setDate(Long.parseLong(streamDataModel.getDate()));
+            streamDocumentModel.setGame(streamDataModel.getGame());
             try {
                 Path streamPath = Paths.get(streamFolderPath);
                 if (!Files.exists(streamPath)) {
@@ -197,11 +203,6 @@ public class VodRecorder implements RecordThread {
         LinkedHashMap<Integer, String> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, mainPlaylist);
         LinkedHashMap<Integer, String> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, mainPlaylist);
 
-        StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
-        streamDocumentModel.setUuid(streamDataModel.getUuid().toString());
-        streamDocumentModel.setTitle(streamDataModel.getTitle());
-        streamDocumentModel.setDate(Long.parseLong(streamDataModel.getDate()));
-        streamDocumentModel.setGame(streamDataModel.getGame());
 
         streamDocumentModel.setDuration(mainPlaylist.size() * 10);
         streamDocumentModel.setAnimatedPreviews(animatedPreview);

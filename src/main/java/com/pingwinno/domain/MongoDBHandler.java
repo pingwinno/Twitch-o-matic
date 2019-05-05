@@ -11,10 +11,12 @@ import org.bson.codecs.DocumentCodec;
 import org.bson.codecs.StringCodec;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.slf4j.LoggerFactory;
 
 public class MongoDBHandler {
     private static MongoDatabase database;
     private static MongoClient mongoClient;
+    private static org.slf4j.Logger log = LoggerFactory.getLogger(MongoDBHandler.class);
 
     public static void connect() {
         CodecRegistry registry;
@@ -24,6 +26,7 @@ public class MongoDBHandler {
         if (!SettingsProperties.getMongoDBName().trim().isEmpty()) {
             dbName = SettingsProperties.getMongoDBName().trim();
         }
+        log.trace(dbName);
         database = mongoClient.getDatabase(dbName).withCodecRegistry(registry);
     }
 
