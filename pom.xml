@@ -248,11 +248,6 @@
             <artifactId>javax-websocket-server-impl</artifactId>
             <version>${jetty-version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty.websocket</groupId>
-            <artifactId>javax-websocket-client-impl</artifactId>
-            <version>${jetty-version}</version>
-        </dependency>
 
 
     </dependencies>

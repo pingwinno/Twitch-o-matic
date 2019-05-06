@@ -7,6 +7,7 @@ import com.pingwinno.application.StorageHelper;
 import com.pingwinno.domain.MongoDBHandler;
 import com.pingwinno.domain.servers.ManagementServer;
 import com.pingwinno.domain.servers.TwitchServer;
+import com.pingwinno.domain.servers.WebSocketServer;
 import com.pingwinno.infrastructure.SettingsProperties;
 import org.apache.commons.daemon.Daemon;
 import org.apache.commons.daemon.DaemonContext;
@@ -50,6 +51,7 @@ public class Main implements Daemon {
         }
 
         Thread.sleep(100);
+        new Thread(WebSocketServer::start).start();
         log.info("start TwitchServer");
         new Thread(TwitchServer::start).start();
         if (SettingsProperties.getTwitchServerPort() != 0) {

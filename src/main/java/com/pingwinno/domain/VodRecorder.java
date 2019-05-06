@@ -58,7 +58,11 @@ public class VodRecorder implements RecordThread {
             }
         } catch (IOException | InterruptedException e) {
             log.error("Can't start record. {}", e);
-            new RecordStatusList().changeState(uuid, State.ERROR);
+            try {
+                new RecordStatusList().changeState(uuid, State.ERROR);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
         try {
             new RecordStatusList().changeState(uuid, State.RUNNING);
@@ -108,7 +112,11 @@ public class VodRecorder implements RecordThread {
             this.recordCycle();
         } catch (IOException | URISyntaxException | InterruptedException | StreamNotFoundExeption e) {
             log.error("Vod downloader initialization failed. {}", e);
-            new RecordStatusList().changeState(uuid, State.ERROR);
+            try {
+                new RecordStatusList().changeState(uuid, State.ERROR);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
             stop();
         }
     }
@@ -165,7 +173,11 @@ public class VodRecorder implements RecordThread {
             }
         } catch (IOException | URISyntaxException | StreamNotFoundExeption e) {
             log.error("Vod downloader refresh failed. {}", e);
-            new RecordStatusList().changeState(uuid, State.ERROR);
+            try {
+                new RecordStatusList().changeState(uuid, State.ERROR);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
             stop();
         }
         return status;
@@ -273,7 +285,11 @@ public class VodRecorder implements RecordThread {
             thisTread.interrupt();
 
         } catch (IOException e) {
-            new RecordStatusList().changeState(uuid, State.ERROR);
+            try {
+                new RecordStatusList().changeState(uuid, State.ERROR);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
             log.error("VoD downloader unexpectedly stop. {}", e);
         }
     }
