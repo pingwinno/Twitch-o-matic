@@ -67,6 +67,7 @@ public class VodRecorder implements RecordThread {
             streamDocumentModel.setTitle(streamDataModel.getTitle());
             streamDocumentModel.setDate(streamDataModel.getDate());
             streamDocumentModel.setGame(streamDataModel.getGame());
+            DataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
             try {
                 Path streamPath = Paths.get(streamFolderPath);
                 if (!Files.exists(streamPath)) {
@@ -208,11 +209,7 @@ public class VodRecorder implements RecordThread {
         streamDocumentModel.setDuration(mainPlaylist.size() * 10);
         streamDocumentModel.setAnimatedPreviews(animatedPreview);
         streamDocumentModel.setTimelinePreviews(timelinePreview);
-        if (!SettingsProperties.getMongoDBAddress().equals("")) {
-            log.info("write to remote db");
-            DataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
-            log.info("Complete");
-        }
+        DataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
         new RecordStatusList().changeState(uuid, State.COMPLETE);
         stop();
     }
