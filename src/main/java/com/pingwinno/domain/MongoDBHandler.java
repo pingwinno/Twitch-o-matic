@@ -1,17 +1,18 @@
 package com.pingwinno.domain;
 
 
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.pingwinno.infrastructure.SettingsProperties;
-import com.pingwinno.infrastructure.StreamDocumentCodec;
-import org.bson.codecs.DocumentCodec;
-import org.bson.codecs.StringCodec;
+import com.pingwinno.infrastructure.models.StreamDocumentModel;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.codecs.pojo.PojoCodecProvider;
 import org.slf4j.LoggerFactory;
+
 
 public class MongoDBHandler {
     private static MongoDatabase database;
@@ -20,7 +21,8 @@ public class MongoDBHandler {
 
     public static void connect() {
         CodecRegistry registry;
-        registry = CodecRegistries.fromCodecs(new StreamDocumentCodec(), new DocumentCodec(), new StringCodec());
+        registry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
+                CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build()));
         mongoClient = MongoClients.create("mongodb://" + SettingsProperties.getMongoDBAddress());
         String dbName = "streams";
         if (!SettingsProperties.getMongoDBName().trim().isEmpty()) {
@@ -35,9 +37,15 @@ public class MongoDBHandler {
     }
 
 
-    public static MongoCollection getCollection(String user, Class aClass) {
+    public static MongoCollection getCollection(String user) {
+        if (database == null) connect();
+        return database.getCollection(user, StreamDocumentModel.class);
+    }
 
+    public static MongoCollection getCollection(String user, Class aClass) {
+        if (database == null) connect();
         return database.getCollection(user, aClass);
     }
+
 
 }

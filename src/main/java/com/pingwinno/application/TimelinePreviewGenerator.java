@@ -1,6 +1,7 @@
 package com.pingwinno.application;
 
 import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.models.Preview;
 import com.pingwinno.infrastructure.models.StreamDataModel;
 import org.slf4j.LoggerFactory;
 
@@ -15,12 +16,12 @@ import java.util.Map;
 public class TimelinePreviewGenerator {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(TimelinePreviewGenerator.class.getName());
 
-    public static LinkedHashMap<Integer, String> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet)
+    public static LinkedHashMap<String, Preview> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet)
             throws IOException {
         String pathString = SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid();
         Files.createDirectories(Paths.get(SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() +
                 "/timeline_preview/"));
-        LinkedHashMap<Integer, String> previewList = new LinkedHashMap<>();
+        LinkedHashMap<String, Preview> previewList = new LinkedHashMap<>();
         int chunkNum = 0;
         double frameTime = 0.0;
         for (Map.Entry<String, Double> chunk : chunksSet.entrySet()) {
@@ -28,7 +29,7 @@ public class TimelinePreviewGenerator {
                             "/" + chunk.getKey().replace("-muted", ""), 256, 144),
                     "jpeg", new File(pathString + "/timeline_preview/preview" + chunkNum + ".jpg"));
             frameTime += chunk.getValue();
-            previewList.put((int) frameTime, "preview" + chunkNum + ".jpg");
+            previewList.put(String.valueOf((int) frameTime), new Preview("preview" + chunkNum + ".jpg"));
             chunkNum++;
         }
         return previewList;

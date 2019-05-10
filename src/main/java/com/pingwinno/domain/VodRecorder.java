@@ -6,6 +6,7 @@ import com.pingwinno.application.TimelinePreviewGenerator;
 import com.pingwinno.application.twitch.playlist.handler.*;
 import com.pingwinno.infrastructure.*;
 import com.pingwinno.infrastructure.enums.State;
+import com.pingwinno.infrastructure.models.Preview;
 import com.pingwinno.infrastructure.models.StreamDataModel;
 import com.pingwinno.infrastructure.models.StreamDocumentModel;
 import org.slf4j.LoggerFactory;
@@ -68,8 +69,9 @@ public class VodRecorder implements RecordThread {
             new RecordStatusList().changeState(uuid, State.RUNNING);
             streamDocumentModel.setUuid(streamDataModel.getUuid().toString());
             streamDocumentModel.setTitle(streamDataModel.getTitle());
-            streamDocumentModel.setDate(Long.parseLong(streamDataModel.getDate()));
+            streamDocumentModel.setDate(streamDataModel.getDate());
             streamDocumentModel.setGame(streamDataModel.getGame());
+            DataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
             try {
                 Path streamPath = Paths.get(streamFolderPath);
                 if (!Files.exists(streamPath)) {
@@ -212,18 +214,14 @@ public class VodRecorder implements RecordThread {
         log.debug("Download m3u8");
         MediaPlaylistWriter.write(mainPlaylist, streamFolderPath);
 
-        LinkedHashMap<Integer, String> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, mainPlaylist);
-        LinkedHashMap<Integer, String> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, mainPlaylist);
+        LinkedHashMap<String, String> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, mainPlaylist);
+        LinkedHashMap<String, Preview> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, mainPlaylist);
 
 
         streamDocumentModel.setDuration(mainPlaylist.size() * 10);
         streamDocumentModel.setAnimatedPreviews(animatedPreview);
         streamDocumentModel.setTimelinePreviews(timelinePreview);
-        if (!SettingsProperties.getMongoDBAddress().equals("")) {
-            log.info("write to remote db");
-            DataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
-            log.info("Complete");
-        }
+        DataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
         new RecordStatusList().changeState(uuid, State.COMPLETE);
         stop();
     }

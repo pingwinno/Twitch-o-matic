@@ -3,7 +3,6 @@ package com.pingwinno.domain.servers;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.infrastructure.JettyInitializationListener;
-import com.pingwinno.infrastructure.RestExceptionMapper;
 import com.pingwinno.infrastructure.SettingsProperties;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -16,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.naming.NamingException;
 import javax.ws.rs.core.Application;
-import java.util.LinkedHashMap;
 
 public class TwitchServer {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(TwitchServer.class.getName());
@@ -43,11 +41,6 @@ public class TwitchServer {
         }
         server.setHandler(ctx);
 
-        ResourceConfig config = new ResourceConfig();
-        config.register(new RestExceptionMapper());
-        config.setProperties(new LinkedHashMap<String, Object>() {{
-            put(org.glassfish.jersey.server.ServerProperties.PROCESSING_RESPONSE_ERRORS_ENABLED, true);
-        }});
         final Application application = new ResourceConfig()
                 .packages("org.glassfish.jersey.examples.jackson").register(JacksonFeature.class);
         ObjectMapper mapper = new ObjectMapper();
