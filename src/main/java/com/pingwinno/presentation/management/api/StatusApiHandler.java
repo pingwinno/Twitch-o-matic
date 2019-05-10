@@ -10,9 +10,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.UUID;
 
-@Path("/status_api")
+@Path("/status_list")
 public class StatusApiHandler {
-    @Path("/status_list")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStatusList() {

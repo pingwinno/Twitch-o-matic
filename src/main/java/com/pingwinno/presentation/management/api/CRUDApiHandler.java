@@ -37,7 +37,7 @@ import static com.mongodb.client.model.Projections.include;
 import static com.mongodb.client.model.Updates.combine;
 import static com.mongodb.client.model.Updates.set;
 
-@Path("/management_api")
+@Path("/")
 public class CRUDApiHandler {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 

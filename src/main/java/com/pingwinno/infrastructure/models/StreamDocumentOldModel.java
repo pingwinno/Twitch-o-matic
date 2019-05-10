@@ -6,9 +6,10 @@ import org.bson.codecs.pojo.annotations.BsonProperty;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 
 //@JsonSerialize(using = DocumentModelSerializer.class)
-public class StreamDocumentModel {
+public class StreamDocumentOldModel {
 
     @BsonId
     private String uuid;
@@ -17,7 +18,7 @@ public class StreamDocumentModel {
     private String game;
     private long duration;
     @BsonProperty("animated_preview")
-    private LinkedHashMap<String, String> animatedPreviews;
+    private LinkedList<AnimatedPreview> animatedPreviews;
     @BsonProperty("timeline_preview")
     private LinkedHashMap<String, Preview> timelinePreviews;
 
@@ -62,12 +63,12 @@ public class StreamDocumentModel {
     }
 
     @JsonProperty("animated_preview")
-    public LinkedHashMap<String, String> getAnimatedPreviews() {
+    public LinkedList<AnimatedPreview> getAnimatedPreviews() {
         return animatedPreviews;
     }
 
     @JsonProperty("animated_preview")
-    public void setAnimatedPreviews(LinkedHashMap<String, String> animatedPreviews) {
+    public void setAnimatedPreviews(LinkedList<AnimatedPreview> animatedPreviews) {
         this.animatedPreviews = animatedPreviews;
     }
 

@@ -38,8 +38,14 @@ public class MongoDBHandler {
 
 
     public static MongoCollection getCollection(String user) {
-
+        if (database == null) connect();
         return database.getCollection(user, StreamDocumentModel.class);
     }
+
+    public static MongoCollection getCollection(String user, Class aClass) {
+        if (database == null) connect();
+        return database.getCollection(user, aClass);
+    }
+
 
 }
