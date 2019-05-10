@@ -15,8 +15,8 @@ import java.util.LinkedHashMap;
 public class AnimatedPreviewGenerator {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(AnimatedPreviewGenerator.class.getName());
 
-    public static LinkedHashMap<Integer, String> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet) throws IOException {
-        LinkedHashMap<Integer, String> previewList = new LinkedHashMap<>();
+    public static LinkedHashMap<String, String> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet) throws IOException {
+        LinkedHashMap<String, String> previewList = new LinkedHashMap<>();
         ArrayList<String> chunks = new ArrayList<>(chunksSet.keySet());
         String pathString = SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid();
         Files.createDirectories(Paths.get(pathString + "/animated_preview/"));
@@ -30,7 +30,7 @@ public class AnimatedPreviewGenerator {
                 ImageIO.write(FrameGrabber.getFrame(path, 640, 360),
                         "jpeg", new File(pathString + "/animated_preview/preview" + i + ".jpg"));
                 chunkNum += offset;
-                previewList.put(i, "preview" + i + ".jpg");
+                previewList.put(String.valueOf(i), "preview" + i + ".jpg");
             }
             return previewList;
 
@@ -44,7 +44,7 @@ public class AnimatedPreviewGenerator {
                 ImageIO.write(FrameGrabber.getFrame(path, 640, 360),
                         "jpeg", new File(pathString + "/animated_preview/preview" + i + ".jpg"));
                 chunkNum += i;
-                previewList.put(i, "preview" + i + ".jpg");
+                previewList.put(String.valueOf(i), "preview" + i + ".jpg");
             }
             return previewList;
         }

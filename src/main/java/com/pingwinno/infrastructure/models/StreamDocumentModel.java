@@ -1,22 +1,25 @@
 package com.pingwinno.infrastructure.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.pingwinno.infrastructure.DocumentModelSerializer;
+import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.codecs.pojo.annotations.BsonProperty;
 
+import java.util.Date;
 import java.util.Map;
 
-@JsonSerialize(using = DocumentModelSerializer.class)
+//@JsonSerialize(using = DocumentModelSerializer.class)
 public class StreamDocumentModel {
 
-    @JsonProperty("_id")
+    @BsonId
     private String uuid;
-    private long date;
+    private Date date;
     private String title;
     private String game;
     private long duration;
-    private Map<Integer, String> animatedPreviews;
-    private Map<Integer, String> timelinePreviews;
+    @BsonProperty("animated_preview")
+    private Map<String, String> animatedPreviews;
+    @BsonProperty("timeline_preview")
+    private Map<String, Preview> timelinePreviews;
 
     public String getUuid() {
         return uuid;
@@ -26,11 +29,11 @@ public class StreamDocumentModel {
         this.uuid = uuid;
     }
 
-    public long getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(long date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 
@@ -59,22 +62,22 @@ public class StreamDocumentModel {
     }
 
     @JsonProperty("animated_preview")
-    public Map<Integer, String> getAnimatedPreviews() {
+    public Map<String, String> getAnimatedPreviews() {
         return animatedPreviews;
     }
 
     @JsonProperty("animated_preview")
-    public void setAnimatedPreviews(Map<Integer, String> animatedPreviews) {
+    public void setAnimatedPreviews(Map<String, String> animatedPreviews) {
         this.animatedPreviews = animatedPreviews;
     }
 
     @JsonProperty("timeline_preview")
-    public Map<Integer, String> getTimelinePreviews() {
+    public Map<String, Preview> getTimelinePreviews() {
         return timelinePreviews;
     }
 
     @JsonProperty("timeline_preview")
-    public void setTimelinePreviews(Map<Integer, String> timelinePreviews) {
+    public void setTimelinePreviews(Map<String, Preview> timelinePreviews) {
         this.timelinePreviews = timelinePreviews;
     }
 

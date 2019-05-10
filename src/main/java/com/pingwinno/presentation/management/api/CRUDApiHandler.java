@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Projections.fields;
@@ -74,7 +75,7 @@ public class CRUDApiHandler {
 
                     new Thread(() -> vodRecorder.start(finalStreamMetadata)).start();
 
-                    String startedAt = streamMetadata.getDate();
+                    Date startedAt = streamMetadata.getDate();
                     log.info("Record started at:{} ", startedAt);
                     response = Response.accepted().build();
                 } else {
@@ -118,7 +119,7 @@ public class CRUDApiHandler {
 
                         new Thread(() -> vodRecorder.start(finalStreamMetadata)).start();
 
-                        String startedAt = streamMetadata.getDate();
+                        Date startedAt = streamMetadata.getDate();
                         log.info("Record started at:{} ", startedAt);
                         response = Response.accepted().build();
                     } else {
@@ -142,7 +143,7 @@ public class CRUDApiHandler {
     @DELETE
     public Response deleteStream(@PathParam("uuid") String uuid, @PathParam("user") String user, @QueryParam("deleteMedia") String deleteMedia) {
 
-        MongoDBHandler.getCollection(user, Document.class).deleteOne(new Document("_id", uuid));
+        MongoDBHandler.getCollection(user).deleteOne(new Document("_id", uuid));
         log.info("delete stream {}", uuid);
         if (deleteMedia.equals("true")) {
             try {
@@ -160,7 +161,7 @@ public class CRUDApiHandler {
     @POST
     public Response updateStream(@PathParam("user") String user, @PathParam("uuid") String uuid, StreamDataModel dataModel) {
 
-        MongoDBHandler.getCollection(user, Document.class).updateOne(eq("_id", uuid),
+        MongoDBHandler.getCollection(user).updateOne(eq("_id", uuid),
                 combine(set("date", dataModel.getDate()), set("title", dataModel.getTitle()), set("game", dataModel.getGame())));
 
         return Response.ok().build();
@@ -171,18 +172,18 @@ public class CRUDApiHandler {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStreamsList(@PathParam("user") String user) {
+        log.trace(user);
+
         try {
-            log.trace(user);
-            log.trace(new ObjectMapper().writeValueAsString(MongoDBHandler.getCollection(user, Document.class).
-                    find().projection(fields(include("title", "date", "game"))).into(new ArrayList())));
             return Response.status(Response.Status.OK)
-                    .entity(new ObjectMapper().writeValueAsString(MongoDBHandler.getCollection(user, Document.class).
+                    .entity(new ObjectMapper().writeValueAsString(MongoDBHandler.getCollection(user).
                             find().projection(fields(include("title", "date", "game"))).into(new ArrayList()))
                             .replaceAll("_id", "uuid")).build();
         } catch (JsonProcessingException e) {
-            log.error("{}", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            e.printStackTrace();
+            return null;
         }
+
     }
 
     @Path("/users")

@@ -9,17 +9,16 @@ import java.util.Date;
 
 public class DateConverter {
 
-public static String convert(String stringDate) {
+    public static Date convert(String stringDate) {
     SimpleDateFormat parser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-    String unixTime = null;
+        Date date = null;
     try {
-        Date  date = parser.parse(stringDate);
-        unixTime =Long.toString(date.getTime());
-
+        date = parser.parse(stringDate);
     } catch (ParseException e) {
         e.printStackTrace();
     }
-    return unixTime ;
+
+        return date;
 }
 
     public static String convert(LocalDateTime localDateTime) {
