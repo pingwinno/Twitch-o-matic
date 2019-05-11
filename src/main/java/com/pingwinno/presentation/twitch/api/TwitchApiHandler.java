@@ -84,6 +84,7 @@ public class TwitchApiHandler {
                         if (VodMetadataHelper.getLastVod(user).getVodId() != null) {
                             new Thread(() -> {
                                 try {
+                                    Thread.sleep(10 * 1000);
                                     StreamDataModel streamMetadata = VodMetadataHelper.getLastVod(user);
                                     int counter = 0;
                                     log.trace(streamMetadata.toString());
