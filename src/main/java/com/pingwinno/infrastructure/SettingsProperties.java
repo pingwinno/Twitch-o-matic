@@ -1,29 +1,60 @@
 package com.pingwinno.infrastructure;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pingwinno.infrastructure.models.ConfigFile;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Properties;
 
 public class SettingsProperties {
-    private final static String PROPSFILE = "/etc/tom/config.prop";
-    private final static String TESTPROPSFILE = "config_test.prop";
+    private final static String PROPSFILE = "/etc/tom/config.json";
+    private final static String TESTPROPSFILE = "config_test.json";
 
     private static org.slf4j.Logger log = LoggerFactory.getLogger(SettingsProperties.class.getName());
 
-    private static Properties props;
+    private static ConfigFile configFile;
 
-    private static Properties getProperties() throws IOException {
+    private static ConfigFile getProperties() {
+
+        boolean isLoaded = false;
+        if (configFile == null) {
+            try {
+                configFile = new ObjectMapper().readValue(new File(TESTPROPSFILE), ConfigFile.class);
+                isLoaded = true;
+            } catch (FileNotFoundException e) {
+                log.debug("config_test.prop not found");
+                isLoaded = false;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (!isLoaded) {
+                try {
+                    configFile = new ObjectMapper().readValue(new File(PROPSFILE), ConfigFile.class);
+                    isLoaded = true;
+                } catch (FileNotFoundException e) {
+                    log.debug("config_test.prop not found");
+                    isLoaded = false;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (!isLoaded) {
+                log.error("Config file not found");
+                System.exit(1);
+            }
+        }
+
+        return configFile;
+    }
+
+    /*private static void saveProperties() throws IOException {
 
         boolean isLoaded;
-        if (props == null) {
-            props = new Properties();
             try {
-                props.load(new FileInputStream(new File(TESTPROPSFILE)));
+                props.store(new FileOutputStream(TESTPROPSFILE), null);
                 isLoaded = true;
             } catch (FileNotFoundException e) {
                 log.debug("config_test.prop not found");
@@ -31,7 +62,7 @@ public class SettingsProperties {
             }
             if (!isLoaded) {
                 try {
-                    props.load(new FileInputStream(new File(PROPSFILE)));
+                    props.store(new FileOutputStream(PROPSFILE), null);
                     isLoaded = true;
                 } catch (FileNotFoundException e) {
                     log.debug("config_test.prop not found");
@@ -43,139 +74,62 @@ public class SettingsProperties {
                 System.exit(1);
             }
         }
-
-        return props;
-    }
+*/
 
     public static String getCallbackAddress() {
-        String callbackAddress = null;
-        try {
-            callbackAddress = getProperties().getProperty("CallbackAddress");
-        } catch (IOException e) {
-            log.error("Can't read CallbackAddress. {}", e);
-            System.exit(1);
-        }
-        return callbackAddress;
+        return getProperties().getCallbackAddress();
     }
 
     public static int getTwitchServerPort() {
-        int twitchServerPort = 0;
-        try {
-            twitchServerPort = Integer.parseInt(getProperties().getProperty("TwitchServerPort"));
-        } catch (IOException e) {
-            log.error("Can't read TwitchServerPort. {}", e);
-            System.exit(1);
-        }
-        return twitchServerPort;
+        return getProperties().getTwitchServerPort();
     }
 
     public static int getManagementServerPort() {
-        int managementServerPort = 0;
-        try {
-            managementServerPort = Integer.parseInt(getProperties().getProperty("ManagementServerPort"));
-        } catch (IOException e) {
-            log.error("Can't read ManagementServerPort. {}", e);
-            System.exit(1);
-        }
-        return managementServerPort;
+        return getProperties().getManagementServerPort();
     }
 
     public static String[] getUsers() {
-        String[] users = null;
-        try {
-            users = getProperties().getProperty("User").toLowerCase().
-                    replace(" ", "").split(",");
-        } catch (IOException e) {
-            log.error("Can't read User. {}", e);
-            System.exit(1);
-        }
-        return users;
+        return getProperties().getUsers();
     }
 
     public static String getRecordedStreamPath() {
-        String recordedStreamPath = null;
-        try {
-            recordedStreamPath = getProperties().getProperty("RecordedStreamPath");
-        } catch (IOException e) {
-            log.error("Can't read RecordedStreamPath. {}", e);
-            System.exit(1);
-        }
-        return recordedStreamPath;
+        return getProperties().getRecordedStreamPath();
     }
 
     public static boolean h2ConsoleIsEnabled() {
-        boolean h2ConsoleIsEnabled = false;
-        try {
-            if (getProperties().getProperty("h2ConsoleIsEnabled").equals("true")) {
-                h2ConsoleIsEnabled = true;
-            }
-        } catch (IOException e) {
-            log.error("Can't read h2ConsoleIsEnabled.", e);
-        }
-        return h2ConsoleIsEnabled;
+        return getProperties().isH2ConsoleIsEnabled();
     }
 
     public static String getStreamQuality() {
-        String streamQuality;
-        try {
-            streamQuality = getProperties().getProperty("StreamQuality");
-            // check for default config
-            if (streamQuality.equals("chunked, 720p60, 720p30, 480p30, 360p30, 160p30, audio_only")) {
-                streamQuality = "chunked";
-            }
-        } catch (IOException e) {
-            log.error("Can't read StreamQuality. {}", e);
-            return "chunked";
-        }
-        return streamQuality;
+        return getProperties().getStreamQuality();
     }
 
     public static String getMongoDBAddress() {
-        String mongoDBAddress = null;
-        try {
-            mongoDBAddress = getProperties().getProperty("MongoDBAddress");
-        } catch (IOException e) {
-            log.error("Can't read MongoDBAddress. {}", e);
-        }
-        return mongoDBAddress;
+        return getProperties().getMongoDBAddress();
     }
 
     public static String getMongoDBName() {
-        String mongoDBName = null;
-        try {
-            mongoDBName = getProperties().getProperty("MongoDBName");
-        } catch (IOException e) {
-            log.error("Can't read MongoDBName. {}", e);
-        }
-        return mongoDBName;
+        return getProperties().getMongoDBName();
     }
 
 
     public static String getH2User() {
         String h2User = null;
-        try {
-            if ((h2User = getProperties().getProperty("H2User")).trim().equals("")) {
-                h2User = "someUser";
-            }
-        } catch (IOException e) {
-            log.error("Can't read H2User. {}", e);
-            System.exit(1);
+        if ((h2User = getProperties().getH2User()).trim().equals("")) {
+            h2User = "someUser";
         }
         return h2User;
+
     }
 
     public static String getH2Password() {
         String h2Password = null;
-        try {
-            if ((h2Password = getProperties().getProperty("H2Password")).trim().equals("")) {
-                h2Password = "wy4c5j7yw457g";
-            }
-            ;
-        } catch (IOException e) {
-            log.error("Can't read H2Password. {}", e);
-            System.exit(1);
+        if ((h2Password = getProperties().getH2Password()).trim().equals("")) {
+            h2Password = "wy4c5j7yw457g";
         }
         return h2Password;
     }
+
 }
+
 

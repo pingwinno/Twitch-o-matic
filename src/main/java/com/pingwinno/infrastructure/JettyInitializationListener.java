@@ -30,12 +30,12 @@ public class JettyInitializationListener implements LifeCycle.Listener {
                         "https://api.twitch.tv/helix/streams?user_id=" +
                                 UserIdGetter.getUserId(user),
                         SettingsProperties.getCallbackAddress() + ":" + SettingsProperties.getTwitchServerPort() +
-                                "/handler/" + user, 86400, HashHandler.getKey());
+                                "/handler/" + user, SubscriptionRequestTimer.HUB_LEASE, HashHandler.getKey());
                 log.trace("SubscriptionQueryModel: {}", json.toString());
                 SubscriptionRequestTimer subscriptionQuery =
                         new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
                 log.debug("Sending subscription query");
-                subscriptionQuery.sendSubscriptionRequest();
+                subscriptionQuery.sendSubscriptionRequest(user);
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

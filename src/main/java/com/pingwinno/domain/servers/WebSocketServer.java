@@ -1,5 +1,6 @@
 package com.pingwinno.domain.servers;
 
+import com.pingwinno.presentation.management.api.ServerStatusSocket;
 import com.pingwinno.presentation.management.api.StatusUpdater;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -27,7 +28,7 @@ public class WebSocketServer {
 
             // Add StatusUpdater endpoint to javax.websocket layer
             wscontainer.addEndpoint(StatusUpdater.class);
-
+            wscontainer.addEndpoint(ServerStatusSocket.class);
 
             server.start();
             server.dump(System.err);

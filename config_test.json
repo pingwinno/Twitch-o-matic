@@ -1,0 +1,16 @@
+{
+  "callbackAddress": "http://31.202.63.26",
+  "twitchServerPort": "48500",
+  "managementServerPort": "20000",
+  "users": [
+    "dedlim",
+    "olyashaa"
+  ],
+  "recordedStreamPath": "/home/shiro/streams/",
+  "h2ConsoleIsEnabled": "true",
+  "h2User": "",
+  "h2Password": "",
+  "streamQuality": "chunked",
+  "mongoDBAddress": "192.168.1.35:27017",
+  "mongoDBName": ""
+}

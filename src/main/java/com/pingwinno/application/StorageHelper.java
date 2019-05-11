@@ -7,41 +7,60 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class StorageHelper {
-    private final static Path STREAMS_PATH = Paths.get(SettingsProperties.getRecordedStreamPath());
+    private final static String STREAMS_PATH = SettingsProperties.getRecordedStreamPath();
     private static org.slf4j.Logger log = LoggerFactory.getLogger(StorageHelper.class.getName());
 
-    private static int checkFreeSpace() throws IOException {
+    public static Map<String, Integer> getFreeSpace() throws IOException {
+        Map<String, Integer> freeSpace = new HashMap<>();
+        for (String user : SettingsProperties.getUsers()) {
+            freeSpace.put(user, (int) (Files.getFileStore(Paths.get(STREAMS_PATH + user)).getUsableSpace() / 1073741824));
+        }
+        return freeSpace;
+    }
 
-        return (int) (Files.getFileStore(STREAMS_PATH).getUsableSpace() / 1073741824);
+    public static Map<String, Integer> getTotalSpace() throws IOException {
+        Map<String, Integer> freeSpace = new HashMap<>();
+        for (String user : SettingsProperties.getUsers()) {
+            freeSpace.put(user, (int) (Files.getFileStore(Paths.get(STREAMS_PATH + user)).getTotalSpace() / 1073741824));
+        }
+        return freeSpace;
     }
 
     private static boolean creatingRecordedPath() throws IOException {
-        return (Files.createDirectories(STREAMS_PATH) != null);
+        boolean pass = true;
+        for (String user : SettingsProperties.getUsers()) {
+            pass = (Files.createDirectories(Paths.get(STREAMS_PATH + user)) != null);
+        }
+        return pass;
     }
     
     public static boolean initialStorageCheck() throws IOException {
         boolean pass = true;
-
-        if (!Files.exists(STREAMS_PATH) && !Files.exists(STREAMS_PATH)) {
-            log.info("Folder not exist!");
-            log.info("Try create folder...");
-            if (!creatingRecordedPath()) {
+        for (String user : SettingsProperties.getUsers()) {
+            if (!Files.exists(Paths.get(STREAMS_PATH + user)) && !Files.exists(Paths.get(STREAMS_PATH + user))) {
+                log.info("Folder not exist!");
+                log.info("Try create folder...");
+                if (!creatingRecordedPath()) {
+                    pass = false;
+                } else {
+                    log.info("Success!");
+                }
+            } else if (!Files.isWritable(Paths.get(STREAMS_PATH + user))) {
+                log.warn("Can't write in {}", SettingsProperties.getRecordedStreamPath());
+                log.warn("Check permissions or change RecordedStreamPath in config_test.prop");
                 pass = false;
-            } else {
-                log.info("Success!");
             }
-        } else if (!Files.isWritable(STREAMS_PATH)) {
-            log.warn("Can't write in {}", SettingsProperties.getRecordedStreamPath());
-            log.warn("Check permissions or change RecordedStreamPath in config_test.prop");
-            pass = false;
+
+            log.info("Free space is: {} GB", getFreeSpace().get(user));
+
         }
-        log.info("Free space is: {} GB",checkFreeSpace());
-
-
         return pass;
+
     }
 
     public static UUID getUuidName(){

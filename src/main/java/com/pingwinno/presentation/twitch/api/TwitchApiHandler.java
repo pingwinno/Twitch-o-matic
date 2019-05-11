@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.application.DateConverter;
 import com.pingwinno.application.JdbcHandler;
 import com.pingwinno.application.StorageHelper;
+import com.pingwinno.application.SubscriptionRequestTimer;
 import com.pingwinno.application.twitch.playlist.handler.RecordStatusGetter;
 import com.pingwinno.application.twitch.playlist.handler.VodMetadataHelper;
 import com.pingwinno.domain.VodRecorder;
@@ -67,72 +68,78 @@ public class TwitchApiHandler {
         log.debug("Incoming stream up/down notification");
 
         if (HashHandler.compare(signature, stringDataModel)) {
-            log.debug("Hash confirmed");
-            StreamStatusNotificationModel dataModel =
-                    new ObjectMapper().readValue(stringDataModel, StreamStatusNotificationModel.class);
-            NotificationDataModel[] notificationArray = dataModel.getData();
-            if (notificationArray.length > 0) {
-                log.info("Stream is up");
-                NotificationDataModel notificationModel = notificationArray[0];
+            //check for active subscription
+            if (SubscriptionRequestTimer.getTimers().containsKey(user)) {
+                log.debug("Hash confirmed");
+                StreamStatusNotificationModel dataModel =
+                        new ObjectMapper().readValue(stringDataModel, StreamStatusNotificationModel.class);
+                NotificationDataModel[] notificationArray = dataModel.getData();
+                if (notificationArray.length > 0) {
+                    log.info("Stream is up");
+                    NotificationDataModel notificationModel = notificationArray[0];
 
 
-                if (notificationModel.getType().equals("live")) {
-                    if (VodMetadataHelper.getLastVod(user).getVodId() != null) {
-                        new Thread(() -> {
-                            try {
-                                StreamDataModel streamMetadata = VodMetadataHelper.getLastVod(user);
-                                int counter = 0;
-                                log.trace(streamMetadata.toString());
-                                while (!RecordStatusGetter.isRecording(streamMetadata.getVodId())) {
-                                    log.trace("vodId: {}", streamMetadata.getVodId());
-                                    streamMetadata = VodMetadataHelper.getLastVod(user);
-                                    log.info("waiting for creating vod...");
-                                    Thread.sleep(20 * 1000);
-                                    log.warn("vod is not created yet... cycle " + counter);
-                                    counter++;
-                                    if (counter > 60) {
-                                        throw new StreamNotFoundExeption("new vod not found");
+                    if (notificationModel.getType().equals("live")) {
+
+                        if (VodMetadataHelper.getLastVod(user).getVodId() != null) {
+                            new Thread(() -> {
+                                try {
+                                    StreamDataModel streamMetadata = VodMetadataHelper.getLastVod(user);
+                                    int counter = 0;
+                                    log.trace(streamMetadata.toString());
+                                    while (!RecordStatusGetter.isRecording(streamMetadata.getVodId())) {
+                                        log.trace("vodId: {}", streamMetadata.getVodId());
+                                        streamMetadata = VodMetadataHelper.getLastVod(user);
+                                        log.info("waiting for creating vod...");
+                                        Thread.sleep(20 * 1000);
+                                        log.warn("vod is not created yet... cycle " + counter);
+                                        counter++;
+                                        if (counter > 60) {
+                                            throw new StreamNotFoundExeption("new vod not found");
+                                        }
                                     }
+                                    for (String id : new JdbcHandler().search("vodId", "vodId", streamMetadata.getVodId())) {
+                                        log.trace(id);
+                                    }
+
+                                    if (!new JdbcHandler().search("vodId", "vodId", streamMetadata.getVodId()).contains(streamMetadata.getVodId())) {
+                                        streamMetadata.setUuid(StorageHelper.getUuidName());
+
+                                        new RecordStatusList().addStatus
+                                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.WEBHOOK, DateConverter.convert(LocalDateTime.now()),
+                                                        State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
+
+                                        log.info("Try to start record");
+                                        VodRecorder vodRecorder = new VodRecorder();
+
+                                        //check for notification duplicate
+                                        log.info("check for duplicate notification");
+                                        vodRecorder.start(streamMetadata);
+                                    } else log.warn("Stream duplicate. Skip...");
+                                } catch (IOException | InterruptedException e) {
+                                    log.error("DB error {} ", e);
+                                } catch (StreamNotFoundExeption streamNotFoundExeption) {
+                                    streamNotFoundExeption.printStackTrace();
                                 }
-                                for (String id : new JdbcHandler().search("vodId", "vodId", streamMetadata.getVodId())) {
-                                    log.trace(id);
-                                }
-
-                                if (!new JdbcHandler().search("vodId", "vodId", streamMetadata.getVodId()).contains(streamMetadata.getVodId())) {
-                                    streamMetadata.setUuid(StorageHelper.getUuidName());
-
-                                    new RecordStatusList().addStatus
-                                            (new StatusDataModel(streamMetadata.getVodId(), StartedBy.WEBHOOK, DateConverter.convert(LocalDateTime.now()),
-                                                    State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
-
-                                    log.info("Try to start record");
-                                    VodRecorder vodRecorder = new VodRecorder();
-
-                                    //check for notification duplicate
-                                    log.info("check for duplicate notification");
-                                    vodRecorder.start(streamMetadata);
-                                } else log.warn("Stream duplicate. Skip...");
-                            } catch (IOException | InterruptedException e) {
-                                log.error("DB error {} ", e);
-                            } catch (StreamNotFoundExeption streamNotFoundExeption) {
-                                streamNotFoundExeption.printStackTrace();
-                            }
 
 
-                        }).start();
+                            }).start();
 
-                        String startedAt = notificationModel.getStarted_at();
-                        log.info("Record started at: {}", startedAt);
+                            String startedAt = notificationModel.getStarted_at();
+                            log.info("Record started at: {}", startedAt);
+                        } else {
+                            log.error("vodId is null. Stream not found");
+                        }
                     } else {
-                        log.error("vodId is null. Stream not found");
+                        log.info("stream duplicate");
                     }
                 } else {
-                    log.info("stream duplicate");
+                    log.info("Stream down notification");
                 }
-            } else {
-                log.info("Stream down notification");
-            }
 
+            } else {
+                log.warn("Subscription for {} canceled", user);
+            }
         } else {
             log.error("Notification not accepted. Wrong hash.");
         }
