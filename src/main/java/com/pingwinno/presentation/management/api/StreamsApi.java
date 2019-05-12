@@ -14,10 +14,9 @@ import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.infrastructure.StreamNotFoundExeption;
 import com.pingwinno.infrastructure.enums.StartedBy;
 import com.pingwinno.infrastructure.enums.State;
-import com.pingwinno.infrastructure.models.AddDataModel;
+import com.pingwinno.infrastructure.models.AddRequestModel;
 import com.pingwinno.infrastructure.models.StatusDataModel;
 import com.pingwinno.infrastructure.models.StreamDataModel;
-import com.pingwinno.infrastructure.models.ValidationDataModel;
 import org.apache.commons.io.FileUtils;
 import org.bson.Document;
 import org.slf4j.LoggerFactory;
@@ -37,46 +36,68 @@ import static com.mongodb.client.model.Projections.include;
 import static com.mongodb.client.model.Updates.combine;
 import static com.mongodb.client.model.Updates.set;
 
+/**
+ * API for database and streams management
+ * Endpoint /database
+ */
+
 @Path("/database")
-public class CRUDApiHandler {
+public class StreamsApi {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
-    @Path("/add")
-    @POST
+    /**
+     * Start recording new stream
+     * Endpoint /database/add
+     *
+     * @param requestModel request params
+     * @see AddRequestModel for review json fields
+     */
+    @PUT
+    @Path("/streams")
     @Produces(MediaType.TEXT_HTML)
-    public Response startRecord(AddDataModel dataModel) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response startRecord(AddRequestModel requestModel) {
         Response response;
         StreamDataModel streamMetadata = null;
 
         try {
-            log.trace("type: {}", dataModel.getType());
-            log.trace("value: {}", dataModel.getValue());
-            if (dataModel.getType().equals("user")) {
-                streamMetadata = VodMetadataHelper.getLastVod(dataModel.getValue());
-            } else if (dataModel.getType().equals("vod")) {
-                streamMetadata = VodMetadataHelper.getVodMetadata(dataModel.getValue());
+            log.trace("type: {}", requestModel.getType());
+            log.trace("value: {}", requestModel.getValue());
+            if (requestModel.getType().equals("user")) {
+                streamMetadata = VodMetadataHelper.getLastVod(requestModel.getValue());
+            } else if (requestModel.getType().equals("vod")) {
+                streamMetadata = VodMetadataHelper.getVodMetadata(requestModel.getValue());
             }
             if (streamMetadata != null) {
                 //set another parent folder/db for stream ( for example if streamer guest on another chanel)
-                if (dataModel.getWriteTo() != null) {
-                    streamMetadata.setUser(dataModel.getWriteTo());
+                if (requestModel.getWriteTo() != null) {
+                    streamMetadata.setUser(requestModel.getWriteTo());
                 }
                 VodRecorder vodRecorder = new VodRecorder();
+
+
                 if (streamMetadata.getVodId() != null) {
-                    if (new JdbcHandler().search("vodId", "vodId",
+                    //if uuid == null start new record, else start validation
+                    if (requestModel.getUuid() != null) {
+                        streamMetadata.setUuid(requestModel.getUuid());
+                        new RecordStatusList().addStatus
+                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, DateConverter.convert(LocalDateTime.now()),
+                                        State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
+                    } else if (new JdbcHandler().search("vodId", "vodId",
                             streamMetadata.getVodId()).contains(streamMetadata.getVodId())) {
-                        log.debug("Stream exist. Run validation or delete folder");
-                        return Response.notModified().build();
+                        streamMetadata.setUuid(new JdbcHandler().search("vodId", "uuid").get(0).getUuid());
+                        new RecordStatusList().addStatus
+                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, DateConverter.convert(LocalDateTime.now()),
+                                        State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
                     } else {
                         streamMetadata.setUuid(StorageHelper.getUuidName());
+                        new RecordStatusList().addStatus
+                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.MANUAL, DateConverter.convert(LocalDateTime.now()),
+                                        State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
                     }
 
+                    streamMetadata.setSkipMuted(requestModel.isSkipMuted());
                     StreamDataModel finalStreamMetadata = streamMetadata;
-                    streamMetadata.setSkipMuted(dataModel.isSkipMuted());
-
-                    new RecordStatusList().addStatus
-                            (new StatusDataModel(streamMetadata.getVodId(), StartedBy.MANUAL, DateConverter.convert(LocalDateTime.now()),
-                                    State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
 
                     new Thread(() -> vodRecorder.start(finalStreamMetadata)).start();
 
@@ -84,7 +105,7 @@ public class CRUDApiHandler {
                     log.info("Record started at:{} ", startedAt);
                     response = Response.accepted().build();
                 } else {
-                    log.error("Stream {} not found", dataModel.getValue());
+                    log.error("Stream {} not found", requestModel.getValue());
                     response = Response.status(Response.Status.NOT_FOUND).build();
                 }
             } else {
@@ -97,54 +118,16 @@ public class CRUDApiHandler {
         return response;
     }
 
-    @Path("/validate")
-    @POST
-    @Produces(MediaType.TEXT_HTML)
-    public Response validateRecord(ValidationDataModel dataModel) {
-        if (!(dataModel.getVodId().trim().equals("") && dataModel.getUuid() == null)) {
-            Response response;
-            StreamDataModel streamMetadata;
-            try {
-                log.trace("vodId: {}", dataModel.getVodId());
-                log.trace("uuid: {}", dataModel.getUuid());
-
-                streamMetadata = VodMetadataHelper.getVodMetadata(dataModel.getVodId());
-
-                if (streamMetadata != null) {
-                    VodRecorder vodRecorder = new VodRecorder();
-                    if (streamMetadata.getVodId() != null) {
-
-                        streamMetadata.setUuid(dataModel.getUuid());
-                        StreamDataModel finalStreamMetadata = streamMetadata;
-                        streamMetadata.setSkipMuted(dataModel.isSkipMuted());
-
-                        new RecordStatusList().addStatus
-                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, DateConverter.convert(LocalDateTime.now()),
-                                        State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
-
-                        new Thread(() -> vodRecorder.start(finalStreamMetadata)).start();
-
-                        Date startedAt = streamMetadata.getDate();
-                        log.info("Record started at:{} ", startedAt);
-                        response = Response.accepted().build();
-                    } else {
-                        log.error("Stream {} not found", dataModel.getVodId());
-                        response = Response.status(Response.Status.NOT_FOUND).build();
-                    }
-                } else {
-                    response = Response.status(Response.Status.NOT_ACCEPTABLE).build();
-                }
-            } catch (IOException | InterruptedException | StreamNotFoundExeption e) {
-                response = Response.status(500, e.toString()).build();
-                log.error("Can't start record {}", e);
-            }
-            return response;
-        } else {
-            return Response.noContent().build();
-        }
-    }
-
-    @Path("/{user}/{uuid}")
+    /**
+     * Delete stream from database
+     * Endpoint /database/{user}/{uuid}/
+     *
+     * @param uuid        UUID of stream
+     * @param user        name of streamer
+     * @param deleteMedia if "true" also delete stream from storage
+     * @return return notModified if can't delete stream from storage (right issue/etc)
+     */
+    @Path("/streams/{user}/{uuid}")
     @DELETE
     public Response deleteStream(@PathParam("uuid") String uuid, @PathParam("user") String user, @QueryParam("deleteMedia") String deleteMedia) {
 
@@ -162,8 +145,18 @@ public class CRUDApiHandler {
         return Response.accepted().build();
     }
 
-    @Path("/update/{user}/{uuid}")
-    @POST
+    /**
+     * Update database record
+     * Endpoint /database/{user}/{uuid}/
+     *
+     * @param user      name of streamer
+     * @param uuid      UUID of stream
+     * @param dataModel updated metadata
+     * @return return ok
+     * @see StreamDataModel for see required fields
+     */
+    @Path("/streams/{user}/{uuid}")
+    @PATCH
     public Response updateStream(@PathParam("user") String user, @PathParam("uuid") String uuid, StreamDataModel dataModel) {
 
         MongoDBHandler.getCollection(user).updateOne(eq("_id", uuid),
@@ -173,6 +166,12 @@ public class CRUDApiHandler {
 
     }
 
+    /**
+     * Return streams array of selected streamer
+     * Endpoint /database/streams
+     * @param user streamer name
+     * @return array of streamer streams
+     */
     @Path("/streams/{user}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -188,19 +187,5 @@ public class CRUDApiHandler {
             e.printStackTrace();
             return null;
         }
-
     }
-
-    @Path("/users")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getUsersList() {
-        try {
-            return Response.status(Response.Status.OK)
-                    .entity(new ObjectMapper().writeValueAsString(SettingsProperties.getUsers())).build();
-        } catch (JsonProcessingException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
 }

@@ -2,12 +2,32 @@ package com.pingwinno.infrastructure.models;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-public class AddDataModel {
+import java.util.UUID;
+
+public class AddRequestModel {
+    //Should contain "user"(live broadcasts) or "vod"(past broadcasts) value.
     private String type;
+
+    //Should contain chanel name or vod ID
     private String value;
-    private String writeTo;
+
+    //May contain parent streamer name
     @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String writeTo;
+
+    //Use for skipp muted chunks
     private boolean skipMuted;
+    //UUID of saved stream
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private UUID uuid;
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
 
     public String getWriteTo() {
         return writeTo;
