@@ -1,5 +1,6 @@
 package com.pingwinno.domain.servers;
 
+import com.pingwinno.infrastructure.SettingsProperties;
 import com.pingwinno.presentation.management.api.ServerStatusSocket;
 import com.pingwinno.presentation.management.api.StatusUpdater;
 import org.eclipse.jetty.server.Server;
@@ -13,7 +14,7 @@ public class WebSocketServer {
     public static void start() {
         Server server = new Server();
         ServerConnector connector = new ServerConnector(server);
-        connector.setPort(30000);
+        connector.setPort(SettingsProperties.getManagementServerPort() + 1);
         server.addConnector(connector);
 
         // Setup the basic application "context" for this application at "/"
