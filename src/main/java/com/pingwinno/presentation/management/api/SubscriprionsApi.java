@@ -23,7 +23,7 @@ public class SubscriprionsApi {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @GET
-    @Path("/subscriptions")
+    @Path("")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getTimers() {
         Map<String, Long> timers = new HashMap<>();
@@ -39,7 +39,7 @@ public class SubscriprionsApi {
     }
 
     @PUT
-    @Path("/subscriptions/{user}")
+    @Path("/{user}")
     public Response addSubscription(@PathParam("user") String user) {
         try {
             SubscriptionQueryModel json = new SubscriptionQueryModel("subscribe",
@@ -51,7 +51,7 @@ public class SubscriprionsApi {
             SubscriptionRequestTimer subscriptionQuery = new SubscriptionRequestTimer("https://api.twitch.tv/helix/webhooks/hub", json);
             subscriptionQuery.sendSubscriptionRequest(user);
             log.debug("Sending subscription query");
-
+            SettingsProperties.addUser(user);
             return Response.accepted().build();
         } catch (InterruptedException | IOException e) {
             return Response.notModified().build();
@@ -60,9 +60,10 @@ public class SubscriprionsApi {
     }
 
     @DELETE
-    @Path("/subscriptions/{user}")
+    @Path("/{user}")
     public Response removeSubscription(@PathParam("user") String user) {
         SubscriptionRequestTimer.stop(user);
+        SettingsProperties.removeUser(user);
         return Response.accepted().build();
     }
 }

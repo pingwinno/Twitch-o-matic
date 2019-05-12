@@ -1,7 +1,9 @@
 package com.pingwinno.infrastructure;
 
 
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.pingwinno.infrastructure.models.ConfigFile;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 public class SettingsProperties {
-    private final static String PROPSFILE = "/etc/tom/config.json";
+    private final static String PROPSFILE = System.getProperty("user.home") + "/config.json";
     private final static String TESTPROPSFILE = "config_test.json";
 
     private static org.slf4j.Logger log = LoggerFactory.getLogger(SettingsProperties.class.getName());
@@ -50,31 +52,20 @@ public class SettingsProperties {
         return configFile;
     }
 
-    /*private static void saveProperties() throws IOException {
+    private static void saveProperties() {
 
-        boolean isLoaded;
-            try {
-                props.store(new FileOutputStream(TESTPROPSFILE), null);
-                isLoaded = true;
-            } catch (FileNotFoundException e) {
-                log.debug("config_test.prop not found");
-                isLoaded = false;
-            }
-            if (!isLoaded) {
-                try {
-                    props.store(new FileOutputStream(PROPSFILE), null);
-                    isLoaded = true;
-                } catch (FileNotFoundException e) {
-                    log.debug("config_test.prop not found");
-                    isLoaded = false;
-                }
-            }
-            if (!isLoaded) {
-                log.error("Config file not found");
-                System.exit(1);
-            }
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
+        log.debug("saving settings...");
+
+        try {
+            writer.writeValue(new File(TESTPROPSFILE), getProperties());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-*/
+
+    }
+
 
     public static String getCallbackAddress() {
         return getProperties().getCallbackAddress();
@@ -89,7 +80,19 @@ public class SettingsProperties {
     }
 
     public static String[] getUsers() {
-        return getProperties().getUsers();
+        return getProperties().getUsers().toArray(new String[0]);
+    }
+
+    public static void addUser(String user) {
+        getProperties().getUsers().add(user);
+
+        log.trace(getProperties().getUsers().toString());
+        saveProperties();
+    }
+
+    public static void removeUser(String user) {
+        getProperties().getUsers().remove(user);
+        saveProperties();
     }
 
     public static String getRecordedStreamPath() {

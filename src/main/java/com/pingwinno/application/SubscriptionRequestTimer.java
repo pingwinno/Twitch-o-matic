@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SubscriptionRequestTimer extends TimerTask {
 
-    private static org.slf4j.Logger log = LoggerFactory.getLogger(StorageHelper.class.getName());
+    private static org.slf4j.Logger log = LoggerFactory.getLogger(SubscriptionRequestTimer.class.getName());
     public static final int HUB_LEASE = 86400;
     private static Map<String, Timer> timers = new ConcurrentHashMap<>();
     private String serverAddress;
@@ -40,6 +40,7 @@ public class SubscriptionRequestTimer extends TimerTask {
     public static void stop(String user) {
         timers.remove(user).cancel();
         timersStartTime.remove(user);
+        log.info("Subscription for {} canceled", user);
     }
 
     public static Map<String, Instant> getTimers() {
@@ -70,7 +71,7 @@ public class SubscriptionRequestTimer extends TimerTask {
             ServerStatusSocket.updateState(getTimers());
 
         } catch (IOException | InterruptedException e) {
-            log.error("Subscription timer request failed. {}", e);
+            log.error("Subscription timer request failed. {}", e.toString());
         }
 
     }

@@ -1,11 +1,13 @@
 package com.pingwinno.infrastructure.models;
 
+import java.util.ArrayList;
+
 public class ConfigFile {
     private String callbackAddress;
     private int twitchServerPort;
     private int managementServerPort;
     private int websocketServerPort;
-    private String[] users;
+    private ArrayList<String> users;
     private String recordedStreamPath;
     private boolean h2ConsoleIsEnabled;
     private String h2User;
@@ -46,11 +48,11 @@ public class ConfigFile {
         this.websocketServerPort = websocketServerPort;
     }
 
-    public String[] getUsers() {
+    public ArrayList<String> getUsers() {
         return users;
     }
 
-    public void setUsers(String[] users) {
+    public void setUsers(ArrayList<String> users) {
         this.users = users;
     }
 

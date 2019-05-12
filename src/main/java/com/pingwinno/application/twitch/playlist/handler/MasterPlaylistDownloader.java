@@ -19,7 +19,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class MasterPlaylistDownloader {
 
-    private BufferedReader reader;
     private static org.slf4j.Logger log = LoggerFactory.getLogger(MasterPlaylistDownloader.class.getName());
     private HttpSevice httpSevice = new HttpSevice();
     private String jsonString;
@@ -49,12 +48,15 @@ public class MasterPlaylistDownloader {
             throw new StreamNotFoundExeption("Stream" + vodId + "not found");
         }
         if (response.getStatusLine().getStatusCode() == 200) {
-            reader = new BufferedReader(new InputStreamReader
-                    (httpSevice.getService(httpGet, false).getEntity().getContent(), StandardCharsets.UTF_8));
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader
+                    (httpSevice.getService(httpGet, false).getEntity().getContent(), StandardCharsets.UTF_8))) {
+                return new BufferedReader(reader);
+            }
+
         } else {
             throw new IOException();
         }
-        return reader;
+
     }
 
     public void close() throws IOException {
