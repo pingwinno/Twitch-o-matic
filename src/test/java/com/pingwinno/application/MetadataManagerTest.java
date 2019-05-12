@@ -5,7 +5,6 @@ import com.pingwinno.infrastructure.models.AnimatedPreview;
 import com.pingwinno.infrastructure.models.StreamDocumentModel;
 import com.pingwinno.infrastructure.models.StreamDocumentOldModel;
 import org.bson.Document;
-import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -13,18 +12,18 @@ import java.util.List;
 
 class MetadataManagerTest {
 
-    @Test
+
     void importToDB() {
         //MongoDBHandler.connect();
         MetadataManager.importToDB("dedlim");
     }
 
-    @Test
+
     void exportFromDB() {
         MetadataManager.exportFromDB("albisha");
     }
 
-    @Test
+
     void convert() {
         List<StreamDocumentOldModel> streamDocumentOldModels =
                 (List<StreamDocumentOldModel>) MongoDBHandler.getCollection("olyashaa",

@@ -6,7 +6,6 @@ public class ConfigFile {
     private String callbackAddress;
     private int twitchServerPort;
     private int managementServerPort;
-    private int websocketServerPort;
     private ArrayList<String> users;
     private String recordedStreamPath;
     private boolean h2ConsoleIsEnabled;
@@ -38,14 +37,6 @@ public class ConfigFile {
 
     public void setManagementServerPort(int managementServerPort) {
         this.managementServerPort = managementServerPort;
-    }
-
-    public int getWebsocketServerPort() {
-        return websocketServerPort;
-    }
-
-    public void setWebsocketServerPort(int websocketServerPort) {
-        this.websocketServerPort = websocketServerPort;
     }
 
     public ArrayList<String> getUsers() {

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pingwinno.infrastructure.HttpSevice;
 import com.pingwinno.infrastructure.models.SubscriptionQueryModel;
-import com.pingwinno.presentation.management.api.ServerStatusSocket;
+import com.pingwinno.presentation.management.api.SubscriptionsSocketApi;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.slf4j.LoggerFactory;
@@ -68,7 +68,7 @@ public class SubscriptionRequestTimer extends TimerTask {
             log.debug("Waiting for hub.challenge request");
             httpSevice.close();
             timersStartTime.replace(user, Instant.now());
-            ServerStatusSocket.updateState(getTimers());
+            SubscriptionsSocketApi.updateState(getTimers());
 
         } catch (IOException | InterruptedException e) {
             log.error("Subscription timer request failed. {}", e.toString());

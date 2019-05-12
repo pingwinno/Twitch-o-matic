@@ -13,8 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@ServerEndpoint(value = "/server/")
-public class ServerStatusSocket {
+@ServerEndpoint(value = "/subscriptions/")
+public class SubscriptionsSocketApi {
 
     private static List<Session> sessions = new ArrayList<>();
 
@@ -30,7 +30,7 @@ public class ServerStatusSocket {
 
     @OnOpen
     public void onOpen(Session session) throws IOException {
-        // Get session and StatusUpdater connection
+        // Get session and StreamStatusSocketApi connection
         sessions.add(session);
 
     }
@@ -43,7 +43,7 @@ public class ServerStatusSocket {
 
     @OnClose
     public void onClose(Session session) throws IOException {
-        // StatusUpdater connection closes
+        // StreamStatusSocketApi connection closes
         sessions.remove(session);
     }
 

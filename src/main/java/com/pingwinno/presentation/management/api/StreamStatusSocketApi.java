@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @ServerEndpoint(value = "/status/")
-public class StatusUpdater {
+public class StreamStatusSocketApi {
 
     private static List<Session> sessions = new ArrayList<>();
 
@@ -19,7 +19,7 @@ public class StatusUpdater {
 
     @OnOpen
     public void onOpen(Session session) throws IOException {
-        // Get session and StatusUpdater connection
+        // Get session and StreamStatusSocketApi connection
         sessions.add(session);
     }
 
@@ -30,7 +30,7 @@ public class StatusUpdater {
 
     @OnClose
     public void onClose(Session session) throws IOException {
-        // StatusUpdater connection closes
+        // StreamStatusSocketApi connection closes
         sessions.remove(session);
     }
 

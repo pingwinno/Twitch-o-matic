@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -177,15 +178,19 @@ public class StreamsApi {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStreamsList(@PathParam("user") String user) {
         log.trace(user);
-
-        try {
-            return Response.status(Response.Status.OK)
-                    .entity(new ObjectMapper().writeValueAsString(MongoDBHandler.getCollection(user).
-                            find().projection(fields(include("title", "date", "game"))).into(new ArrayList()))
-                            .replaceAll("_id", "uuid")).build();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return null;
+        if (Arrays.deepToString(SettingsProperties.getUsers()).contains(user)) {
+            try {
+                return Response.status(Response.Status.OK)
+                        .entity(new ObjectMapper().writeValueAsString(MongoDBHandler.getCollection(user).
+                                find().projection(fields(include("title", "date", "game"))).into(new ArrayList()))
+                                .replaceAll("_id", "uuid")).build();
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+                return null;
+            }
+        } else {
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
+
     }
 }
