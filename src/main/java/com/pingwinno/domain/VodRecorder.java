@@ -71,7 +71,7 @@ public class VodRecorder implements RecordThread {
             streamDocumentModel.setTitle(streamDataModel.getTitle());
             streamDocumentModel.setDate(streamDataModel.getDate());
             streamDocumentModel.setGame(streamDataModel.getGame());
-            DataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
+
             try {
                 Path streamPath = Paths.get(streamFolderPath);
                 if (!Files.exists(streamPath)) {
@@ -85,6 +85,7 @@ public class VodRecorder implements RecordThread {
                 new RecordStatusList().changeState(uuid, State.ERROR);
                 log.error("Can't create file or folder for VoD downloader. {}", e);
             }
+            DataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
             vodId = streamDataModel.getVodId();
 
             String m3u8Link = MasterPlaylistParser.parse(

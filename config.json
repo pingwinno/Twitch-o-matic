@@ -1,0 +1,23 @@
+{
+  "callbackAddress": "http://server",
+  "twitchServerPort": "11111",
+  "managementServerPort": "20000",
+  "users": [
+    "one",
+    "two"
+  ],
+  "recordedStreamPath": "/path/to/streams/",
+  "h2ConsoleIsEnabled": "false",
+  "h2User": "",
+  "h2Password": "",
+  //chose one of variants
+  "streamQuality": "chunked",
+  "720p60",
+  "720p30",
+  "480p30",
+  "360p30",
+  "160p30",
+  "audio_only"
+  "mongoDBAddress": "make connection string for you server",
+  "mongoDBName": ""
+}

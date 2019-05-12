@@ -23,7 +23,7 @@ public class MongoDBHandler {
         CodecRegistry registry;
         registry = CodecRegistries.fromRegistries(MongoClientSettings.getDefaultCodecRegistry(),
                 CodecRegistries.fromProviders(PojoCodecProvider.builder().automatic(true).build()));
-        mongoClient = MongoClients.create("mongodb://" + SettingsProperties.getMongoDBAddress());
+        mongoClient = MongoClients.create(SettingsProperties.getMongoDBAddress());
         String dbName = "streams";
         if (!SettingsProperties.getMongoDBName().trim().isEmpty()) {
             dbName = SettingsProperties.getMongoDBName().trim();

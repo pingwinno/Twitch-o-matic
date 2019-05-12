@@ -354,23 +354,23 @@
             }
         },
         created() {
-            this.$http.get(this.BASE_URL + "/management_api/users").then(response => {
+            this.$http.get(this.BASE_URL + "/database/users").then(response => {
                 this.streamers = response.body;
                 this.streamer = response.body[0];
                 this.initialize();
             });
-            this.$http.get(this.BASE_URL + "/status_api/status_list").then(r => {
+            this.$http.get(this.BASE_URL + "/status_list").then(r => {
                 this.statuses = r.body;
             });
             setInterval(() => {
-                this.$http.get(this.BASE_URL + "/status_api/status_list").then(r => {
+                this.$http.get(this.BASE_URL + "/status_list").then(r => {
                     this.statuses = r.body;
                 });
             }, 1000);
         },
         methods: {
             initialize() {
-                this.$http.get(this.BASE_URL + "/management_api/streams/" + this.streamer).then(response => {
+                this.$http.get(this.BASE_URL + "/database/streams/" + this.streamer).then(response => {
                     this.streams = response.body;
                     this.pagination.totalItems = response.body.length;
                     if (this.pagination.rowsPerPage == null || this.pagination.totalItems == null) this.pages = 0;
@@ -384,7 +384,7 @@
             },
             edit() {
                 this.$http
-                    .post(`${this.BASE_URL}/management_api/update/${this.streamer}/${this.editedData.uuid}`, this.editedData)
+                    .post(`${this.BASE_URL}/database/update/${this.streamer}/${this.editedData.uuid}`, this.editedData)
                     .then(() => {
                         this.initialize();
                         this.close();
@@ -396,7 +396,7 @@
             },
             deleteItem() {
                 this.$http
-                    .delete(`${this.BASE_URL}/management_api/${this.streamer}/${this.deleteData.uuid}`, {
+                    .delete(`${this.BASE_URL}/database/${this.streamer}/${this.deleteData.uuid}`, {
                         params: {deleteMedia: this.deleteData.deleteMedia}
                     })
                     .then(() => {
@@ -409,7 +409,7 @@
                 this.addDialog = true;
             },
             add() {
-                this.$http.post(this.BASE_URL + "/management_api/add", this.addData).then();
+                this.$http.post(this.BASE_URL + "/database/add", this.addData).then();
                 this.initialize();
                 this.close();
             },
@@ -426,7 +426,7 @@
             },
             validate() {
                 if (this.validateData.vodId.trim() !== "" || this.validateData.uuid.trim() !== "")
-                    this.$http.post(this.BASE_URL + "/management_api/validate", this.validateData).then(() => {
+                    this.$http.post(this.BASE_URL + "/database/validate", this.validateData).then(() => {
                         this.close();
                     });
             },
@@ -442,7 +442,7 @@
                 this.stopDialog = true;
             },
             stop() {
-                this.$http.delete(this.BASE_URL + "/status_api/" + this.stopUUID).then(() => {
+                this.$http.delete(this.BASE_URL + "/status_list/" + this.stopUUID).then(() => {
                     this.close();
                 });
             },
