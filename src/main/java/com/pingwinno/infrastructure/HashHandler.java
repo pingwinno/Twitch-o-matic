@@ -2,7 +2,6 @@ package com.pingwinno.infrastructure;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.LoggerFactory;
 
 import javax.crypto.Mac;
@@ -18,13 +17,8 @@ public class HashHandler {
 
 
     public static void generateKey() {
-        if (!SystemUtils.IS_OS_WINDOWS) {
             key = RandomStringUtils.randomAlphanumeric(20);
             log.trace("key {}", key);
-        } else {
-            log.info("Hello, winboy :*");
-            key = "I0Am9WindOws2ana16S1ave";
-        }
     }
 
     public static boolean compare(String header, String dataModel) {
