@@ -47,6 +47,7 @@ public class CRUDApiHandler {
     public Response startRecord(AddDataModel dataModel) {
         Response response;
         StreamDataModel streamMetadata = null;
+
         try {
             log.trace("type: {}", dataModel.getType());
             log.trace("value: {}", dataModel.getValue());
@@ -56,6 +57,10 @@ public class CRUDApiHandler {
                 streamMetadata = VodMetadataHelper.getVodMetadata(dataModel.getValue());
             }
             if (streamMetadata != null) {
+                //set another parent folder/db for stream ( for example if streamer guest on another chanel)
+                if (dataModel.getWriteTo() != null) {
+                    streamMetadata.setUser(dataModel.getWriteTo());
+                }
                 VodRecorder vodRecorder = new VodRecorder();
                 if (streamMetadata.getVodId() != null) {
                     if (new JdbcHandler().search("vodId", "vodId",
@@ -79,7 +84,7 @@ public class CRUDApiHandler {
                     log.info("Record started at:{} ", startedAt);
                     response = Response.accepted().build();
                 } else {
-                    log.error("Stream {] not found", dataModel.getValue());
+                    log.error("Stream {} not found", dataModel.getValue());
                     response = Response.status(Response.Status.NOT_FOUND).build();
                 }
             } else {
@@ -123,7 +128,7 @@ public class CRUDApiHandler {
                         log.info("Record started at:{} ", startedAt);
                         response = Response.accepted().build();
                     } else {
-                        log.error("Stream {] not found", dataModel.getVodId());
+                        log.error("Stream {} not found", dataModel.getVodId());
                         response = Response.status(Response.Status.NOT_FOUND).build();
                     }
                 } else {
