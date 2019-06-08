@@ -11,11 +11,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 
+/**
+ * API returns storage state.
+ */
 @Path("/server")
 public class ServerStatusApi {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
-
+    /**
+     * Method returns list of free storage space per streamer.
+     *
+     * @return list of free storage space per streamer.
+     */
     @GET
     @Path("/free_storage")
     @Produces(MediaType.APPLICATION_JSON)
@@ -28,6 +35,10 @@ public class ServerStatusApi {
         }
     }
 
+    /**
+     * Method returns list of total storage capacity per streamer.
+     * @return list of total storage capacity per streamer.
+     */
     @GET
     @Path("/total_storage")
     @Produces(MediaType.APPLICATION_JSON)

@@ -39,7 +39,7 @@ import static com.mongodb.client.model.Updates.set;
 
 /**
  * API for database and streams management
- * Endpoint /database
+ * Endpoint {@code /database}
  */
 
 @Path("/database")
@@ -48,7 +48,7 @@ public class StreamsApi {
 
     /**
      * Start recording new stream
-     * Endpoint /database/add
+     * Endpoint {@code /database/add}
      *
      * @param requestModel request params
      * @see AddRequestModel for review json fields
@@ -70,7 +70,7 @@ public class StreamsApi {
                 streamMetadata = VodMetadataHelper.getVodMetadata(requestModel.getValue());
             }
             if (streamMetadata != null) {
-                //set another parent folder/db for stream ( for example if streamer guest on another chanel)
+                //set another parent folder/db for stream ( for example if streamer is guest on another chanel)
                 if (requestModel.getWriteTo() != null) {
                     streamMetadata.setUser(requestModel.getWriteTo());
                 }
@@ -121,7 +121,7 @@ public class StreamsApi {
 
     /**
      * Delete stream from database
-     * Endpoint /database/{user}/{uuid}/
+     * Endpoint {@code /database/{user}/{uuid}/}
      *
      * @param uuid        UUID of stream
      * @param user        name of streamer
@@ -148,7 +148,7 @@ public class StreamsApi {
 
     /**
      * Update database record
-     * Endpoint /database/{user}/{uuid}/
+     * Endpoint {@code /database/{user}/{uuid}/}
      *
      * @param user      name of streamer
      * @param uuid      UUID of stream
@@ -169,7 +169,7 @@ public class StreamsApi {
 
     /**
      * Return streams array of selected streamer
-     * Endpoint /database/streams
+     * Endpoint {@code /database/streams}
      * @param user streamer name
      * @return array of streamer streams
      */

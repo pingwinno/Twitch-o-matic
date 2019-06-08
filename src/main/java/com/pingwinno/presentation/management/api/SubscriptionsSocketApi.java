@@ -13,11 +13,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * API sends update of subscriptions list of client.
+ */
 @ServerEndpoint(value = "/subscriptions/")
 public class SubscriptionsSocketApi {
 
     private static List<Session> sessions = new ArrayList<>();
 
+    /**
+     * Method sends list with updated subscriptions
+     *
+     * @param message for sending to client
+     * @throws IOException
+     */
     public static void updateState(Map<String, Instant> message) throws IOException {
         for (Session session : sessions) {
             Map<String, Long> timers = new HashMap<>();

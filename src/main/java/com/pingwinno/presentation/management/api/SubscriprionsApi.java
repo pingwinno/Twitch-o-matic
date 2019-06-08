@@ -18,10 +18,18 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * API for chanel subscriptions management.
+ * Endpoint {@code /subscriptions}
+ */
 @Path("/subscriptions")
 public class SubscriprionsApi {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
+    /**
+     * Method returns list of current active subscriptions.
+     * @return list of current active subscriptions.
+     */
     @GET
     @Path("")
     @Produces(MediaType.APPLICATION_JSON)
@@ -38,6 +46,11 @@ public class SubscriprionsApi {
         }
     }
 
+    /**
+     * Method adds new chanel subscription.
+     * @param user name of chanel
+     * @return adding operation response
+     */
     @PUT
     @Path("/{user}")
     public Response addSubscription(@PathParam("user") String user) {
@@ -59,6 +72,11 @@ public class SubscriprionsApi {
 
     }
 
+    /**
+     * Method delete chanel subscription.
+     * @param user name of chanel
+     * @return deleting operation response
+     */
     @DELETE
     @Path("/{user}")
     public Response removeSubscription(@PathParam("user") String user) {
