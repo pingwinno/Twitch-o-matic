@@ -18,23 +18,24 @@ public class DataBaseWriter {
 
     public static void writeToRemoteDB(StreamDocumentModel streamDocumentModel, String user) throws IOException {
 
+        File file = new File(SettingsProperties.getRecordedStreamPath() + user + "/" + streamDocumentModel.getUuid()
+                + "/metadata.json");
         ObjectMapper mapper = new ObjectMapper();
         ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
-        writer.writeValue(new File(SettingsProperties.getRecordedStreamPath() + user + "/" + streamDocumentModel.getUuid()
-                + "/metadata.json"), streamDocumentModel);
+        writer.writeValue(file, streamDocumentModel);
 
-        if (MongoDBHandler.getCollection(user).find(
-                eq("_id", streamDocumentModel.getUuid())).first() == null) {
-            log.debug("Write to remote db...");
-            MongoDBHandler.getCollection(user).insertOne(streamDocumentModel);
-            log.trace("Remote db endpoint: {}", SettingsProperties.getMongoDBAddress());
-        } else {
-            log.debug("Update record...");
-            MongoDBHandler.getCollection(user).
-                    replaceOne(eq("_id", streamDocumentModel.getUuid()),
-                            streamDocumentModel);
+        if (!SettingsProperties.getMongoDBAddress().trim().equals("")) {
+            if (MongoDBHandler.getCollection(user).find(
+                    eq("_id", streamDocumentModel.getUuid())).first() == null) {
+                log.debug("Write to remote db...");
+                MongoDBHandler.getCollection(user).insertOne(streamDocumentModel);
+                log.trace("Remote db endpoint: {}", SettingsProperties.getMongoDBAddress());
+            } else {
+                log.debug("Update record...");
+                MongoDBHandler.getCollection(user).
+                        replaceOne(eq("_id", streamDocumentModel.getUuid()),
+                                streamDocumentModel);
+            }
         }
     }
-
-
 }
