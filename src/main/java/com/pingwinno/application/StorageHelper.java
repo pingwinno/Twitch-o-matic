@@ -1,15 +1,14 @@
 package com.pingwinno.application;
 
 import com.pingwinno.infrastructure.SettingsProperties;
+import com.pingwinno.infrastructure.models.StorageState;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class StorageHelper {
     private final static String STREAMS_PATH = SettingsProperties.getRecordedStreamPath();
@@ -23,12 +22,16 @@ public class StorageHelper {
         return freeSpace;
     }
 
-    public static Map<String, Integer> getTotalSpace() throws IOException {
-        Map<String, Integer> freeSpace = new HashMap<>();
+    public static List<StorageState> getStorageState() throws IOException {
+        List<StorageState> storageStates = new ArrayList<>();
         for (String user : SettingsProperties.getUsers()) {
-            freeSpace.put(user, (int) (Files.getFileStore(Paths.get(STREAMS_PATH + user)).getTotalSpace() / 1073741824));
+            StorageState storageState = new StorageState();
+            storageState.setUser(user);
+            storageState.setTotalStorage((int) (Files.getFileStore(Paths.get(STREAMS_PATH + user)).getTotalSpace() / 1073741824));
+            storageState.setFreeStorage((int) (Files.getFileStore(Paths.get(STREAMS_PATH + user)).getUsableSpace() / 1073741824));
+            storageStates.add(storageState);
         }
-        return freeSpace;
+        return storageStates;
     }
 
     private static boolean creatingRecordedPath() throws IOException {

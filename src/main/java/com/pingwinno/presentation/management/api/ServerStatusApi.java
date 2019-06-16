@@ -34,28 +34,12 @@ public class ServerStatusApi {
      * @return list of free storage space per streamer.
      */
     @GET
-    @Path("/free_storage")
+    @Path("/storage")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFreeStorage() {
         try {
             return Response.status(Response.Status.OK)
-                    .entity(new ObjectMapper().writeValueAsString(StorageHelper.getFreeSpace())).build();
-        } catch (IOException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    /**
-     * Method returns list of total storage capacity per streamer.
-     * @return list of total storage capacity per streamer.
-     */
-    @GET
-    @Path("/total_storage")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getTotalStorage() {
-        try {
-            return Response.status(Response.Status.OK)
-                    .entity(new ObjectMapper().writeValueAsString(StorageHelper.getTotalSpace())).build();
+                    .entity(new ObjectMapper().writeValueAsString(StorageHelper.getStorageState())).build();
         } catch (IOException e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
         }
