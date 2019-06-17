@@ -4,13 +4,10 @@ package net.streamarchive.presentation.management.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.streamarchive.application.DateConverter;
-import net.streamarchive.infrastructure.RecordThread;
-import net.streamarchive.repository.StatusRepository;
 import net.streamarchive.application.StorageHelper;
 import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
-import net.streamarchive.domain.MongoDBHandler;
-import net.streamarchive.domain.VodRecorder;
 import net.streamarchive.infrastructure.RecordStatusList;
+import net.streamarchive.infrastructure.RecordThread;
 import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.StreamNotFoundExeption;
 import net.streamarchive.infrastructure.enums.StartedBy;
@@ -18,10 +15,14 @@ import net.streamarchive.infrastructure.enums.State;
 import net.streamarchive.infrastructure.models.AddRequestModel;
 import net.streamarchive.infrastructure.models.StatusDataModel;
 import net.streamarchive.infrastructure.models.StreamDataModel;
+import net.streamarchive.infrastructure.models.StreamDocumentModel;
+import net.streamarchive.repository.StatusRepository;
 import org.apache.commons.io.FileUtils;
-import org.bson.Document;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.*;
@@ -30,15 +31,8 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Projections.fields;
-import static com.mongodb.client.model.Projections.include;
-import static com.mongodb.client.model.Updates.combine;
-import static com.mongodb.client.model.Updates.set;
 
 /**
  * API for database and streams management
@@ -53,6 +47,8 @@ public class StreamsApi {
     RecordStatusList recordStatusList;
     @Autowired
     RecordThread vodRecorder;
+    @Autowired
+    MongoTemplate mongoTemplate;
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
@@ -139,19 +135,28 @@ public class StreamsApi {
     @Path("/streams/{user}/{uuid}")
     @DELETE
     public Response deleteStream(@PathParam("uuid") String uuid, @PathParam("user") String user, @QueryParam("deleteMedia") String deleteMedia) {
+        if (Arrays.asList(SettingsProperties.getUsers()).contains(user)) {
+            Query query = new Query();
+            query.addCriteria(Criteria.where("_id").is(uuid));
 
-        MongoDBHandler.getCollection(user).deleteOne(new Document("_id", uuid));
-        log.info("delete stream {}", uuid);
-        if (deleteMedia.equals("true")) {
-            try {
-                FileUtils.deleteDirectory(new File(SettingsProperties.getRecordedStreamPath() + "" + user + "/" + uuid));
-            } catch (IOException e) {
-                log.error("can't delete media {] ", e);
+            if (mongoTemplate.remove(query, user).getDeletedCount() == 0L) {
                 return Response.notModified().build();
+            } else {
+                log.info("delete stream {}", uuid);
+                if (deleteMedia.equals("true")) {
+                    try {
+                        FileUtils.deleteDirectory(new File(SettingsProperties.getRecordedStreamPath() + "" + user + "/" + uuid));
+                    } catch (IOException e) {
+                        log.error("can't delete media {] ", e);
+                        return Response.notModified().build();
+                    }
+                }
+                return Response.accepted().build();
             }
+        } else {
+            return Response.status(Response.Status.FORBIDDEN).build();
         }
 
-        return Response.accepted().build();
     }
 
     /**
@@ -167,10 +172,11 @@ public class StreamsApi {
     @Path("/streams/{user}/{uuid}")
     @PATCH
     public Response updateStream(@PathParam("user") String user, @PathParam("uuid") String uuid, StreamDataModel dataModel) {
-
-        MongoDBHandler.getCollection(user).updateOne(eq("_id", uuid),
-                combine(set("date", dataModel.getDate()), set("title", dataModel.getTitle()), set("game", dataModel.getGame())));
-
+        StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
+        streamDocumentModel.setGame(dataModel.getGame());
+        streamDocumentModel.setDate(dataModel.getDate());
+        streamDocumentModel.setTitle(dataModel.getTitle());
+        mongoTemplate.save(streamDocumentModel, user);
         return Response.ok().build();
 
     }
@@ -187,12 +193,13 @@ public class StreamsApi {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStreamsList(@PathParam("user") String user) {
         log.trace(user);
+        Query query = new Query();
+        query.fields().include("title").include("date").include("game");
         if (Arrays.deepToString(SettingsProperties.getUsers()).contains(user)) {
             try {
                 return Response.status(Response.Status.OK)
-                        .entity(new ObjectMapper().writeValueAsString(MongoDBHandler.getCollection(user).
-                                find().projection(fields(include("title", "date", "game"))).into(new ArrayList()))
-                                .replaceAll("_id", "uuid")).build();
+                        .entity(new ObjectMapper().writeValueAsString(mongoTemplate.find(query, StreamDocumentModel.class, user))
+                        ).build();
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
                 return null;

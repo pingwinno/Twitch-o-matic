@@ -53,6 +53,8 @@ public class VodRecorder implements RecordThread {
 
     @Autowired
     RecordThreadSupervisor recordThreadSupervisor;
+    @Autowired
+    DataBaseWriter dataBaseWriter;
 
     public VodRecorder(RecordStatusList recordStatusList) {
         this.recordStatusList = recordStatusList;
@@ -82,7 +84,7 @@ public class VodRecorder implements RecordThread {
         }
         try {
             recordStatusList.changeState(uuid, State.RUNNING);
-            streamDocumentModel.setUuid(streamDataModel.getUuid().toString());
+            streamDocumentModel.set_id(streamDataModel.getUuid().toString());
             streamDocumentModel.setTitle(streamDataModel.getTitle());
             streamDocumentModel.setDate(streamDataModel.getDate());
             streamDocumentModel.setGame(streamDataModel.getGame());
@@ -100,7 +102,7 @@ public class VodRecorder implements RecordThread {
                 recordStatusList.changeState(uuid, State.ERROR);
                 log.error("Can't create file or folder for VoD downloader. ", e);
             }
-            DataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
+            dataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
             vodId = streamDataModel.getVodId();
 
             String m3u8Link = MasterPlaylistParser.parse(
@@ -236,8 +238,8 @@ public class VodRecorder implements RecordThread {
 
         streamDocumentModel.setDuration(mainPlaylist.size() * 10);
         streamDocumentModel.setAnimatedPreviews(animatedPreview);
-        streamDocumentModel.setTimelinePreviews(timelinePreview);
-        DataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
+        streamDocumentModel.setTimeline_preview(timelinePreview);
+        dataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
         recordStatusList.changeState(uuid, State.COMPLETE);
         stop();
     }

@@ -6,36 +6,31 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.models.StreamDocumentModel;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
 
-import static com.mongodb.client.model.Filters.eq;
-
+@Service
 public class DataBaseWriter {
-
+    @Autowired
+    MongoTemplate mongoTemplate;
     static private org.slf4j.Logger log = LoggerFactory.getLogger(DataBaseWriter.class);
 
-    public static void writeToRemoteDB(StreamDocumentModel streamDocumentModel, String user) throws IOException {
+    public void writeToRemoteDB(StreamDocumentModel streamDocumentModel, String user) throws IOException {
 
-        File file = new File(SettingsProperties.getRecordedStreamPath() + user + "/" + streamDocumentModel.getUuid()
+        File file = new File(SettingsProperties.getRecordedStreamPath() + user + "/" + streamDocumentModel.get_id()
                 + "/metadata.json");
         ObjectMapper mapper = new ObjectMapper();
         ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
         writer.writeValue(file, streamDocumentModel);
 
         if (!SettingsProperties.getMongoDBAddress().trim().equals("")) {
-            if (MongoDBHandler.getCollection(user).find(
-                    eq("_id", streamDocumentModel.getUuid())).first() == null) {
                 log.debug("Write to remote db...");
-                MongoDBHandler.getCollection(user).insertOne(streamDocumentModel);
+            mongoTemplate.save(streamDocumentModel, user);
                 log.trace("Remote db endpoint: {}", SettingsProperties.getMongoDBAddress());
-            } else {
-                log.debug("Update record...");
-                MongoDBHandler.getCollection(user).
-                        replaceOne(eq("_id", streamDocumentModel.getUuid()),
-                                streamDocumentModel);
-            }
         }
     }
 }

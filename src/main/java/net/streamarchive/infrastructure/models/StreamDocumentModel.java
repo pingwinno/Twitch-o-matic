@@ -1,32 +1,33 @@
 package net.streamarchive.infrastructure.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.bson.codecs.pojo.annotations.BsonId;
-import org.bson.codecs.pojo.annotations.BsonProperty;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
 
 //@JsonSerialize(using = DocumentModelSerializer.class)
+@Document
 public class StreamDocumentModel {
 
-    @BsonId
-    private String uuid;
+    @Id
+    private String _id;
     private Date date;
     private String title;
     private String game;
     private long duration;
-    @BsonProperty("animated_preview")
-    private LinkedHashMap<String, String> animatedPreviews;
-    @BsonProperty("timeline_preview")
-    private LinkedHashMap<String, Preview> timelinePreviews;
 
-    public String getUuid() {
-        return uuid;
+    private LinkedHashMap<String, String> animated_preview;
+
+    private LinkedHashMap<String, Preview> timeline_preview;
+
+    public String get_id() {
+        return _id;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void set_id(String _id) {
+        this._id = _id;
     }
 
     public Date getDate() {
@@ -63,22 +64,22 @@ public class StreamDocumentModel {
 
     @JsonProperty("animated_preview")
     public LinkedHashMap<String, String> getAnimatedPreviews() {
-        return animatedPreviews;
+        return animated_preview;
     }
 
     @JsonProperty("animated_preview")
     public void setAnimatedPreviews(LinkedHashMap<String, String> animatedPreviews) {
-        this.animatedPreviews = animatedPreviews;
+        this.animated_preview = animatedPreviews;
     }
 
     @JsonProperty("timeline_preview")
-    public LinkedHashMap<String, Preview> getTimelinePreviews() {
-        return timelinePreviews;
+    public LinkedHashMap<String, Preview> getTimeline_preview() {
+        return timeline_preview;
     }
 
     @JsonProperty("timeline_preview")
-    public void setTimelinePreviews(LinkedHashMap<String, Preview> timelinePreviews) {
-        this.timelinePreviews = timelinePreviews;
+    public void setTimeline_preview(LinkedHashMap<String, Preview> timeline_preview) {
+        this.timeline_preview = timeline_preview;
     }
 
 

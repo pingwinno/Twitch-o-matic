@@ -3,10 +3,12 @@ package net.streamarchive.presentation.management.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.streamarchive.application.StorageHelper;
 import net.streamarchive.domain.DataBaseWriter;
-import net.streamarchive.domain.MongoDBHandler;
 import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.models.StreamDocumentModel;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.stereotype.Service;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -16,7 +18,6 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -24,8 +25,13 @@ import java.util.stream.Stream;
 /**
  * API returns storage state.
  */
+@Service
 @Path("/server")
 public class ServerStatusApi {
+    @Autowired
+    DataBaseWriter dataBaseWriter;
+    @Autowired
+    MongoTemplate mongoTemplate;
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     /**
@@ -56,8 +62,8 @@ public class ServerStatusApi {
     public Response importToLocalDb() {
         try {
             for (String user : SettingsProperties.getUsers()) {
-                for (StreamDocumentModel stream : (ArrayList<StreamDocumentModel>) MongoDBHandler.getCollection(user, StreamDocumentModel.class).find().into(new ArrayList<StreamDocumentModel>())) {
-                    DataBaseWriter.writeToRemoteDB(stream, user);
+                for (StreamDocumentModel stream : mongoTemplate.findAll(StreamDocumentModel.class, user)) {
+                    dataBaseWriter.writeToRemoteDB(stream, user);
                 }
             }
 
@@ -87,7 +93,7 @@ public class ServerStatusApi {
 
                 result.forEach(x -> {
                     try {
-                        DataBaseWriter.writeToRemoteDB(objectMapper.readValue(x, StreamDocumentModel.class), user);
+                        dataBaseWriter.writeToRemoteDB(objectMapper.readValue(x, StreamDocumentModel.class), user);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

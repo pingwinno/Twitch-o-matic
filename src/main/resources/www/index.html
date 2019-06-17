@@ -47,7 +47,7 @@
                                         class="elevation-1"
                                 >
                                     <template v-slot:items="props">
-                                        <td width="25%">{{ props.item.uuid }}</td>
+                                        <td width="25%">{{ props.item._id }}</td>
                                         <td width="25%">{{ props.item.title }}</td>
                                         <td width="15%">{{ props.item.date | date }}</td>
                                         <td width="15%">{{ props.item.game }}</td>
@@ -90,7 +90,7 @@
                                           class="elevation-1">
                                 <template v-slot:items="props">
                                     <td :class="background(props.item.state)">
-                                        {{ props.item.uuid }}
+                                        {{ props.item._id }}
                                     </td>
                                     <td :class="background(props.item.state)">
                                         {{ props.item.user }}
@@ -109,7 +109,8 @@
                                     </td>
                                     <td :class="background(props.item.state)">
                                         <v-icon @click="openValidation(props.item)">refresh</v-icon>
-                                        <v-icon @click="openStopping(props.item.uuid)" :disabled="props.item.state !== 'RUNNING'">
+                                        <v-icon :disabled="props.item.state !== 'RUNNING'"
+                                                @click="openStopping(props.item._id)">
                                             stop
                                         </v-icon>
                                     </td>
@@ -206,7 +207,7 @@
                     <v-container grid-list-md>
                         <v-layout wrap>
                             <v-flex xs12>
-                                <v-text-field v-model="validateData.uuid" label="id"></v-text-field>
+                                <v-text-field label="id" v-model="validateData._id"></v-text-field>
                             </v-flex>
                             <v-flex xs12>
                                 <v-text-field v-model="validateData.vodId" label="vod"></v-text-field>
@@ -236,7 +237,7 @@
                 <v-card-text>
                     <v-container grid-list-md>
                         <v-layout wrap>
-                            <v-flex xs12> Are you sure to delete stream with id: {{ deleteData.uuid }}.</v-flex>
+                            <v-flex xs12> Are you sure to delete stream with id: {{ deleteData._id }}.</v-flex>
                             <v-flex xs12>
                                 <v-checkbox v-model="deleteData.deleteMedia" label="Delete media"></v-checkbox>
                             </v-flex>
@@ -285,7 +286,7 @@
             streamers: [],
             streamer: "",
             headers: [
-                {text: "id", align: "left", value: "uuid"},
+                {text: "id", align: "left", value: "_id"},
                 {text: "Title", value: "title"},
                 {text: "Date", value: "date"},
                 {text: "Genre", value: "game"},
@@ -301,7 +302,7 @@
 
             searchStatus: "",
             headersStatus: [
-                {text: "id", align: "left", value: "uuid"},
+                {text: "id", align: "left", value: "_id"},
                 {text: "User", value: "user"},
                 {text: "Vod", value: "vodId"},
                 {text: "Date", value: "date"},
@@ -320,14 +321,14 @@
 
             validateDialog: false,
             validateData: {
-                uuid: "",
+                _id: "",
                 vodId: "",
                 skipMuted: false
             },
 
             editDialog: false,
             editedData: {
-                uuid: "",
+                _id: "",
                 title: "",
                 date: 0,
                 game: ""
@@ -335,7 +336,7 @@
 
             deleteDialog: false,
             deleteData: {
-                uuid: "",
+                _id: "",
                 deleteMedia: false
             },
 
@@ -384,19 +385,19 @@
             },
             edit() {
                 this.$http
-                    .post(`${this.BASE_URL}/database/update/${this.streamer}/${this.editedData.uuid}`, this.editedData)
+                    .post(`${this.BASE_URL}/database/update/${this.streamer}/${this.editedData._id}`, this.editedData)
                     .then(() => {
                         this.initialize();
                         this.close();
                     });
             },
             openDeletion(item) {
-                this.deleteData = Object.assign({}, {uuid: item.uuid, deleteMedia: false});
+                this.deleteData = Object.assign({}, {_id: item._id, deleteMedia: false});
                 this.deleteDialog = true;
             },
             deleteItem() {
                 this.$http
-                    .delete(`${this.BASE_URL}/database/${this.streamer}/${this.deleteData.uuid}`, {
+                    .delete(`${this.BASE_URL}/database/${this.streamer}/${this.deleteData._id}`, {
                         params: {deleteMedia: this.deleteData.deleteMedia}
                     })
                     .then(() => {
@@ -417,7 +418,7 @@
                 this.validateData = Object.assign(
                     {},
                     {
-                        uuid: item !== undefined ? item.uuid : "",
+                        _id: item !== undefined ? item._id : "",
                         vodId: item.vodId ? item.vodId : "",
                         skipMuted: false
                     }
@@ -425,7 +426,7 @@
                 this.validateDialog = true;
             },
             validate() {
-                if (this.validateData.vodId.trim() !== "" || this.validateData.uuid.trim() !== "")
+                if (this.validateData.vodId.trim() !== "" || this.validateData._id.trim() !== "")
                     this.$http.post(this.BASE_URL + "/database/validate", this.validateData).then(() => {
                         this.close();
                     });
@@ -437,8 +438,8 @@
                 this.deleteDialog = false;
                 this.stopDialog = false;
             },
-            openStopping(uuid) {
-                this.stopUUID = uuid;
+            openStopping(_id) {
+                this.stopUUID = _id;
                 this.stopDialog = true;
             },
             stop() {
