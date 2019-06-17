@@ -1,15 +1,13 @@
 
 [Unit]
 Description=twitch-o-matic Service
-After=multi-user.target
+After=syslog.target
 
 [Service]
-Type=forking
 User=tom-daemon
 
-ExecStart=/bin/bash /usr/local/bin/twitch-o-matic.sh start
-ExecStop=/bin/bash /usr/local/bin/twitch-o-matic.sh stop
-ExecReload =/bin/bash /usr/local/bin/twitch-o-matic.sh restart
+ExecStart=/usr/local/twitch-o-matic/twitch-o-matic.jar
+SuccessExitStatus=143
 
 [Install]
 WantedBy=multi-user.target

@@ -7,10 +7,12 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 @Service
+@Scope("prototype")
 public class HttpSevice {
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
