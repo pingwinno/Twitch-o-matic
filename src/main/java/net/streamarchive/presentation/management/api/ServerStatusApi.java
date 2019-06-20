@@ -9,6 +9,7 @@ import net.streamarchive.infrastructure.models.StreamDocumentModel;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -25,6 +26,7 @@ import java.util.stream.Stream;
 /**
  * API returns storage state.
  */
+@PreAuthorize("#username == authentication.principal.username")
 @RestController
 @RequestMapping("/api/v1/server")
 public class ServerStatusApi {
