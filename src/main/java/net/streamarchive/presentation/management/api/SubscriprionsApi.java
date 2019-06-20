@@ -8,9 +8,14 @@ import net.streamarchive.infrastructure.HashHandler;
 import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.models.SubscriptionQueryModel;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.time.Duration;
@@ -22,7 +27,9 @@ import java.util.Map;
  * API for chanel subscriptions management.
  * Endpoint {@code /subscriptions}
  */
-@Path("/subscriptions")
+
+@RestController
+@RequestMapping("/api/v1/subscriptions")
 public class SubscriprionsApi {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
@@ -30,9 +37,7 @@ public class SubscriprionsApi {
      * Method returns list of current active subscriptions.
      * @return list of current active subscriptions.
      */
-    @GET
-    @Path("")
-    @Produces(MediaType.APPLICATION_JSON)
+    @RequestMapping(value = "/", method = RequestMethod.PUT)
     public Response getTimers() {
         Map<String, Long> timers = new HashMap<>();
         for (Map.Entry<String, Instant> timer : SubscriptionRequestTimer.getTimers().entrySet()) {
@@ -51,9 +56,8 @@ public class SubscriprionsApi {
      * @param user name of chanel
      * @return adding operation response
      */
-    @PUT
-    @Path("/{user}")
-    public Response addSubscription(@PathParam("user") String user) {
+    @RequestMapping(value = "/{user}", method = RequestMethod.PUT)
+    public Response addSubscription(@PathVariable("user") String user) {
         try {
             SubscriptionQueryModel json = new SubscriptionQueryModel("subscribe",
                     "https://api.twitch.tv/helix/streams?user_id=" +

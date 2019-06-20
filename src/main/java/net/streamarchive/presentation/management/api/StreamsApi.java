@@ -1,8 +1,6 @@
 package net.streamarchive.presentation.management.api;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.streamarchive.application.DateConverter;
 import net.streamarchive.application.StorageHelper;
 import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
@@ -19,38 +17,43 @@ import net.streamarchive.infrastructure.models.StreamDocumentModel;
 import net.streamarchive.repository.StatusRepository;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 /**
  * API for database and streams management
  * Endpoint {@code /database}
  */
-@Service
-@Path("/database")
+@RestController
+@RequestMapping("/api/v1/database")
 public class StreamsApi {
-    @Autowired
+    private final
     StatusRepository statusRepository;
-    @Autowired
+    private final
     RecordStatusList recordStatusList;
-    @Autowired
+    private final
     RecordThread vodRecorder;
-    @Autowired
+    private final
     MongoTemplate mongoTemplate;
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
+
+    public StreamsApi(StatusRepository statusRepository, RecordStatusList recordStatusList, RecordThread vodRecorder, MongoTemplate mongoTemplate) {
+        this.statusRepository = statusRepository;
+        this.recordStatusList = recordStatusList;
+        this.vodRecorder = vodRecorder;
+        this.mongoTemplate = mongoTemplate;
+    }
 
     /**
      * Start recording new stream
@@ -59,12 +62,9 @@ public class StreamsApi {
      * @param requestModel request params
      * @see AddRequestModel for review json fields
      */
-    @PUT
-    @Path("/streams")
-    @Produces(MediaType.TEXT_HTML)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response startRecord(AddRequestModel requestModel) {
-        Response response;
+
+    @RequestMapping(value = "/streams", method = RequestMethod.PUT)
+    public void startRecord(AddRequestModel requestModel) {
         StreamDataModel streamMetadata = null;
 
         try {
@@ -108,19 +108,18 @@ public class StreamsApi {
 
                     Date startedAt = streamMetadata.getDate();
                     log.info("Record started at:{} ", startedAt);
-                    response = Response.accepted().build();
+
                 } else {
                     log.error("Stream {} not found", requestModel.getValue());
-                    response = Response.status(Response.Status.NOT_FOUND).build();
+                    throw new NotFoundException();
                 }
             } else {
-                response = Response.status(Response.Status.NOT_ACCEPTABLE).build();
+                throw new NotAcceptableExeption();
             }
         } catch (IOException | InterruptedException | StreamNotFoundExeption e) {
-            response = Response.status(500, e.toString()).build();
-            log.error("Can't start record {}", e);
+            log.error("Can't start record ", e);
+            throw new NotFoundException();
         }
-        return response;
     }
 
     /**
@@ -130,17 +129,16 @@ public class StreamsApi {
      * @param uuid        UUID of stream
      * @param user        name of streamer
      * @param deleteMedia if "true" also delete stream from storage
-     * @return return notModified if can't delete stream from storage (right issue/etc)
+     * @throws NotModifiedException if can't delete stream from storage (right issue/etc)
      */
-    @Path("/streams/{user}/{uuid}")
-    @DELETE
-    public Response deleteStream(@PathParam("uuid") String uuid, @PathParam("user") String user, @QueryParam("deleteMedia") String deleteMedia) {
+    @RequestMapping(value = "/streams/{user}/{uuid}", method = RequestMethod.DELETE)
+    public void deleteStream(@PathVariable("uuid") String uuid, @PathVariable("user") String user, @RequestParam("deleteMedia") String deleteMedia) {
         if (Arrays.asList(SettingsProperties.getUsers()).contains(user)) {
             Query query = new Query();
             query.addCriteria(Criteria.where("_id").is(uuid));
 
             if (mongoTemplate.remove(query, user).getDeletedCount() == 0L) {
-                return Response.notModified().build();
+                throw new NotModifiedException();
             } else {
                 log.info("delete stream {}", uuid);
                 if (deleteMedia.equals("true")) {
@@ -148,13 +146,12 @@ public class StreamsApi {
                         FileUtils.deleteDirectory(new File(SettingsProperties.getRecordedStreamPath() + "" + user + "/" + uuid));
                     } catch (IOException e) {
                         log.error("can't delete media {] ", e);
-                        return Response.notModified().build();
+                        throw new NotModifiedException();
                     }
                 }
-                return Response.accepted().build();
             }
         } else {
-            return Response.status(Response.Status.FORBIDDEN).build();
+            throw new NotFoundException();
         }
 
     }
@@ -166,19 +163,16 @@ public class StreamsApi {
      * @param user      name of streamer
      * @param uuid      UUID of stream
      * @param dataModel updated metadata
-     * @return return ok
      * @see StreamDataModel for see required fields
      */
-    @Path("/streams/{user}/{uuid}")
-    @PATCH
-    public Response updateStream(@PathParam("user") String user, @PathParam("uuid") String uuid, StreamDataModel dataModel) {
+    @RequestMapping(value = "/streams/{user}/{uuid}", method = RequestMethod.PATCH)
+    public void updateStream(@PathVariable("uuid") String uuid, @PathVariable("user") String user, StreamDataModel dataModel) {
         StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
+        streamDocumentModel.set_id(uuid);
         streamDocumentModel.setGame(dataModel.getGame());
         streamDocumentModel.setDate(dataModel.getDate());
         streamDocumentModel.setTitle(dataModel.getTitle());
         mongoTemplate.save(streamDocumentModel, user);
-        return Response.ok().build();
-
     }
 
     /**
@@ -188,25 +182,26 @@ public class StreamsApi {
      * @param user streamer name
      * @return array of streamer streams
      */
-    @Path("/streams/{user}")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getStreamsList(@PathParam("user") String user) {
+    @RequestMapping(value = "/streams/{user}", method = RequestMethod.GET)
+    public List<StreamDocumentModel> getStreamsList(@PathVariable("user") String user) {
         log.trace(user);
         Query query = new Query();
         query.fields().include("title").include("date").include("game");
-        if (Arrays.deepToString(SettingsProperties.getUsers()).contains(user)) {
-            try {
-                return Response.status(Response.Status.OK)
-                        .entity(new ObjectMapper().writeValueAsString(mongoTemplate.find(query, StreamDocumentModel.class, user))
-                        ).build();
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-                return null;
-            }
-        } else {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
+        if (Arrays.asList(SettingsProperties.getUsers()).contains(user)) {
+            return mongoTemplate.find(query, StreamDocumentModel.class, user);
+        } else throw new NotFoundException();
     }
+
+    @ResponseStatus(HttpStatus.NOT_MODIFIED)
+    private class NotFoundException extends RuntimeException {
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    private class NotModifiedException extends RuntimeException {
+    }
+
+    @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
+    private class NotAcceptableExeption extends RuntimeException {
+    }
+
 }

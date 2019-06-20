@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * API sends updates of status list to client.
  */
-@ServerEndpoint(value = "/status/")
+@ServerEndpoint(value = "/api/v1/status/")
 public class StreamStatusSocketApi {
 
     private static List<Session> sessions = new ArrayList<>();

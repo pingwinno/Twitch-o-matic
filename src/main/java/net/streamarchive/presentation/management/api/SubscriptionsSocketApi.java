@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * API sends update of subscriptions list of client.
  */
-@ServerEndpoint(value = "/subscriptions/")
+@ServerEndpoint(value = "/api/v1/subscriptions/")
 public class SubscriptionsSocketApi {
 
     private static List<Session> sessions = new ArrayList<>();

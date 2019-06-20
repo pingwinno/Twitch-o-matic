@@ -18,14 +18,13 @@ import java.io.IOException;
 
 @SpringBootApplication
 @EnableTransactionManagement
+
 public class TwitchOMaticApplication {
     @Autowired
     RecoveryRecordHandler recoveryRecordHandler;
 
     public static void main(String[] args) {
         SpringApplication.run(TwitchOMaticApplication.class, args);
-
-
     }
 
     @PostConstruct

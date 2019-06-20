@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>Management and statuses</title>
-    <link rel="icon" href="./logo.png">
+    <link href="logo.png" rel="icon">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
@@ -360,11 +360,11 @@
                 this.streamer = response.body[0];
                 this.initialize();
             });
-            this.$http.get(this.BASE_URL + "/status_list").then(r => {
+            this.$http.get(this.BASE_URL + "/api/v1/status_list").then(r = > {
                 this.statuses = r.body;
             });
             setInterval(() => {
-                this.$http.get(this.BASE_URL + "/status_list").then(r => {
+                this.$http.get(this.BASE_URL + "/api/v1/status_list").then(r = > {
                     this.statuses = r.body;
                 });
             }, 1000);
@@ -443,7 +443,7 @@
                 this.stopDialog = true;
             },
             stop() {
-                this.$http.delete(this.BASE_URL + "/status_list/" + this.stopUUID).then(() => {
+                this.$http.delete(this.BASE_URL + "/api/v1/status_list/" + this.stopUUID).then(() = > {
                     this.close();
                 });
             },
