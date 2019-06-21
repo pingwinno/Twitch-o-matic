@@ -1,4 +1,4 @@
-package net.streamarchive;
+package net.streamarchive.infrastructure;
 
 import org.springframework.boot.autoconfigure.security.oauth2.resource.PrincipalExtractor;
 import org.springframework.security.authentication.BadCredentialsException;

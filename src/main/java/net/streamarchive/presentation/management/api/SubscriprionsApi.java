@@ -1,22 +1,14 @@
 package net.streamarchive.presentation.management.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.streamarchive.application.SubscriptionRequestTimer;
 import net.streamarchive.application.twitch.playlist.handler.UserIdGetter;
 import net.streamarchive.infrastructure.HashHandler;
 import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.models.SubscriptionQueryModel;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
@@ -37,18 +29,13 @@ public class SubscriprionsApi {
      * Method returns list of current active subscriptions.
      * @return list of current active subscriptions.
      */
-    @RequestMapping(value = "/", method = RequestMethod.PUT)
-    public Response getTimers() {
+    @RequestMapping(value = "/", method = RequestMethod.GET)
+    public Map<String, Long> getTimers() {
         Map<String, Long> timers = new HashMap<>();
         for (Map.Entry<String, Instant> timer : SubscriptionRequestTimer.getTimers().entrySet()) {
             timers.put(timer.getKey(), SubscriptionRequestTimer.HUB_LEASE - Duration.between(timer.getValue(), Instant.now()).getSeconds());
         }
-        try {
-            return Response.status(Response.Status.OK)
-                    .entity(new ObjectMapper().writeValueAsString(timers)).build();
-        } catch (JsonProcessingException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-        }
+        return timers;
     }
 
     /**
@@ -57,7 +44,7 @@ public class SubscriprionsApi {
      * @return adding operation response
      */
     @RequestMapping(value = "/{user}", method = RequestMethod.PUT)
-    public Response addSubscription(@PathVariable("user") String user) {
+    public void addSubscription(@PathVariable("user") String user) {
         try {
             SubscriptionQueryModel json = new SubscriptionQueryModel("subscribe",
                     "https://api.twitch.tv/helix/streams?user_id=" +
@@ -69,11 +56,11 @@ public class SubscriprionsApi {
             subscriptionQuery.sendSubscriptionRequest(user);
             log.debug("Sending subscription query");
             SettingsProperties.addUser(user);
-            return Response.accepted().build();
-        } catch (InterruptedException | IOException e) {
-            return Response.notModified().build();
-        }
 
+        } catch (InterruptedException | IOException e) {
+            log.error("Can't start subscription for {}", user);
+            throw new InternalServerErrorExeption();
+        }
     }
 
     /**
@@ -81,11 +68,15 @@ public class SubscriprionsApi {
      * @param user name of chanel
      * @return deleting operation response
      */
-    @DELETE
-    @Path("/{user}")
-    public Response removeSubscription(@PathParam("user") String user) {
+
+    @RequestMapping(value = "/{user}", method = RequestMethod.DELETE)
+    public void removeSubscription(@PathVariable("user") String user) {
         SubscriptionRequestTimer.stop(user);
         SettingsProperties.removeUser(user);
-        return Response.accepted().build();
     }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    private class InternalServerErrorExeption extends RuntimeException {
+    }
+
 }

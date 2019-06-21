@@ -1,49 +1,25 @@
 package net.streamarchive.presentation.management.api;
 
-import javax.websocket.*;
-import javax.websocket.server.ServerEndpoint;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import net.streamarchive.infrastructure.models.StatusDataModel;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
 
 /**
  * API sends updates of status list to client.
  */
-@ServerEndpoint(value = "/api/v1/status/")
+
+@Service
 public class StreamStatusSocketApi {
 
-    private static List<Session> sessions = new ArrayList<>();
+    private final SimpMessagingTemplate messagingTemplate;
 
-    /**
-     * @param message A JSON string with {@see StreamStatusModel}
-     * @throws IOException
-     */
-    public static void updateState(String message) throws IOException {
-        for (Session session : sessions) {
-            session.getBasicRemote().sendText(message);
-        }
+    @Autowired
+    public StreamStatusSocketApi(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
     }
 
-    @OnOpen
-    public void onOpen(Session session) {
-        // Get session and StreamStatusSocketApi connection
-        sessions.add(session);
-    }
-
-    @OnMessage
-    public void onMessage(Session session, String message) {
-
-    }
-
-    @OnClose
-    public void onClose(Session session) {
-        // StreamStatusSocketApi connection closes
-        sessions.remove(session);
-    }
-
-    @OnError
-    public void onError(Session session) {
-        // Do error handling here
-        sessions.remove(session);
+    public void sendUpdate(StatusDataModel statusDataModel) {
+        this.messagingTemplate.convertAndSend("/topic/status", statusDataModel);
     }
 }

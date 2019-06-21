@@ -1,6 +1,6 @@
-package net.streamarchive;
+package net.streamarchive.infrastructure.configuration;
 
-import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
+import net.streamarchive.infrastructure.GithubPrincipalExtractor;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.PrincipalExtractor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
-@EnableOAuth2Sso
 @RestController
 @Configuration
 public class WebConfiguration extends WebSecurityConfigurerAdapter {

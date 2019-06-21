@@ -9,6 +9,7 @@ import net.streamarchive.presentation.management.api.SubscriptionsSocketApi;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -29,7 +30,8 @@ public class SubscriptionRequestTimer extends TimerTask {
     private int resubscribingPeriod;
     private static Map<String, Instant> timersStartTime = new ConcurrentHashMap<>();
     private String user;
-
+    @Autowired
+    private SubscriptionsSocketApi subscriptionsSocketApi;
     public SubscriptionRequestTimer(String serverAddress, SubscriptionQueryModel subscriptionModel) throws JsonProcessingException {
         ObjectMapper mapper = new ObjectMapper();
         this.serverAddress = serverAddress;
@@ -68,7 +70,7 @@ public class SubscriptionRequestTimer extends TimerTask {
             log.debug("Waiting for hub.challenge request");
             httpSevice.close();
             timersStartTime.replace(user, Instant.now());
-            SubscriptionsSocketApi.updateState(getTimers());
+            subscriptionsSocketApi.sendUpdate(getTimers());
 
         } catch (IOException | InterruptedException e) {
             log.error("Subscription timer request failed. {}", e.toString());

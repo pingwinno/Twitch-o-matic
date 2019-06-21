@@ -11,14 +11,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth2Sso;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
 
 @SpringBootApplication
 @EnableTransactionManagement
-
+@EnableWebSocket
+@EnableOAuth2Sso
+@EnableWebSocketMessageBroker
 public class TwitchOMaticApplication {
     @Autowired
     RecoveryRecordHandler recoveryRecordHandler;
