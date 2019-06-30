@@ -11,7 +11,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -19,22 +18,29 @@ import java.io.IOException;
 @Component
 public class SubscriptionRequest {
 
-    public static final int HUB_LEASE = 0;
+    private static final int HUB_LEASE = 10000 * 1000;
     private static org.slf4j.Logger log = LoggerFactory.getLogger(SubscriptionRequest.class.getName());
 
-    @Autowired
-    private HttpSevice httpSevice;
-    @Autowired
+    private final HttpSevice httpSevice;
+    private final
     HashHandler hashHandler;
+    private final
+    SettingsProperties settingsProperties;
 
     private CloseableHttpResponse httpResponse;
+
+    public SubscriptionRequest(HttpSevice httpSevice, HashHandler hashHandler, SettingsProperties settingsProperties) {
+        this.httpSevice = httpSevice;
+        this.hashHandler = hashHandler;
+        this.settingsProperties = settingsProperties;
+    }
 
     public int sendSubscriptionRequest(String user) throws IOException {
         try {
             SubscriptionQueryModel subscriptionModel = new SubscriptionQueryModel("subscribe",
                     "https://api.twitch.tv/helix/streams?user_id=" +
                             UserIdGetter.getUserId(user),
-                    SettingsProperties.getCallbackAddress() + ":" + SettingsProperties.getTwitchServerPort() +
+                    settingsProperties.getCallbackAddress() + ":" + settingsProperties.getTwitchServerPort() +
                             "/handler/" + user, HUB_LEASE, hashHandler.getKey());
             log.trace("SubscriptionQueryModel: {}", subscriptionModel.toString());
 

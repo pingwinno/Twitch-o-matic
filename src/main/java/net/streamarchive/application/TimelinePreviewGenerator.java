@@ -4,6 +4,8 @@ import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.models.Preview;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -13,13 +15,16 @@ import java.nio.file.Paths;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Component
 public class TimelinePreviewGenerator {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(TimelinePreviewGenerator.class.getName());
+    @Autowired
+    private SettingsProperties settingsProperties;
 
-    public static LinkedHashMap<String, Preview> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet)
+    public LinkedHashMap<String, Preview> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet)
             throws IOException {
-        String pathString = SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid();
-        Files.createDirectories(Paths.get(SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() +
+        String pathString = settingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid();
+        Files.createDirectories(Paths.get(settingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() +
                 "/timeline_preview/"));
         LinkedHashMap<String, Preview> previewList = new LinkedHashMap<>();
         int chunkNum = 0;

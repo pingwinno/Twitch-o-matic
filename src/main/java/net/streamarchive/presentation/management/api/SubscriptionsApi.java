@@ -4,7 +4,6 @@ package net.streamarchive.presentation.management.api;
 import net.streamarchive.application.SubscriptionRequest;
 import net.streamarchive.infrastructure.SettingsProperties;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,10 +18,17 @@ import java.io.IOException;
 @RequestMapping("/api/v1/subscriptions")
 public class SubscriptionsApi {
 
-    @Autowired
+    private final
     SubscriptionRequest subscriptionRequest;
+    private final
+    SettingsProperties settingsProperties;
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
+
+    public SubscriptionsApi(SubscriptionRequest subscriptionRequest, SettingsProperties settingsProperties) {
+        this.subscriptionRequest = subscriptionRequest;
+        this.settingsProperties = settingsProperties;
+    }
 
     /**
      * Method returns list of current active subscriptions.
@@ -31,7 +37,7 @@ public class SubscriptionsApi {
      */
     @RequestMapping(method = RequestMethod.GET)
     public String[] getTimers() {
-        return SettingsProperties.getUsers();
+        return settingsProperties.getUsers();
     }
 
     /**
@@ -44,9 +50,9 @@ public class SubscriptionsApi {
         try {
             subscriptionRequest.sendSubscriptionRequest(user);
         } catch (IOException e) {
-            throw new InternalServerErrorExeption();
+            throw new InternalServerErrorException();
         }
-        SettingsProperties.addUser(user);
+        settingsProperties.addUser(user);
     }
 
     /**
@@ -57,11 +63,11 @@ public class SubscriptionsApi {
 
     @RequestMapping(value = "/{user}", method = RequestMethod.DELETE)
     public void removeSubscription(@PathVariable("user") String user) {
-        SettingsProperties.removeUser(user);
+        settingsProperties.removeUser(user);
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    private class InternalServerErrorExeption extends RuntimeException {
+    private class InternalServerErrorException extends RuntimeException {
     }
 
 }

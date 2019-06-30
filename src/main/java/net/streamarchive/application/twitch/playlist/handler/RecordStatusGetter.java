@@ -4,11 +4,13 @@ import net.streamarchive.infrastructure.HttpSevice;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Component
 public class RecordStatusGetter {
-    public static boolean isRecording(int vodId) throws IOException, InterruptedException {
+    public boolean isRecording(int vodId) throws IOException, InterruptedException {
 
         HttpSevice httpSevice = new HttpSevice();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/videos/" + vodId);

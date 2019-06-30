@@ -31,16 +31,23 @@ import java.util.stream.Stream;
 @RestController
 @RequestMapping("/api/v1/server")
 public class ServerStatusApi {
-    @Autowired
+    private final
     DataBaseWriter dataBaseWriter;
     private final
     MongoTemplate mongoTemplate;
+    private final
+    SettingsProperties settingsProperties;
+    private final
+    StorageHelper storageHelper;
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @Autowired
-    public ServerStatusApi(DataBaseWriter dataBaseWriter, MongoTemplate mongoTemplate) {
+    public ServerStatusApi(DataBaseWriter dataBaseWriter, MongoTemplate mongoTemplate, SettingsProperties settingsProperties, StorageHelper storageHelper) {
         this.dataBaseWriter = dataBaseWriter;
         this.mongoTemplate = mongoTemplate;
+        this.settingsProperties = settingsProperties;
+
+        this.storageHelper = storageHelper;
     }
 
     /**
@@ -50,7 +57,7 @@ public class ServerStatusApi {
      */
     @GetMapping("/storage")
     public List<StorageState> getFreeStorage() throws IOException {
-        return StorageHelper.getStorageState();
+        return storageHelper.getStorageState();
     }
 
     /**
@@ -59,7 +66,7 @@ public class ServerStatusApi {
     @GetMapping("/import")
     public void importToLocalDb() {
         try {
-            for (String user : SettingsProperties.getUsers()) {
+            for (String user : settingsProperties.getUsers()) {
                 for (StreamDocumentModel stream : mongoTemplate.findAll(StreamDocumentModel.class, user)) {
                     dataBaseWriter.writeToRemoteDB(stream, user);
                 }
@@ -77,9 +84,9 @@ public class ServerStatusApi {
     public void exportFromLocalDb() {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        for (String user : SettingsProperties.getUsers()) {
+        for (String user : settingsProperties.getUsers()) {
 
-            try (Stream<java.nio.file.Path> walk = Files.walk(Paths.get(SettingsProperties.getRecordedStreamPath() + user))) {
+            try (Stream<java.nio.file.Path> walk = Files.walk(Paths.get(settingsProperties.getRecordedStreamPath() + user))) {
 
                 List<String> result = walk.filter(Files::isDirectory)
                         .map(Path::toString).collect(Collectors.toList());

@@ -45,14 +45,23 @@ public class StreamsApi {
     RecordThread vodRecorder;
     private final
     MongoTemplate mongoTemplate;
+    private final
+    VodMetadataHelper vodMetadataHelper;
+    private final
+    StorageHelper storageHelper;
+    private final
+    SettingsProperties settingsProperties;
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
-    public StreamsApi(StatusRepository statusRepository, RecordStatusList recordStatusList, RecordThread vodRecorder, MongoTemplate mongoTemplate) {
+    public StreamsApi(StatusRepository statusRepository, RecordStatusList recordStatusList, RecordThread vodRecorder, MongoTemplate mongoTemplate, VodMetadataHelper vodMetadataHelper, StorageHelper storageHelper, SettingsProperties settingsProperties) {
         this.statusRepository = statusRepository;
         this.recordStatusList = recordStatusList;
         this.vodRecorder = vodRecorder;
         this.mongoTemplate = mongoTemplate;
+        this.vodMetadataHelper = vodMetadataHelper;
+        this.storageHelper = storageHelper;
+        this.settingsProperties = settingsProperties;
     }
 
     /**
@@ -71,9 +80,9 @@ public class StreamsApi {
             log.trace("type: {}", requestModel.getType());
             log.trace("value: {}", requestModel.getValue());
             if (requestModel.getType().equals("user")) {
-                streamMetadata = VodMetadataHelper.getLastVod(requestModel.getValue());
+                streamMetadata = vodMetadataHelper.getLastVod(requestModel.getValue());
             } else if (requestModel.getType().equals("vod")) {
-                streamMetadata = VodMetadataHelper.getVodMetadata(Integer.valueOf(requestModel.getValue()));
+                streamMetadata = vodMetadataHelper.getVodMetadata(Integer.valueOf(requestModel.getValue()));
             }
             if (streamMetadata != null) {
                 //set another parent folder/db for stream ( for example if streamer is guest on another chanel)
@@ -95,7 +104,7 @@ public class StreamsApi {
                                 (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, DateConverter.convert(LocalDateTime.now()),
                                         State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
                     } else {
-                        streamMetadata.setUuid(StorageHelper.getUuidName());
+                        streamMetadata.setUuid(storageHelper.getUuidName());
                         recordStatusList.addStatus
                                 (new StatusDataModel(streamMetadata.getVodId(), StartedBy.MANUAL, DateConverter.convert(LocalDateTime.now()),
                                         State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
@@ -133,7 +142,7 @@ public class StreamsApi {
      */
     @RequestMapping(value = "/streams/{user}/{uuid}", method = RequestMethod.DELETE)
     public void deleteStream(@PathVariable("uuid") String uuid, @PathVariable("user") String user, @RequestParam("deleteMedia") String deleteMedia) {
-        if (Arrays.asList(SettingsProperties.getUsers()).contains(user)) {
+        if (Arrays.asList(settingsProperties.getUsers()).contains(user)) {
             Query query = new Query();
             query.addCriteria(Criteria.where("_id").is(uuid));
 
@@ -143,7 +152,7 @@ public class StreamsApi {
                 log.info("delete stream {}", uuid);
                 if (deleteMedia.equals("true")) {
                     try {
-                        FileUtils.deleteDirectory(new File(SettingsProperties.getRecordedStreamPath() + "" + user + "/" + uuid));
+                        FileUtils.deleteDirectory(new File(settingsProperties.getRecordedStreamPath() + "" + user + "/" + uuid));
                     } catch (IOException e) {
                         log.error("can't delete media {] ", e);
                         throw new NotModifiedException();
@@ -187,7 +196,7 @@ public class StreamsApi {
         log.trace(user);
         Query query = new Query();
         query.fields().include("title").include("date").include("game");
-        if (Arrays.asList(SettingsProperties.getUsers()).contains(user)) {
+        if (Arrays.asList(settingsProperties.getUsers()).contains(user)) {
             return mongoTemplate.find(query, StreamDocumentModel.class, user);
         } else throw new NotFoundException();
     }

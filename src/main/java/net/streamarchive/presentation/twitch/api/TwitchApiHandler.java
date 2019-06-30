@@ -1,16 +1,26 @@
 package net.streamarchive.presentation.twitch.api;
 
 
-import net.streamarchive.infrastructure.RecordStatusList;
-import net.streamarchive.infrastructure.RecordThread;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import net.streamarchive.application.DateConverter;
+import net.streamarchive.application.StorageHelper;
+import net.streamarchive.application.twitch.playlist.handler.RecordStatusGetter;
+import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
+import net.streamarchive.infrastructure.*;
+import net.streamarchive.infrastructure.enums.StartedBy;
+import net.streamarchive.infrastructure.enums.State;
+import net.streamarchive.infrastructure.models.NotificationDataModel;
+import net.streamarchive.infrastructure.models.StatusDataModel;
+import net.streamarchive.infrastructure.models.StreamDataModel;
+import net.streamarchive.infrastructure.models.StreamStatusNotificationModel;
 import net.streamarchive.repository.StatusRepository;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Map;
 
 @RestController
@@ -20,19 +30,33 @@ public class TwitchApiHandler {
     StatusRepository statusRepository;
     private final
     RecordStatusList recordStatusList;
-
     private final
     RecordThread recordThread;
+    private final
+    HashHandler hashHandler;
+    private final
+    VodMetadataHelper vodMetadataHelper;
+    private final
+    RecordStatusGetter recordStatusGetter;
+    private final
+    SettingsProperties settingsProperties;
+    @Autowired
+    StorageHelper storageHelper;
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @Autowired
-    public TwitchApiHandler(StatusRepository statusRepository, RecordStatusList recordStatusList, RecordThread recordThread) {
+    public TwitchApiHandler(StatusRepository statusRepository, RecordStatusList recordStatusList, RecordThread recordThread, VodMetadataHelper vodMetadataHelper, RecordStatusGetter recordStatusGetter, HashHandler hashHandler, SettingsProperties settingsProperties) {
         this.statusRepository = statusRepository;
         this.recordStatusList = recordStatusList;
         this.recordThread = recordThread;
+        this.hashHandler = hashHandler;
+        this.vodMetadataHelper = vodMetadataHelper;
+        this.recordStatusGetter = recordStatusGetter;
+
+        this.settingsProperties = settingsProperties;
     }
 
-    @RequestMapping("/{user}")
+    @RequestMapping(value = "/{user}", method = RequestMethod.GET)
     public String getSubscriptionQuery(@RequestParam Map<String, String> allParams, @PathVariable("user") String user) {
 
         log.debug("Incoming challenge request");
@@ -57,18 +81,18 @@ public class TwitchApiHandler {
 
         return null;
     }
-/*
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response handleStreamNotification(String stringDataModel
-            , @HeaderParam("X-Hub-Signature") String signature, @PathVariable("user") String user) throws IOException,
-            InterruptedException, StreamNotFoundExeption {
+
+    @RequestMapping(value = "/{user}", method = RequestMethod.POST)
+    public void handleStreamNotification(@RequestBody String stringDataModel
+            , @RequestHeader("X-Hub-Signature") String signature, @PathVariable("user") String user) throws InterruptedException, StreamNotFoundExeption, IOException {
         log.debug("Incoming stream up/down notification");
 
-        if (HashHandler.compare(signature, stringDataModel)) {
+        if (hashHandler.compare(signature, stringDataModel)) {
+            log.debug("Hash confirmed");
             //check for active subscription
-            if (subscriptionRequestTimer.getTimers().containsKey(user)) {
-                log.debug("Hash confirmed");
+            log.trace("User search res: {}", Arrays.binarySearch(settingsProperties.getUsers(), user));
+            if (Arrays.binarySearch(settingsProperties.getUsers(), user) <= 0) {
+                log.debug("Subscription is active");
                 StreamStatusNotificationModel dataModel =
                         new ObjectMapper().readValue(stringDataModel, StreamStatusNotificationModel.class);
                 NotificationDataModel[] notificationArray = dataModel.getData();
@@ -79,16 +103,16 @@ public class TwitchApiHandler {
 
                     if (notificationModel.getType().equals("live")) {
 
-                        if (VodMetadataHelper.getLastVod(user).getVodId() != 0) {
+                        if (vodMetadataHelper.getLastVod(user).getVodId() != 0) {
                             new Thread(() -> {
                                 try {
                                     Thread.sleep(10 * 1000);
-                                    StreamDataModel streamMetadata = VodMetadataHelper.getLastVod(user);
+                                    StreamDataModel streamMetadata = vodMetadataHelper.getLastVod(user);
                                     int counter = 0;
                                     log.trace(streamMetadata.toString());
-                                    while (!RecordStatusGetter.isRecording(streamMetadata.getVodId())) {
+                                    while (!recordStatusGetter.isRecording(streamMetadata.getVodId())) {
                                         log.trace("vodId: {}", streamMetadata.getVodId());
-                                        streamMetadata = VodMetadataHelper.getLastVod(user);
+                                        streamMetadata = vodMetadataHelper.getLastVod(user);
                                         log.info("waiting for creating vod...");
                                         Thread.sleep(20 * 1000);
                                         log.warn("vod is not created yet... cycle " + counter);
@@ -99,8 +123,8 @@ public class TwitchApiHandler {
                                     }
 
 
-                                    if (statusRepository.existsById(streamMetadata.getVodId())) {
-                                        streamMetadata.setUuid(StorageHelper.getUuidName());
+                                    if (!statusRepository.existsById(streamMetadata.getVodId())) {
+                                        streamMetadata.setUuid(storageHelper.getUuidName());
 
                                         recordStatusList.addStatus
                                                 (new StatusDataModel(streamMetadata.getVodId(), StartedBy.WEBHOOK, DateConverter.convert(LocalDateTime.now()),
@@ -140,10 +164,9 @@ public class TwitchApiHandler {
             log.error("Notification not accepted. Wrong hash.");
         }
         log.debug("Response ok");
-        return Response.status(Response.Status.OK).build();
     }
 
- */
+
 }
 
 

@@ -10,13 +10,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
+@Component
 public class VodMetadataHelper {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(VodMetadataHelper.class.getName());
 
-    public static StreamDataModel getLastVod(String user) throws IOException, InterruptedException,
+    public StreamDataModel getLastVod(String user) throws IOException, InterruptedException,
             StreamNotFoundExeption {
 
         HttpSevice httpSevice = new HttpSevice();
@@ -38,7 +40,7 @@ public class VodMetadataHelper {
         return streamMetadata;
         }
 
-    public static StreamDataModel getVodMetadata(int vodId) throws IOException,
+    public StreamDataModel getVodMetadata(int vodId) throws IOException,
             InterruptedException, StreamNotFoundExeption {
 
         HttpSevice httpSevice = new HttpSevice();

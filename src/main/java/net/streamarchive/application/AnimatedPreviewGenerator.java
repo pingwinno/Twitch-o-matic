@@ -3,6 +3,8 @@ package net.streamarchive.application;
 import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
 import java.io.File;
@@ -12,13 +14,16 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+@Component
 public class AnimatedPreviewGenerator {
-    private static org.slf4j.Logger log = LoggerFactory.getLogger(AnimatedPreviewGenerator.class.getName());
+    @Autowired
+    SettingsProperties settingsProperties;
+    private org.slf4j.Logger log = LoggerFactory.getLogger(AnimatedPreviewGenerator.class.getName());
 
-    public static LinkedHashMap<String, String> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet) throws IOException {
+    public LinkedHashMap<String, String> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet) throws IOException {
         LinkedHashMap<String, String> previewList = new LinkedHashMap<>();
         ArrayList<String> chunks = new ArrayList<>(chunksSet.keySet());
-        String pathString = SettingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid();
+        String pathString = settingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid();
         Files.createDirectories(Paths.get(pathString + "/animated_preview/"));
         if (chunks.size() > 10) {
             int chunkNum = 0;
@@ -38,7 +43,7 @@ public class AnimatedPreviewGenerator {
         }
     }
 
-    private static int writePreviews(LinkedHashMap<String, String> previewList, ArrayList<String> chunks, String pathString, int chunkNum, int offset, int i) throws IOException {
+    private int writePreviews(LinkedHashMap<String, String> previewList, ArrayList<String> chunks, String pathString, int chunkNum, int offset, int i) throws IOException {
         String path = pathString +
                 "/" + chunks.get(chunkNum).replace("-muted", "");
         log.trace(path);

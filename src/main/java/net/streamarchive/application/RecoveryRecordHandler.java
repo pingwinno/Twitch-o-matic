@@ -1,8 +1,6 @@
 package net.streamarchive.application;
 
 import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
-import net.streamarchive.domain.VodRecorder;
-import net.streamarchive.infrastructure.RecordStatusList;
 import net.streamarchive.infrastructure.RecordThread;
 import net.streamarchive.infrastructure.StreamNotFoundExeption;
 import net.streamarchive.infrastructure.enums.State;
@@ -19,10 +17,18 @@ import java.util.List;
 @Service
 public class RecoveryRecordHandler {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(RecoveryRecordHandler.class.getName());
-    @Autowired
+    private final
     RecordThread recordThread;
+    private final
+    VodMetadataHelper vodMetadataHelper;
 
     private StatusRepository statusRepository;
+
+    public RecoveryRecordHandler(RecordThread recordThread, VodMetadataHelper vodMetadataHelper) {
+        this.recordThread = recordThread;
+        this.vodMetadataHelper = vodMetadataHelper;
+    }
+
     @Autowired
     public void setStatusRepository(StatusRepository statusRepository) {
         this.statusRepository = statusRepository;
@@ -38,7 +44,7 @@ public class RecoveryRecordHandler {
                     try {
                         log.info("Found uncompleted task. {}", dataModel.getVodId());
                         StreamDataModel streamDataModel;
-                        streamDataModel = VodMetadataHelper.getVodMetadata(dataModel.getVodId());
+                        streamDataModel = vodMetadataHelper.getVodMetadata(dataModel.getVodId());
                         streamDataModel.setUuid(dataModel.getUuid());
                         recordThread.start(streamDataModel);
                     } catch (StreamNotFoundExeption streamNotFoundExeption) {

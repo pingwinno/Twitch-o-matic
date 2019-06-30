@@ -17,20 +17,22 @@ import java.io.IOException;
 public class DataBaseWriter {
     @Autowired
     MongoTemplate mongoTemplate;
+    @Autowired
+    SettingsProperties settingsProperties;
     static private org.slf4j.Logger log = LoggerFactory.getLogger(DataBaseWriter.class);
 
     public void writeToRemoteDB(StreamDocumentModel streamDocumentModel, String user) throws IOException {
 
-        File file = new File(SettingsProperties.getRecordedStreamPath() + user + "/" + streamDocumentModel.get_id()
+        File file = new File(settingsProperties.getRecordedStreamPath() + user + "/" + streamDocumentModel.get_id()
                 + "/metadata.json");
         ObjectMapper mapper = new ObjectMapper();
         ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
         writer.writeValue(file, streamDocumentModel);
 
-        if (!SettingsProperties.getMongoDBAddress().trim().equals("")) {
+        if (!settingsProperties.getMongoDBAddress().trim().equals("")) {
                 log.debug("Write to remote db...");
             mongoTemplate.save(streamDocumentModel, user);
-                log.trace("Remote db endpoint: {}", SettingsProperties.getMongoDBAddress());
+            log.trace("Remote db endpoint: {}", settingsProperties.getMongoDBAddress());
         }
     }
 }

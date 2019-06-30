@@ -53,23 +53,38 @@ public class VodRecorder implements RecordThread {
     RecordThreadSupervisor recordThreadSupervisor;
     private final
     DataBaseWriter dataBaseWriter;
+    private final
+    SettingsProperties settingsProperties;
+    private final
+    RecordStatusGetter recordStatusGetter;
+    private final
+    VodMetadataHelper vodMetadataHelper;
+    private final
+    AnimatedPreviewGenerator animatedPreviewGenerator;
+    private final
+    TimelinePreviewGenerator timelinePreviewGenerator;
 
-    public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, DataBaseWriter dataBaseWriter) {
+    public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, DataBaseWriter dataBaseWriter, SettingsProperties settingsProperties, RecordStatusGetter recordStatusGetter, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator) {
         this.recordStatusList = recordStatusList;
         this.masterPlaylistDownloader = masterPlaylistDownloader;
         this.recordThreadSupervisor = recordThreadSupervisor;
         this.dataBaseWriter = dataBaseWriter;
+        this.settingsProperties = settingsProperties;
+        this.recordStatusGetter = recordStatusGetter;
+        this.vodMetadataHelper = vodMetadataHelper;
+        this.animatedPreviewGenerator = animatedPreviewGenerator;
+        this.timelinePreviewGenerator = timelinePreviewGenerator;
     }
 
     public void start(StreamDataModel streamDataModel) {
 
         this.streamDataModel = streamDataModel;
         uuid = streamDataModel.getUuid();
-        streamFolderPath = SettingsProperties.getRecordedStreamPath() + streamDataModel.getUser() + "/" + uuid.toString();
+        streamFolderPath = settingsProperties.getRecordedStreamPath() + streamDataModel.getUser() + "/" + uuid.toString();
         vodId = streamDataModel.getVodId();
         recordThreadSupervisor.add(uuid, this);
         try {
-            if (RecordStatusGetter.isRecording(vodId)) {
+            if (recordStatusGetter.isRecording(vodId)) {
                 threadsNumber = 2;
                 log.info("Wait for creating vod...");
             } else {
@@ -103,7 +118,7 @@ public class VodRecorder implements RecordThread {
             vodId = streamDataModel.getVodId();
 
             String m3u8Link = MasterPlaylistParser.parse(
-                    masterPlaylistDownloader.getPlaylist(vodId), SettingsProperties.getStreamQuality());
+                    masterPlaylistDownloader.getPlaylist(vodId), settingsProperties.getStreamQuality());
             //if stream  exist
             if (m3u8Link != null) {
                 String streamPath = StreamPathExtractor.extract(m3u8Link);
@@ -143,7 +158,7 @@ public class VodRecorder implements RecordThread {
             do {
                 try {
                     m3u8Link = MasterPlaylistParser.parse(
-                            masterPlaylistDownloader.getPlaylist(vodId), SettingsProperties.getStreamQuality());
+                            masterPlaylistDownloader.getPlaylist(vodId), settingsProperties.getStreamQuality());
                 } catch (UnknownHostException e) {
                     counter++;
                     log.warn("UnknownHostException. cycle:{} \n Stacktrace{}", counter, e);
@@ -194,7 +209,7 @@ public class VodRecorder implements RecordThread {
 
     private void recordCycle() throws IOException, InterruptedException {
 
-        while (RecordStatusGetter.isRecording(vodId)) {
+        while (recordStatusGetter.isRecording(vodId)) {
             refreshDownload();
             Thread.sleep(20 * 1000);
         }
@@ -210,7 +225,7 @@ public class VodRecorder implements RecordThread {
         log.info("End of list. Downloading last mainPlaylist");
         log.debug("Download preview");
         try {
-            downloadPreview(VodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl());
+            downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl());
 
         } catch (StreamNotFoundExeption e) {
             int streamLength = mainPlaylist.size() / 2;
@@ -221,8 +236,8 @@ public class VodRecorder implements RecordThread {
         log.debug("Download m3u8");
         MediaPlaylistWriter.write(mainPlaylist, streamFolderPath);
 
-        LinkedHashMap<String, String> animatedPreview = AnimatedPreviewGenerator.generate(streamDataModel, mainPlaylist);
-        LinkedHashMap<String, Preview> timelinePreview = TimelinePreviewGenerator.generate(streamDataModel, mainPlaylist);
+        LinkedHashMap<String, String> animatedPreview = animatedPreviewGenerator.generate(streamDataModel, mainPlaylist);
+        LinkedHashMap<String, Preview> timelinePreview = timelinePreviewGenerator.generate(streamDataModel, mainPlaylist);
 
 
         streamDocumentModel.setDuration(mainPlaylist.size() * 10);
