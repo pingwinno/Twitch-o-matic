@@ -24,6 +24,8 @@ public class SubscriptionRequest {
 
     @Autowired
     private HttpSevice httpSevice;
+    @Autowired
+    HashHandler hashHandler;
 
     private CloseableHttpResponse httpResponse;
 
@@ -33,7 +35,7 @@ public class SubscriptionRequest {
                     "https://api.twitch.tv/helix/streams?user_id=" +
                             UserIdGetter.getUserId(user),
                     SettingsProperties.getCallbackAddress() + ":" + SettingsProperties.getTwitchServerPort() +
-                            "/handler/" + user, HUB_LEASE, HashHandler.getKey());
+                            "/handler/" + user, HUB_LEASE, hashHandler.getKey());
             log.trace("SubscriptionQueryModel: {}", subscriptionModel.toString());
 
             log.debug("Sending subscription query");

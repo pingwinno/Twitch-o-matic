@@ -13,11 +13,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBr
 
 @EnableWebSocketMessageBroker
 public class TwitchOMaticApplication {
-
-
     public static void main(String[] args) {
         SpringApplication.run(TwitchOMaticApplication.class, args);
     }
-
-
 }

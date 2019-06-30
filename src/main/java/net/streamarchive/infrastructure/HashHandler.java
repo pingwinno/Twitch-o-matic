@@ -3,25 +3,26 @@ package net.streamarchive.infrastructure;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-
+@Component
 public class HashHandler {
 
     private static org.slf4j.Logger log = LoggerFactory.getLogger(HashHandler.class.getName());
-    private static String key;
+    private String key;
 
 
-    public static void generateKey() {
+    public void generateKey() {
             key = RandomStringUtils.randomAlphanumeric(20);
             log.trace("key {}", key);
     }
 
-    public static boolean compare(String header, String dataModel) {
+    public boolean compare(String header, String dataModel) {
 
         log.trace("header {} ", header);
 
@@ -37,7 +38,7 @@ public class HashHandler {
         return header.equals(sha256hex);
     }
 
-    public static String getKey() {
+    public String getKey() {
         return key;
     }
 
