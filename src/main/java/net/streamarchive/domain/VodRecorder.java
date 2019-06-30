@@ -77,7 +77,7 @@ public class VodRecorder implements RecordThread {
     }
 
     public void start(StreamDataModel streamDataModel) {
-
+        log.debug("Starting {} {} {}", streamDataModel.getUser(), streamDataModel.getVodId(), streamDataModel.getUuid());
         this.streamDataModel = streamDataModel;
         uuid = streamDataModel.getUuid();
         streamFolderPath = settingsProperties.getRecordedStreamPath() + streamDataModel.getUser() + "/" + uuid.toString();
@@ -122,7 +122,9 @@ public class VodRecorder implements RecordThread {
             //if stream  exist
             if (m3u8Link != null) {
                 String streamPath = StreamPathExtractor.extract(m3u8Link);
+
                 mainPlaylist = MediaPlaylistParser.getChunks(mediaPlaylistDownloader.getMediaPlaylist(m3u8Link), streamDataModel.isSkipMuted());
+
                 executorService = Executors.newFixedThreadPool(threadsNumber);
 
                 for (Map.Entry<String, Double> chunk : mainPlaylist.entrySet()) {
@@ -210,13 +212,14 @@ public class VodRecorder implements RecordThread {
     private void recordCycle() throws IOException, InterruptedException {
 
         while (recordStatusGetter.isRecording(vodId)) {
+            log.debug("Refresh download {} {} {}", streamDataModel.getUser(), streamDataModel.getVodId(), streamDataModel.getUuid());
             refreshDownload();
             Thread.sleep(20 * 1000);
         }
         log.info("Finalize record...");
         int counter = 0;
         while ((!this.refreshDownload()) && (counter <= 10)) {
-            log.info("Wait for renewing playlist");
+            log.info("Wait for renewing playlist for {} {} {}", streamDataModel.getUser(), streamDataModel.getVodId(), streamDataModel.getUuid());
             Thread.sleep(10 * 1000);
             counter++;
         }

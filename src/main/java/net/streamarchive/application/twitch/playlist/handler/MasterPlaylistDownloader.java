@@ -26,15 +26,15 @@ public class MasterPlaylistDownloader {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(MasterPlaylistDownloader.class.getName());
     @Autowired
     private HttpSevice httpSevice;
-    private String jsonString;
+    private String accessToken;
 
     public BufferedReader getPlaylist(int vodId) throws IOException, URISyntaxException, InterruptedException, StreamNotFoundExeption {
         //make token request
 
-        if (jsonString == null) {
+        if (accessToken == null) {
             getToken(vodId);
         }
-        JSONObject json = new JSONObject(jsonString);
+        JSONObject json = new JSONObject(accessToken);
         //make playlist request with received token
         URIBuilder builder = new URIBuilder("https://usher.twitch.tv/vod/" + vodId);
         builder.setParameter("player", "twitchweb");
@@ -56,9 +56,8 @@ public class MasterPlaylistDownloader {
 
                 return new BufferedReader(new InputStreamReader
                         (httpSevice.getService(httpGet, false).getEntity().getContent(), StandardCharsets.UTF_8));
-
-
         } else {
+            log.debug(response.getStatusLine().toString());
             throw new IOException();
         }
 
@@ -71,11 +70,11 @@ public class MasterPlaylistDownloader {
     private void getToken(int vodId) throws IOException, InterruptedException {
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/api/vods/" + vodId + "/access_token");
         httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
-        jsonString = EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity());
-        log.trace("Token is: {}", jsonString);
-        while (!jsonString.startsWith("{")) {
-            log.error("Token request failed. {}", jsonString);
-            jsonString = EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity());
+        accessToken = EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity());
+        log.trace("Token is: {}", accessToken);
+        while (!accessToken.startsWith("{")) {
+            log.error("Token request failed. {}", accessToken);
+            accessToken = EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity());
             Thread.sleep(5000);
         }
     }

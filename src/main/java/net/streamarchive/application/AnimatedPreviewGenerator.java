@@ -4,6 +4,7 @@ import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 @Component
+@Scope("prototype")
 public class AnimatedPreviewGenerator {
     @Autowired
     SettingsProperties settingsProperties;

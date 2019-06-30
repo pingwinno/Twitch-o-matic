@@ -18,7 +18,7 @@ public class HashHandler {
 
 
     public void generateKey() {
-            key = RandomStringUtils.randomAlphanumeric(20);
+        key = RandomStringUtils.randomNumeric(20);
             log.trace("key {}", key);
     }
 

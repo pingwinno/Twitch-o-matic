@@ -15,7 +15,10 @@ import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.StreamStatusNotificationModel;
 import net.streamarchive.repository.StatusRepository;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -25,13 +28,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/handler")
-public class TwitchApiHandler {
+public class TwitchApiHandler implements ApplicationContextAware {
     private final
     StatusRepository statusRepository;
     private final
     RecordStatusList recordStatusList;
-    private final
-    RecordThread recordThread;
     private final
     HashHandler hashHandler;
     private final
@@ -42,13 +43,14 @@ public class TwitchApiHandler {
     SettingsProperties settingsProperties;
     @Autowired
     StorageHelper storageHelper;
+    private ApplicationContext applicationContext;
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @Autowired
-    public TwitchApiHandler(StatusRepository statusRepository, RecordStatusList recordStatusList, RecordThread recordThread, VodMetadataHelper vodMetadataHelper, RecordStatusGetter recordStatusGetter, HashHandler hashHandler, SettingsProperties settingsProperties) {
+    public TwitchApiHandler(StatusRepository statusRepository, RecordStatusList recordStatusList, VodMetadataHelper vodMetadataHelper, RecordStatusGetter recordStatusGetter, HashHandler hashHandler, SettingsProperties settingsProperties) {
         this.statusRepository = statusRepository;
         this.recordStatusList = recordStatusList;
-        this.recordThread = recordThread;
+
         this.hashHandler = hashHandler;
         this.vodMetadataHelper = vodMetadataHelper;
         this.recordStatusGetter = recordStatusGetter;
@@ -85,13 +87,14 @@ public class TwitchApiHandler {
     @RequestMapping(value = "/{user}", method = RequestMethod.POST)
     public void handleStreamNotification(@RequestBody String stringDataModel
             , @RequestHeader("X-Hub-Signature") String signature, @PathVariable("user") String user) throws InterruptedException, StreamNotFoundExeption, IOException {
+
         log.debug("Incoming stream up/down notification");
 
         if (hashHandler.compare(signature, stringDataModel)) {
             log.debug("Hash confirmed");
             //check for active subscription
             log.trace("User search res: {}", Arrays.binarySearch(settingsProperties.getUsers(), user));
-            if (Arrays.binarySearch(settingsProperties.getUsers(), user) <= 0) {
+            if (Arrays.binarySearch(settingsProperties.getUsers(), user) >= 0) {
                 log.debug("Subscription is active");
                 StreamStatusNotificationModel dataModel =
                         new ObjectMapper().readValue(stringDataModel, StreamStatusNotificationModel.class);
@@ -134,6 +137,7 @@ public class TwitchApiHandler {
 
                                         //check for notification duplicate
                                         log.info("check for duplicate notification");
+                                        RecordThread recordThread = applicationContext.getBean(RecordThread.class);
                                         recordThread.start(streamMetadata);
                                     } else log.warn("Stream duplicate. Skip...");
                                 } catch (IOException | InterruptedException e) {
@@ -167,6 +171,10 @@ public class TwitchApiHandler {
     }
 
 
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
 }
 
 

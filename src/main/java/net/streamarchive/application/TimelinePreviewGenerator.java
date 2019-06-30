@@ -5,6 +5,7 @@ import net.streamarchive.infrastructure.models.Preview;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
@@ -16,6 +17,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
+@Scope("prototype")
+
 public class TimelinePreviewGenerator {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(TimelinePreviewGenerator.class.getName());
     @Autowired

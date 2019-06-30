@@ -3,7 +3,6 @@ package net.streamarchive.application;
 import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.models.StorageState;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -15,10 +14,14 @@ import java.util.*;
 
 @Service
 public class StorageHelper {
-    @Autowired
+    private final
     SettingsProperties settingsProperties;
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(StorageHelper.class.getName());
+
+    public StorageHelper(SettingsProperties settingsProperties) {
+        this.settingsProperties = settingsProperties;
+    }
 
     public Map<String, Integer> getFreeSpace() throws IOException {
         Map<String, Integer> freeSpace = new HashMap<>();
@@ -39,7 +42,6 @@ public class StorageHelper {
         }
         return storageStates;
     }
-
     private boolean creatingRecordedPath() throws IOException {
         boolean pass = true;
         for (String user : settingsProperties.getUsers()) {
@@ -65,9 +67,9 @@ public class StorageHelper {
                 log.warn("Check permissions or change RecordedStreamPath in config_test.prop");
                 pass = false;
             }
-
-            log.info("Free space is: {} GB", getFreeSpace().get(user));
-
+        }
+        for (String user : settingsProperties.getUsers()) {
+            log.info("Free space for {} is: {} GB", user, getFreeSpace().get(user));
         }
         return pass;
 
