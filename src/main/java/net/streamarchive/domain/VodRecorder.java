@@ -10,7 +10,6 @@ import net.streamarchive.infrastructure.models.Preview;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.StreamDocumentModel;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -33,8 +32,7 @@ import java.util.concurrent.TimeUnit;
 @Scope("prototype")
 public class VodRecorder implements RecordThread {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
-    @Autowired
-    private MasterPlaylistDownloader masterPlaylistDownloader;
+    private final MasterPlaylistDownloader masterPlaylistDownloader;
 
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
     private LinkedHashMap<String, Double> mainPlaylist;
@@ -48,16 +46,19 @@ public class VodRecorder implements RecordThread {
     private boolean isRecordTerminated;
     private StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
 
-    @Autowired
+    private final
     RecordStatusList recordStatusList;
 
-    @Autowired
+    private final
     RecordThreadSupervisor recordThreadSupervisor;
-    @Autowired
+    private final
     DataBaseWriter dataBaseWriter;
 
-    public VodRecorder(RecordStatusList recordStatusList) {
+    public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, DataBaseWriter dataBaseWriter) {
         this.recordStatusList = recordStatusList;
+        this.masterPlaylistDownloader = masterPlaylistDownloader;
+        this.recordThreadSupervisor = recordThreadSupervisor;
+        this.dataBaseWriter = dataBaseWriter;
     }
 
     public void start(StreamDataModel streamDataModel) {
@@ -76,11 +77,7 @@ public class VodRecorder implements RecordThread {
             }
         } catch (IOException | InterruptedException e) {
             log.error("Can't start record. ", e);
-            try {
-                recordStatusList.changeState(uuid, State.ERROR);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            recordStatusList.changeState(uuid, State.ERROR);
         }
         try {
             recordStatusList.changeState(uuid, State.RUNNING);
@@ -132,11 +129,7 @@ public class VodRecorder implements RecordThread {
             this.recordCycle();
         } catch (IOException | URISyntaxException | InterruptedException | StreamNotFoundExeption e) {
             log.error("Vod downloader initialization failed. ", e);
-            try {
-                recordStatusList.changeState(uuid, State.ERROR);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            recordStatusList.changeState(uuid, State.ERROR);
             stop();
         }
     }
@@ -193,11 +186,7 @@ public class VodRecorder implements RecordThread {
             }
         } catch (IOException | URISyntaxException | StreamNotFoundExeption e) {
             log.error("Vod downloader refresh failed. ", e);
-            try {
-                recordStatusList.changeState(uuid, State.ERROR);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            recordStatusList.changeState(uuid, State.ERROR);
             stop();
         }
         return status;
@@ -301,11 +290,7 @@ public class VodRecorder implements RecordThread {
             thisTread.interrupt();
 
         } catch (IOException e) {
-            try {
-                recordStatusList.changeState(uuid, State.ERROR);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            recordStatusList.changeState(uuid, State.ERROR);
             log.error("VoD downloader unexpectedly stop.", e);
         }
     }

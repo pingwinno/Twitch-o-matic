@@ -1,81 +1,73 @@
 package net.streamarchive.presentation.twitch.api;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import net.streamarchive.application.DateConverter;
-import net.streamarchive.repository.StatusRepository;
-import net.streamarchive.application.StorageHelper;
-import net.streamarchive.application.SubscriptionRequestTimer;
-import net.streamarchive.application.twitch.playlist.handler.RecordStatusGetter;
-import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
-import net.streamarchive.domain.VodRecorder;
-import net.streamarchive.infrastructure.HashHandler;
 import net.streamarchive.infrastructure.RecordStatusList;
-import net.streamarchive.infrastructure.StreamNotFoundExeption;
-import net.streamarchive.infrastructure.enums.StartedBy;
-import net.streamarchive.infrastructure.enums.State;
-import net.streamarchive.infrastructure.models.NotificationDataModel;
-import net.streamarchive.infrastructure.models.StatusDataModel;
-import net.streamarchive.infrastructure.models.StreamDataModel;
-import net.streamarchive.infrastructure.models.StreamStatusNotificationModel;
+import net.streamarchive.infrastructure.RecordThread;
+import net.streamarchive.repository.StatusRepository;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.time.LocalDateTime;
+import java.util.Map;
 
-@Service
-@Path("/handler/{user}")
+@RestController
+@RequestMapping("/handler")
 public class TwitchApiHandler {
-    @Autowired
+    private final
     StatusRepository statusRepository;
-    @Autowired
+    private final
     RecordStatusList recordStatusList;
+
+    private final
+    RecordThread recordThread;
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
-    @GET
-    public Response getSubscriptionQuery(@Context UriInfo info, @PathParam("user") String user) {
-        Response response = null;
+    @Autowired
+    public TwitchApiHandler(StatusRepository statusRepository, RecordStatusList recordStatusList, RecordThread recordThread) {
+        this.statusRepository = statusRepository;
+        this.recordStatusList = recordStatusList;
+        this.recordThread = recordThread;
+    }
+
+    @RequestMapping("/{user}")
+    public String getSubscriptionQuery(@RequestParam Map<String, String> allParams, @PathVariable("user") String user) {
+
         log.debug("Incoming challenge request");
-        if (info != null) {
-            log.debug("hub.mode {} ", info.getQueryParameters().getFirst("hub.mode"));
-            String hubMode = info.getQueryParameters().getFirst("hub.mode");
+        if (allParams != null) {
+            log.debug("hub.mode {} ", allParams.get("hub.mode"));
+            String hubMode = allParams.get("hub.mode");
             //handle denied response
             if (hubMode.equals("denied")) {
-                String hubReason = info.getQueryParameters().getFirst("hub.reason");
-                response = Response.status(Response.Status.OK).build();
+                String hubReason = allParams.get("hub.reason");
+
                 log.warn("Subscription failed. Reason:{}", hubReason);
-                return response;
+                return null;
             }
             //handle verify response
             else {
-                String hubChallenge = info.getQueryParameters().getFirst("hub.challenge");
-                response = Response.status(Response.Status.OK).entity(hubChallenge).build();
-                log.debug("Subscription complete {} hub.challenge is:{}", hubMode, hubChallenge);
+                log.debug("Subscription complete {} hub.challenge is:", allParams.get("hub.challenge"));
                 log.info(" Twith-o-matic started for {}. Waiting for stream up", user);
+                return allParams.get("hub.challenge");
+
             }
         } else log.warn("Subscription query is not correct. Try restart Twitch-o-matic.");
 
-        return response;
+        return null;
     }
-
+/*
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response handleStreamNotification(String stringDataModel
-            , @HeaderParam("X-Hub-Signature") String signature, @PathParam("user") String user) throws IOException,
-            InterruptedException, SQLException, StreamNotFoundExeption {
+            , @HeaderParam("X-Hub-Signature") String signature, @PathVariable("user") String user) throws IOException,
+            InterruptedException, StreamNotFoundExeption {
         log.debug("Incoming stream up/down notification");
 
         if (HashHandler.compare(signature, stringDataModel)) {
             //check for active subscription
-            if (SubscriptionRequestTimer.getTimers().containsKey(user)) {
+            if (subscriptionRequestTimer.getTimers().containsKey(user)) {
                 log.debug("Hash confirmed");
                 StreamStatusNotificationModel dataModel =
                         new ObjectMapper().readValue(stringDataModel, StreamStatusNotificationModel.class);
@@ -110,19 +102,18 @@ public class TwitchApiHandler {
                                     if (statusRepository.existsById(streamMetadata.getVodId())) {
                                         streamMetadata.setUuid(StorageHelper.getUuidName());
 
-                                        new RecordStatusList().addStatus
+                                        recordStatusList.addStatus
                                                 (new StatusDataModel(streamMetadata.getVodId(), StartedBy.WEBHOOK, DateConverter.convert(LocalDateTime.now()),
                                                         State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
 
                                         log.info("Try to start record");
-                                        VodRecorder vodRecorder = new VodRecorder(recordStatusList);
 
                                         //check for notification duplicate
                                         log.info("check for duplicate notification");
-                                        vodRecorder.start(streamMetadata);
+                                        recordThread.start(streamMetadata);
                                     } else log.warn("Stream duplicate. Skip...");
                                 } catch (IOException | InterruptedException e) {
-                                    log.error("DB error {} ", e);
+                                    log.error("DB error ", e);
                                 } catch (StreamNotFoundExeption streamNotFoundExeption) {
                                     streamNotFoundExeption.printStackTrace();
                                 }
@@ -151,6 +142,8 @@ public class TwitchApiHandler {
         log.debug("Response ok");
         return Response.status(Response.Status.OK).build();
     }
+
+ */
 }
 
 

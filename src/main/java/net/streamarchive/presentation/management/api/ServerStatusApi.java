@@ -7,6 +7,7 @@ import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.models.StorageState;
 import net.streamarchive.infrastructure.models.StreamDocumentModel;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,12 +31,13 @@ import java.util.stream.Stream;
 @RestController
 @RequestMapping("/api/v1/server")
 public class ServerStatusApi {
-    private final
+    @Autowired
     DataBaseWriter dataBaseWriter;
     private final
     MongoTemplate mongoTemplate;
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
+    @Autowired
     public ServerStatusApi(DataBaseWriter dataBaseWriter, MongoTemplate mongoTemplate) {
         this.dataBaseWriter = dataBaseWriter;
         this.mongoTemplate = mongoTemplate;
