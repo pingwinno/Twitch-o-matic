@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import javax.imageio.ImageIO;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -20,6 +18,8 @@ import java.util.LinkedHashMap;
 public class AnimatedPreviewGenerator {
     @Autowired
     SettingsProperties settingsProperties;
+    @Autowired
+    CommandLineExecutor commandLineExecutor;
     private org.slf4j.Logger log = LoggerFactory.getLogger(AnimatedPreviewGenerator.class.getName());
 
     public LinkedHashMap<String, String> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet) throws IOException {
@@ -45,12 +45,14 @@ public class AnimatedPreviewGenerator {
         }
     }
 
-    private int writePreviews(LinkedHashMap<String, String> previewList, ArrayList<String> chunks, String pathString, int chunkNum, int offset, int i) throws IOException {
+    private int writePreviews(LinkedHashMap<String, String> previewList, ArrayList<String> chunks, String pathString, int chunkNum, int offset, int i) {
         String path = pathString +
                 "/" + chunks.get(chunkNum).replace("-muted", "");
         log.trace(path);
-        ImageIO.write(FrameGrabber.getFrame(path, 640, 360),
-                "jpeg", new File(pathString + "/animated_preview/preview" + i + ".jpg"));
+
+        commandLineExecutor.execute("ffmpeg", "-i", path, "-s", "640x360", "-vframes", "1", pathString +
+                "/animated_preview/preview" + i + ".jpg", "-y");
+
         chunkNum += offset;
         previewList.put(String.valueOf(i), "preview" + i + ".jpg");
         return chunkNum;

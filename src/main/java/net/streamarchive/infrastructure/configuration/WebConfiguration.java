@@ -29,7 +29,6 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
                 .authenticated().and().logout().logoutSuccessUrl("/").clearAuthentication(true).and().csrf().disable();
     }
 
-
     @RequestMapping("/unauthenticated")
     public String unauthenticated() {
         return "redirect:/?error=true";
