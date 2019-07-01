@@ -1,7 +1,7 @@
 package net.streamarchive.domain;
 
 import net.streamarchive.application.AnimatedPreviewGenerator;
-import net.streamarchive.application.FrameGrabber;
+import net.streamarchive.application.CommandLineExecutor;
 import net.streamarchive.application.TimelinePreviewGenerator;
 import net.streamarchive.application.twitch.playlist.handler.*;
 import net.streamarchive.infrastructure.*;
@@ -10,11 +10,10 @@ import net.streamarchive.infrastructure.models.Preview;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.StreamDocumentModel;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import javax.imageio.ImageIO;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
@@ -28,27 +27,13 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
 @Service
 @Scope("prototype")
 public class VodRecorder implements RecordThread {
-    private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
     private final MasterPlaylistDownloader masterPlaylistDownloader;
-
-    private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
-    private LinkedHashMap<String, Double> mainPlaylist;
-    private String streamFolderPath;
-    private int vodId;
-    private StreamDataModel streamDataModel;
-    private int threadsNumber = 1;
-    private UUID uuid;
-    private ExecutorService executorService;
-    private Thread thisTread = Thread.currentThread();
-    private boolean isRecordTerminated;
-    private StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
-
     private final
     RecordStatusList recordStatusList;
-
     private final
     RecordThreadSupervisor recordThreadSupervisor;
     private final
@@ -63,6 +48,20 @@ public class VodRecorder implements RecordThread {
     AnimatedPreviewGenerator animatedPreviewGenerator;
     private final
     TimelinePreviewGenerator timelinePreviewGenerator;
+    @Autowired
+    CommandLineExecutor commandLineExecutor;
+    private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
+    private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
+    private LinkedHashMap<String, Double> mainPlaylist;
+    private String streamFolderPath;
+    private int vodId;
+    private StreamDataModel streamDataModel;
+    private int threadsNumber = 1;
+    private UUID uuid;
+    private ExecutorService executorService;
+    private Thread thisTread = Thread.currentThread();
+    private boolean isRecordTerminated;
+    private StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
 
     public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, DataBaseWriter dataBaseWriter, SettingsProperties settingsProperties, RecordStatusGetter recordStatusGetter, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator) {
         this.recordStatusList = recordStatusList;
@@ -232,9 +231,9 @@ public class VodRecorder implements RecordThread {
 
         } catch (StreamNotFoundExeption e) {
             int streamLength = mainPlaylist.size() / 2;
-            ImageIO.write(FrameGrabber.getFrame(streamFolderPath + "/" + streamLength + ".ts", 640, 360),
-                    "jpeg", new File(streamFolderPath + "/preview.jpg"));
 
+            commandLineExecutor.execute("ffmpeg", "-i", streamFolderPath + "/" + streamLength + ".ts", "-s",
+                    "640x360", "-vframes", "1", streamFolderPath + "/preview.jpg", "-y");
         }
         log.debug("Download m3u8");
         MediaPlaylistWriter.write(mainPlaylist, streamFolderPath);
@@ -277,7 +276,7 @@ public class VodRecorder implements RecordThread {
                     log.trace(fileName + " complete");
                 }
             } else {
-                log.trace("Chunk {} exist. Skipping...",fileName);
+                log.trace("Chunk {} exist. Skipping...", fileName);
             }
         } catch (MalformedURLException e) {
             e.printStackTrace();

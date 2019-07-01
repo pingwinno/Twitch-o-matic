@@ -26,11 +26,11 @@ public class UserIdGetter {
         try {
             JSONArray params = jsonObj.getJSONArray("data");
             JSONObject dataObj = params.getJSONObject(0);
-           user = dataObj.get("id").toString();
+            userId = dataObj.get("id").toString();
 
         } catch (JSONException exception){
-           user = getUserId(user);
+            userId = getUserId(user);
         }
-        return user;
+        return userId;
     }
 }
