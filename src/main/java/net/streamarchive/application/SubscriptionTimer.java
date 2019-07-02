@@ -25,7 +25,7 @@ public class SubscriptionTimer {
     @Scheduled(fixedRate = 10000 * 1000)
     public void doSubscriptions() throws IOException {
         hashHandler.generateKey();
-        for (String user : settingsProperties.getUsers()) {
+        for (String user : settingsProperties.getUsers().keySet()) {
             subscriptionRequest.sendSubscriptionRequest(user);
         }
     }

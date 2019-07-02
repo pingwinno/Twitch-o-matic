@@ -1,12 +1,12 @@
 package net.streamarchive.infrastructure.models;
 
-import java.util.ArrayList;
+import java.util.Map;
 
 public class ConfigFile {
     private String callbackAddress;
     private int twitchServerPort;
     private int managementServerPort;
-    private ArrayList<String> users;
+    private Map<String, String[]> users;
     private String recordedStreamPath;
     private boolean h2ConsoleIsEnabled;
     private String h2User;
@@ -39,11 +39,11 @@ public class ConfigFile {
         this.managementServerPort = managementServerPort;
     }
 
-    public ArrayList<String> getUsers() {
+    public Map<String, String[]> getUsers() {
         return users;
     }
 
-    public void setUsers(ArrayList<String> users) {
+    public void setUsers(Map<String, String[]> users) {
         this.users = users;
     }
 

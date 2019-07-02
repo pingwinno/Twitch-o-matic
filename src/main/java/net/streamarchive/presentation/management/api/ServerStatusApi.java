@@ -66,7 +66,7 @@ public class ServerStatusApi {
     @GetMapping("/import")
     public void importToLocalDb() {
         try {
-            for (String user : settingsProperties.getUsers()) {
+            for (String user : settingsProperties.getUsers().keySet()) {
                 for (StreamDocumentModel stream : mongoTemplate.findAll(StreamDocumentModel.class, user)) {
                     dataBaseWriter.writeToRemoteDB(stream, user);
                 }
@@ -84,7 +84,7 @@ public class ServerStatusApi {
     public void exportFromLocalDb() {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        for (String user : settingsProperties.getUsers()) {
+        for (String user : settingsProperties.getUsers().keySet()) {
 
             try (Stream<java.nio.file.Path> walk = Files.walk(Paths.get(settingsProperties.getRecordedStreamPath() + user))) {
 
