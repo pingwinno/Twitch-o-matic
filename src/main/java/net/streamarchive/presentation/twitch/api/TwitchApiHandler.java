@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Map;
 
 @RestController
@@ -93,8 +92,8 @@ public class TwitchApiHandler implements ApplicationContextAware {
         if (hashHandler.compare(signature, stringDataModel)) {
             log.debug("Hash confirmed");
             //check for active subscription
-            log.trace("User search res: {}", Arrays.binarySearch(settingsProperties.getUsers(), user));
-            if (Arrays.binarySearch(settingsProperties.getUsers(), user) >= 0) {
+            log.trace("User search res: {}", settingsProperties.getUsers().keySet().contains(user));
+            if (settingsProperties.getUsers().keySet().contains(user)) {
                 log.debug("Subscription is active");
                 StreamStatusNotificationModel dataModel =
                         new ObjectMapper().readValue(stringDataModel, StreamStatusNotificationModel.class);

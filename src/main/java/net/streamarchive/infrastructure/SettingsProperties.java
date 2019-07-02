@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Map;
 
 @Component
 public class SettingsProperties {
@@ -81,12 +82,12 @@ public class SettingsProperties {
         return getProperties().getManagementServerPort();
     }
 
-    public String[] getUsers() {
-        return getProperties().getUsers().toArray(new String[0]);
+    public Map<String, String[]> getUsers() {
+        return getProperties().getUsers();
     }
 
-    public void addUser(String user) {
-        getProperties().getUsers().add(user);
+    public void addUser(Map<String, String[]> users) {
+        getProperties().getUsers().putAll(users);
 
         log.trace(getProperties().getUsers().toString());
         saveProperties();

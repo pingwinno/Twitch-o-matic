@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * API for chanel subscriptions management.
@@ -36,7 +38,7 @@ public class SubscriptionsApi {
      * @return list of current active subscriptions.
      */
     @RequestMapping(method = RequestMethod.GET)
-    public String[] getTimers() {
+    public Map<String, String[]> getTimers() {
         return settingsProperties.getUsers();
     }
 
@@ -46,13 +48,15 @@ public class SubscriptionsApi {
      * @param user name of chanel
      */
     @RequestMapping(value = "/{user}", method = RequestMethod.PUT)
-    public void addSubscription(@PathVariable("user") String user) {
+    public void addSubscription(@PathVariable("user") String user, @RequestParam String... quality) {
         try {
             subscriptionRequest.sendSubscriptionRequest(user);
         } catch (IOException e) {
             throw new InternalServerErrorException();
         }
-        settingsProperties.addUser(user);
+        Map<String, String[]> users = new HashMap<>();
+        users.put(user, quality);
+        settingsProperties.addUser(users);
     }
 
     /**
