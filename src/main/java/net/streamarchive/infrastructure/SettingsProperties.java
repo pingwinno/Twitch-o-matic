@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -82,11 +83,11 @@ public class SettingsProperties {
         return getProperties().getManagementServerPort();
     }
 
-    public Map<String, String[]> getUsers() {
+    public Map<String, List<String>> getUsers() {
         return getProperties().getUsers();
     }
 
-    public void addUser(Map<String, String[]> users) {
+    public void addUser(Map<String, List<String>> users) {
         getProperties().getUsers().putAll(users);
 
         log.trace(getProperties().getUsers().toString());

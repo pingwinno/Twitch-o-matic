@@ -8,7 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,7 +40,7 @@ public class SubscriptionsApi {
      * @return list of current active subscriptions.
      */
     @RequestMapping(method = RequestMethod.GET)
-    public Map<String, String[]> getTimers() {
+    public Map<String, List<String>> getTimers() {
         return settingsProperties.getUsers();
     }
 
@@ -46,17 +48,19 @@ public class SubscriptionsApi {
      * Method adds new chanel subscription.
      *
      * @param user name of chanel
+     * @param quality list of streams quality
      */
     @RequestMapping(value = "/{user}", method = RequestMethod.PUT)
-    public void addSubscription(@PathVariable("user") String user, @RequestParam String... quality) {
+    public void addSubscription(@PathVariable("user") String user, @RequestParam("quality") List<String> quality) {
         try {
             subscriptionRequest.sendSubscriptionRequest(user);
+            Map<String, List<String>> users = new HashMap<>();
+            users.put(user, quality);
+            users.get(user).sort(Comparator.comparing(String::length));
+            settingsProperties.addUser(users);
         } catch (IOException e) {
             throw new InternalServerErrorException();
         }
-        Map<String, String[]> users = new HashMap<>();
-        users.put(user, quality);
-        settingsProperties.addUser(users);
     }
 
     /**
