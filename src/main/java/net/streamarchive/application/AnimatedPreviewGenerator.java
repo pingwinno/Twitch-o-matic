@@ -22,7 +22,7 @@ public class AnimatedPreviewGenerator {
     CommandLineExecutor commandLineExecutor;
     private org.slf4j.Logger log = LoggerFactory.getLogger(AnimatedPreviewGenerator.class.getName());
 
-    public LinkedHashMap<String, String> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet) throws IOException {
+    public LinkedHashMap<String, String> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet, String quality) throws IOException {
         LinkedHashMap<String, String> previewList = new LinkedHashMap<>();
         ArrayList<String> chunks = new ArrayList<>(chunksSet.keySet());
         String pathString = settingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid();
@@ -31,7 +31,7 @@ public class AnimatedPreviewGenerator {
             int chunkNum = 0;
             int offset = chunks.size() / 10;
             for (int i = 0; i < 10; i++) {
-                chunkNum = writePreviews(previewList, chunks, pathString, chunkNum, offset, i);
+                chunkNum = writePreviews(previewList, chunks, pathString, chunkNum, offset, i, quality);
             }
             return previewList;
 
@@ -39,15 +39,15 @@ public class AnimatedPreviewGenerator {
             int chunkNum = 0;
             log.trace("{}", chunks.size());
             for (int i = 0; i < chunks.size(); i++) {
-                chunkNum = writePreviews(previewList, chunks, pathString, chunkNum, i, i);
+                chunkNum = writePreviews(previewList, chunks, pathString, chunkNum, i, i, quality);
             }
             return previewList;
         }
     }
 
-    private int writePreviews(LinkedHashMap<String, String> previewList, ArrayList<String> chunks, String pathString, int chunkNum, int offset, int i) {
+    private int writePreviews(LinkedHashMap<String, String> previewList, ArrayList<String> chunks, String pathString, int chunkNum, int offset, int i, String quality) {
         String path = pathString +
-                "/" + chunks.get(chunkNum).replace("-muted", "");
+                "/" + quality + "/" + chunks.get(chunkNum).replace("-muted", "");
         log.trace(path);
 
         commandLineExecutor.execute("ffmpeg", "-i", path, "-s", "640x360", "-vframes", "1", pathString +

@@ -23,7 +23,7 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
         http
                 .antMatcher("/**")
                 .authorizeRequests()
-                .antMatchers("/login**", "/handler/**", "/callback/", "/webjars/**", "/error**")
+                .antMatchers("/login**", "/handler/**", "/callback/", "/webjars/**", "/error**", "/status")
                 .permitAll()
                 .anyRequest()
                 .authenticated().and().logout().logoutSuccessUrl("/").clearAuthentication(true).and().csrf().disable();

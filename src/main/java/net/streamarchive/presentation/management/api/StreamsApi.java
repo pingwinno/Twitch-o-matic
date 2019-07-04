@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -35,7 +34,7 @@ import java.util.List;
  * Endpoint {@code /database}
  */
 @RestController
-@RequestMapping("/api/v1/database")
+@RequestMapping("/api/v1/database/streams")
 public class StreamsApi {
     private final
     StatusRepository statusRepository;
@@ -72,7 +71,7 @@ public class StreamsApi {
      * @see AddRequestModel for review json fields
      */
 
-    @RequestMapping(value = "/streams", method = RequestMethod.PUT)
+    @RequestMapping(method = RequestMethod.PUT)
     public void startRecord(AddRequestModel requestModel) {
         StreamDataModel streamMetadata = null;
 
@@ -140,9 +139,9 @@ public class StreamsApi {
      * @param deleteMedia if "true" also delete stream from storage
      * @throws NotModifiedException if can't delete stream from storage (right issue/etc)
      */
-    @RequestMapping(value = "/streams/{user}/{uuid}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "{user}/{uuid}", method = RequestMethod.DELETE)
     public void deleteStream(@PathVariable("uuid") String uuid, @PathVariable("user") String user, @RequestParam("deleteMedia") String deleteMedia) {
-        if (Arrays.asList(settingsProperties.getUsers()).contains(user)) {
+        if (settingsProperties.getUsers().containsKey(user)) {
             Query query = new Query();
             query.addCriteria(Criteria.where("_id").is(uuid));
 
@@ -174,7 +173,7 @@ public class StreamsApi {
      * @param dataModel updated metadata
      * @see StreamDataModel for see required fields
      */
-    @RequestMapping(value = "/streams/{user}/{uuid}", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/{user}/{uuid}", method = RequestMethod.PATCH)
     public void updateStream(@PathVariable("uuid") String uuid, @PathVariable("user") String user, StreamDataModel dataModel) {
         StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
         streamDocumentModel.set_id(uuid);
@@ -191,12 +190,13 @@ public class StreamsApi {
      * @param user streamer name
      * @return array of streamer streams
      */
-    @RequestMapping(value = "/streams/{user}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{user}", method = RequestMethod.GET)
     public List<StreamDocumentModel> getStreamsList(@PathVariable("user") String user) {
         log.trace(user);
         Query query = new Query();
         query.fields().include("title").include("date").include("game");
-        if (Arrays.asList(settingsProperties.getUsers()).contains(user)) {
+        if (settingsProperties.getUsers().containsKey(user)) {
+            log.debug("Streams for {}", user);
             return mongoTemplate.find(query, StreamDocumentModel.class, user);
         } else throw new NotFoundException();
     }

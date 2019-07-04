@@ -24,7 +24,7 @@ public class TimelinePreviewGenerator {
     @Autowired
     private CommandLineExecutor commandLineExecutor;
 
-    public LinkedHashMap<String, Preview> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet)
+    public LinkedHashMap<String, Preview> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet, String quality)
             throws IOException {
         String pathString = settingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid();
         Files.createDirectories(Paths.get(settingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() +
@@ -35,7 +35,7 @@ public class TimelinePreviewGenerator {
         for (Map.Entry<String, Double> chunk : chunksSet.entrySet()) {
 
             commandLineExecutor.execute("ffmpeg", "-i",
-                    settingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() + "/" + chunk.getKey().replace("-muted", ""),
+                    settingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() + "/" + quality + "/" + chunk.getKey().replace("-muted", ""),
                     "-s", "256x144", "-vframes", "1", pathString +
                             "/timeline_preview/preview" + chunkNum + ".jpg", "-y");
             frameTime += chunk.getValue();
