@@ -152,8 +152,14 @@ public class VodRecorder implements RecordThread {
                                 get(streamDataModel.getUser()).size() - 1) + "/preview.jpg", "-y");
             }
 
-            LinkedHashMap<String, String> animatedPreview = animatedPreviewGenerator.generate(streamDataModel, mainPlaylist);
-            LinkedHashMap<String, Preview> timelinePreview = timelinePreviewGenerator.generate(streamDataModel, mainPlaylist);
+            LinkedHashMap<String, String> animatedPreview = animatedPreviewGenerator.generate(streamDataModel, mainPlaylist,
+                    settingsProperties.getUsers().
+                            get(streamDataModel.getUser()).get(settingsProperties.getUsers().
+                            get(streamDataModel.getUser()).size() - 1));
+            LinkedHashMap<String, Preview> timelinePreview = timelinePreviewGenerator.generate(streamDataModel, mainPlaylist,
+                    settingsProperties.getUsers().
+                            get(streamDataModel.getUser()).get(settingsProperties.getUsers().
+                            get(streamDataModel.getUser()).size() - 1));
 
 
             streamDocumentModel.setDuration(mainPlaylist.size() * 10);
@@ -300,7 +306,7 @@ public class VodRecorder implements RecordThread {
             refreshDownload();
             log.info("End of list. Downloading last mainPlaylist");
 
-            MediaPlaylistWriter.write(mainPlaylist, streamFolderPath);
+            MediaPlaylistWriter.write(mainPlaylist, streamFolderPath + "/" + quality);
             log.debug("Download m3u8");
         }
 
@@ -319,7 +325,7 @@ public class VodRecorder implements RecordThread {
                 connection = website.openConnection();
 
                 if ((!Files.exists(Paths.get(streamFolderPath + "/" + quality + "/" + fileName))) ||
-                        (connection.getContentLengthLong() > Files.size((Paths.get(streamFolderPath + "/" + fileName))))) {
+                        (connection.getContentLengthLong() > Files.size((Paths.get(streamFolderPath + "/" + quality + "/" + fileName))))) {
 
                     try (InputStream in = website.openStream()) {
 
@@ -335,7 +341,7 @@ public class VodRecorder implements RecordThread {
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
-                log.warn("Download failed");
+                log.warn("Download failed", e);
             }
         }
 

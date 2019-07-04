@@ -53,7 +53,6 @@ public class MasterPlaylistDownloader {
             throw new StreamNotFoundExeption("Stream" + vodId + "not found");
         }
         if (response.getStatusLine().getStatusCode() == 200) {
-
                 return new BufferedReader(new InputStreamReader
                         (httpSevice.getService(httpGet, false).getEntity().getContent(), StandardCharsets.UTF_8));
         } else {
