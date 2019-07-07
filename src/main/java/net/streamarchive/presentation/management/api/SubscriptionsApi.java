@@ -1,6 +1,7 @@
 package net.streamarchive.presentation.management.api;
 
 
+import net.streamarchive.application.StorageHelper;
 import net.streamarchive.application.SubscriptionRequest;
 import net.streamarchive.infrastructure.SettingsProperties;
 import org.slf4j.LoggerFactory;
@@ -26,12 +27,15 @@ public class SubscriptionsApi {
     SubscriptionRequest subscriptionRequest;
     private final
     SettingsProperties settingsProperties;
+    private final
+    StorageHelper storageHelper;
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
-    public SubscriptionsApi(SubscriptionRequest subscriptionRequest, SettingsProperties settingsProperties) {
+    public SubscriptionsApi(SubscriptionRequest subscriptionRequest, SettingsProperties settingsProperties, StorageHelper storageHelper) {
         this.subscriptionRequest = subscriptionRequest;
         this.settingsProperties = settingsProperties;
+        this.storageHelper = storageHelper;
     }
 
     /**
@@ -58,6 +62,7 @@ public class SubscriptionsApi {
             users.put(user, quality);
             users.get(user).sort(Comparator.comparing(String::length));
             settingsProperties.addUser(users);
+            storageHelper.creatingRecordedPath(user);
         } catch (IOException e) {
             throw new InternalServerErrorException();
         }
