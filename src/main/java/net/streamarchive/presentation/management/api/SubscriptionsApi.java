@@ -51,7 +51,7 @@ public class SubscriptionsApi {
      * @param quality list of streams quality
      */
     @RequestMapping(value = "/{user}", method = RequestMethod.PUT)
-    public void addSubscription(@PathVariable("user") String user, @RequestParam("quality") List<String> quality) {
+    public void addSubscription(@PathVariable("user") String user, @RequestBody List<String> quality) {
         try {
             subscriptionRequest.sendSubscriptionRequest(user);
             Map<String, List<String>> users = new HashMap<>();
