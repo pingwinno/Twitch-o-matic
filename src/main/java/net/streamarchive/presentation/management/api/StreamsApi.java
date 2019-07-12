@@ -72,7 +72,7 @@ public class StreamsApi {
      */
 
     @RequestMapping(method = RequestMethod.PUT)
-    public void startRecord(AddRequestModel requestModel) {
+    public void startRecord(@RequestBody AddRequestModel requestModel) {
         StreamDataModel streamMetadata = null;
 
         try {
@@ -174,7 +174,7 @@ public class StreamsApi {
      * @see StreamDataModel for see required fields
      */
     @RequestMapping(value = "/{user}/{uuid}", method = RequestMethod.PATCH)
-    public void updateStream(@PathVariable("uuid") String uuid, @PathVariable("user") String user, StreamDataModel dataModel) {
+    public void updateStream(@PathVariable("uuid") String uuid, @PathVariable("user") String user, @RequestBody StreamDataModel dataModel) {
         StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
         streamDocumentModel.set_id(uuid);
         streamDocumentModel.setGame(dataModel.getGame());
