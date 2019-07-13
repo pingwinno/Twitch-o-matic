@@ -22,9 +22,10 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .antMatcher("/**").authorizeRequests()
-                .antMatchers("/login**", "/handler/**", "/callback/", "/webjars/**", "/error**", "/status")
-                .permitAll().and().antMatcher("/api/**").authorizeRequests()
+                .antMatcher("/**")
+                .authorizeRequests()
+                .antMatchers("/login**", "/handler/**", "/callback/", "/webjars/**", "/error**")
+                .permitAll()
                 .anyRequest()
                 .authenticated().and().logout().logoutSuccessUrl("/").clearAuthentication(true).and().csrf().disable();
     }
