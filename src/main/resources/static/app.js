@@ -73,7 +73,11 @@ let app = new Vue({
         this.getStorage();
         this.getStatuses();
 
-        let stompClient = Stomp.client("ws://localhost:8080/status");
+        let loc = window.location, wsUri;
+        if (loc.protocol === "https:") wsUri = "wss:"; else wsUri = "ws:";
+        wsUri += "//" + loc.host + loc.pathname + 'status';
+
+        let stompClient = Stomp.client(wsUri);
         stompClient.connect({}, () =>
             stompClient.subscribe('/topic/status', message =>
                 app.updateStatus(JSON.parse(message.body)))
