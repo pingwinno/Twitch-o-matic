@@ -1,8 +1,9 @@
 <!DOCTYPE html>
-<html>
+<!--suppress HtmlUnknownTag -->
+<html lang="ru">
 <head>
     <title>Management and statuses</title>
-    <link href="logo.png" rel="icon">
+    <link rel="icon" href="./logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
@@ -12,457 +13,322 @@
 <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="./stomp.js"></script>
+
+
 <div id="app">
     <v-app dark>
-        <v-container>
-            <v-tabs dark color="cyan" slider-color="yellow">
-                <v-tab>Management</v-tab>
-                <v-tab-item>
-                    <v-card flat>
-                        <v-card-text>
-                            <v-select v-model="streamer" v-on:change="initialize" :items="streamers"
-                                      label="Streamer"></v-select>
-                            <div>
-                                <v-toolbar flat>
-                                    <v-toolbar-title>Streams</v-toolbar-title>
-                                    <v-divider class="mx-2" inset vertical></v-divider>
-                                    <v-spacer></v-spacer>
-                                    <v-text-field
-                                            v-model="search"
-                                            append-icon="search"
-                                            label="Search"
-                                            single-line
-                                            hide-details
-                                    ></v-text-field>
-                                    <v-spacer></v-spacer>
-                                    <v-btn color="primary" @click="openAddition" dark class="mb-2">Add</v-btn>
-                                    <v-btn color="primary" dark @click="openValidation" class="mb-2">Validate</v-btn>
-                                </v-toolbar>
-                                <v-data-table
-                                        hide-actions
-                                        :search="search"
-                                        :headers="headers"
-                                        :items="streams"
-                                        :pagination.sync="pagination"
-                                        class="elevation-1"
-                                >
-                                    <template v-slot:items="props">
-                                        <td width="25%">{{ props.item._id }}</td>
-                                        <td width="25%">{{ props.item.title }}</td>
-                                        <td width="15%">{{ props.item.date | date }}</td>
-                                        <td width="15%">{{ props.item.game }}</td>
-                                        <td width="10%">
-                                            <v-icon small @click="openEdition(props.item)">edit</v-icon>
-                                            <v-icon small @click="openDeletion(props.item)" class="mx-1">delete</v-icon>
-                                            <v-icon small @click="openValidation(props.item)">refresh</v-icon>
-                                        </td>
-                                    </template>
-                                    <template v-slot:no-data>
-                                        <v-btn color="primary" @click="initialize">Reset</v-btn>
-                                    </template>
-                                </v-data-table>
-                                <div class="text-xs-center pt-2">
-                                    <v-pagination v-model="pagination.page" :length="pages"/>
-                                </div>
-                            </div>
-                        </v-card-text>
-                    </v-card>
-                </v-tab-item>
+        <v-toolbar color="cyan" dark tabs>
+            <v-toolbar-title>Management</v-toolbar-title>
+            <template v-slot:extension>
+                <v-tabs v-model="tabs" centered color="cyan" slider-color="yellow">
+                    <v-tab href="#server">Server</v-tab>
+                    <v-tab href="#streams">Streams</v-tab>
+                    <v-tab href="#statuses">Statuses</v-tab>
+                </v-tabs>
+            </template>
+        </v-toolbar>
 
-                <v-tab>Status</v-tab>
-                <v-tab-item>
-                    <v-card flat>
-                        <v-card-text>
+        <v-tabs-items v-model="tabs">
+            <!-- Server tab -->
+            <v-tab-item value="server">
+                <v-card flat>
+                    <v-card-text>
+                        <v-container fluid grid-list-md>
+                            <v-layout row wrap>
+                                <v-flex xs12>
+                                    <v-btn depressed large color="primary" @click="openSubscribeModal">
+                                        Add streamer
+                                    </v-btn>
+                                </v-flex>
+                                <v-flex xs12 md6 lg3 v-for="item of storage" :key="item.user">
+                                    <v-card>
+                                        <v-card-title><h2>{{item.user}}</h2></v-card-title>
+                                        <v-card-text>
+                                            Used space: <i>{{item.totalStorage - item.freeStorage}} GB</i> <br>
+                                            Free space: {{item.freeStorage}} GB<br>
+                                            Total space: {{item.totalStorage}} GB<br>
+                                            Quality:
+                                            <span v-for="(item2, index) in streamers[item.user]">
+                                                {{item2 + (index !== streamers[item.user].length-1 ? ", " : "") }}
+                                            </span>
+                                        </v-card-text>
+                                        <v-card-actions>
+                                            <v-spacer></v-spacer>
+                                            <v-btn color="error" flat @click="openUnsubscribeModal(item.user)">
+                                                Delete subscription
+                                                <v-icon>delete</v-icon>
+                                            </v-btn>
+                                        </v-card-actions>
+                                        <v-progress-linear :value="100-(item.freeStorage/item.totalStorage)*100">
+                                        </v-progress-linear>
+                                    </v-card>
+                                </v-flex>
+                            </v-layout>
+                        </v-container>
+                    </v-card-text>
+                </v-card>
+            </v-tab-item>
+
+            <!-- Streams tab -->
+            <v-tab-item value="streams">
+                <v-card flat>
+                    <v-card-text>
+                        <v-container fluid grid-list-md>
+                            <v-select v-model="streamer"
+                                      :items="Object.keys(this.streamers)"
+                                      label="Streamer"
+                            ></v-select>
                             <v-toolbar flat>
                                 <v-toolbar-title>Streams</v-toolbar-title>
                                 <v-divider class="mx-2" inset vertical></v-divider>
                                 <v-spacer></v-spacer>
-                                <v-text-field
-                                        v-model="searchStatus"
-                                        append-icon="search"
-                                        label="Search"
-                                        single-line
-                                        hide-details
-                                ></v-text-field>
+                                <v-text-field v-model="search" append-icon="search"
+                                              label="Search" single-line hide-details>
+                                </v-text-field>
                                 <v-spacer></v-spacer>
+                                <v-btn color="primary" @click="openAddStreamModal">Add</v-btn>
+                                <v-btn color="primary" @click="openValidateStreamModal">Validate</v-btn>
                             </v-toolbar>
-                            <v-data-table :search="searchStatus" :headers="headersStatus" :items="statuses"
-                                          class="elevation-1">
+                            <v-data-table hide-actions :search="search" :headers="headers" :items="streams"
+                                          :pagination.sync="pagination" class="elevation-1">
                                 <template v-slot:items="props">
-                                    <td :class="background(props.item.state)">
-                                        {{ props.item._id }}
-                                    </td>
-                                    <td :class="background(props.item.state)">
-                                        {{ props.item.user }}
-                                    </td>
-                                    <td :class="background(props.item.state)">
-                                        {{ props.item.vodId }}
-                                    </td>
-                                    <td :class="background(props.item.state)">
-                                        {{ props.item.date }}
-                                    </td>
-                                    <td :class="background(props.item.state)">
-                                        {{ props.item.startedBy }}
-                                    </td>
-                                    <td :class="background(props.item.state)">
-                                        {{ props.item.state }}
-                                    </td>
-                                    <td :class="background(props.item.state)">
-                                        <v-icon @click="openValidation(props.item)">refresh</v-icon>
-                                        <v-icon :disabled="props.item.state !== 'RUNNING'"
-                                                @click="openStopping(props.item._id)">
-                                            stop
+                                    <td width="25%">{{ props.item._id }}</td>
+                                    <td width="25%">{{ props.item.title }}</td>
+                                    <td width="15%">{{ props.item.date | date }}</td>
+                                    <td width="15%">{{ props.item.game }}</td>
+                                    <td width="10%">
+                                        <v-icon small @click="openEditStreamModal(props.item)">edit</v-icon>
+                                        <v-icon small class="mx-1" @click="openDeleteStreamModal(props.item._id)">
+                                            delete
                                         </v-icon>
+                                        <v-icon small @click="openValidateStreamModal(props.item)">refresh</v-icon>
                                     </td>
-                                </template>
-                                <template v-slot:no-data>
-                                    <v-btn color="primary" @click="initialize">
-                                        Reset
-                                    </v-btn>
                                 </template>
                             </v-data-table>
-                        </v-card-text>
-                    </v-card>
-                </v-tab-item>
-            </v-tabs>
-        </v-container>
+                            <div class="text-xs-center pt-2">
+                                <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
+                            </div>
+                        </v-container>
+                    </v-card-text>
+                </v-card>
+            </v-tab-item>
 
-        <v-dialog v-model="editDialog" max-width="500px">
-            <template v-slot:activator="{ on }">
-                <input type="hidden" v-on="on"/>
-            </template>
+            <!-- Statuses tab -->
+            <v-tab-item value="statuses">
+                <v-card flat>
+                    <v-card-text>
+
+                        <v-toolbar flat>
+                            <v-toolbar-title>Streams</v-toolbar-title>
+                            <v-divider class="mx-2" inset vertical></v-divider>
+                            <v-spacer></v-spacer>
+                            <v-text-field
+                                    v-model="searchStatus"
+                                    append-icon="search"
+                                    label="Search"
+                                    single-line
+                                    hide-details
+                            ></v-text-field>
+                            <v-spacer></v-spacer>
+                        </v-toolbar>
+                        <v-data-table :search="searchStatus" :headers="headersStatus" :items="statuses"
+                                      class="elevation-1">
+                            <template v-slot:items="props">
+                                <td :class="background(props.item.state)">{{ props.item.uuid }}</td>
+                                <td :class="background(props.item.state)">{{ props.item.user }}</td>
+                                <td :class="background(props.item.state)">{{ props.item.vodId }}</td>
+                                <td :class="background(props.item.state)">{{ props.item.date }}</td>
+                                <td :class="background(props.item.state)">{{ props.item.startedBy }}</td>
+                                <td :class="background(props.item.state)">{{ props.item.state }}</td>
+                                <td :class="background(props.item.state)">
+                                    <v-icon @click="openValidateStreamModal(props.item)">refresh</v-icon>
+                                    <v-icon :disabled="props.item.state !== 'RUNNING'"
+                                            @click="stopTask(props.item.uuid)">
+                                        stop
+                                    </v-icon>
+                                </td>
+                            </template>
+                        </v-data-table>
+
+                    </v-card-text>
+                </v-card>
+            </v-tab-item>
+        </v-tabs-items>
+
+        <v-dialog v-model="editStreamModal" max-width="500">
             <v-card>
-                <v-card-title>
-                    <span class="headline">Edit</span>
-                </v-card-title>
+                <v-card-title class="headline">Edit stream</v-card-title>
                 <v-card-text>
-                    <v-container grid-list-md>
-                        <v-layout wrap>
-                            <v-flex xs12>
-                                <v-text-field v-model="editedData.title" label="Title"></v-text-field>
-                            </v-flex>
-                            <v-flex xs12>
-                                <v-text-field v-model="editedData.date" label="Date"></v-text-field>
-                            </v-flex>
-                            <v-flex xs12>
-                                {{ editedData.date | date }}
-                            </v-flex>
-                            <v-flex xs12>
-                                <v-text-field v-model="editedData.game" label="Genre"></v-text-field>
-                            </v-flex>
-                        </v-layout>
-                    </v-container>
+                    <v-text-field
+                            v-model="editStreamForm.title"
+                            label="Title"
+                            hint="Title of stream"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-text-field
+                            v-model="editStreamForm.game"
+                            label="Game"
+                            hint="Genre of stream"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-text-field
+                            v-model="editStreamForm.date"
+                            label="Date"
+                            hint="Date of stream"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-alert :value="editStreamError" type="error">Form is incorrect.</v-alert>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
-                    <v-btn color="blue darken-1" flat @click="edit">Save</v-btn>
+                    <v-btn color="darken-1" depressed @click="cancel">Cancel</v-btn>
+                    <v-btn color="success darken-1" depressed @click="saveStream">
+                        Save
+                    </v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
-
-        <v-dialog v-model="addDialog" max-width="500px">
-            <template v-slot:activator="{ on }">
-                <input type="hidden" v-on="on"/>
-            </template>
+        <v-dialog v-model="deleteStreamModal" max-width="500">
             <v-card>
-                <v-card-title>
-                    <span class="headline">Add</span>
-                </v-card-title>
+                <v-card-title class="headline">Delete stream</v-card-title>
                 <v-card-text>
-                    <v-container grid-list-md>
-                        <v-layout wrap>
-                            <v-flex xs12>
-                                <v-radio-group label="Type" v-model="addData.type" :mandatory="false">
-                                    <v-radio label="Vod" value="vod" checked></v-radio>
-                                    <v-radio label="User" value="user"></v-radio>
-                                </v-radio-group>
-                            </v-flex>
-                            <v-flex xs12>
-                                <v-checkbox v-model="addData.skipMuted" label="Skip muted"></v-checkbox>
-                            </v-flex>
-                            <v-flex xs12>
-                                <v-text-field v-model="addData.value" label="Value"></v-text-field>
-                            </v-flex>
-                        </v-layout>
-                    </v-container>
+                    You are going to delete stream with uuid:<br>{{deleteStreamUUID}}
+                    <v-checkbox
+                            v-model="deleteStreamMedia"
+                            label="Delete media"
+                            hint="Delete stream from hard drive"
+                            persistent-hint
+                    ></v-checkbox>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
-                    <v-btn color="blue darken-1" flat @click="add">Add</v-btn>
+                    <v-btn color="darken-1" depressed @click="cancel">Cancel</v-btn>
+                    <v-btn color="error darken-1" depressed @click="deleteStream">Delete</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
-
-        <v-dialog v-model="validateDialog" max-width="500px">
-            <template v-slot:activator="{ on }">
-                <input type="hidden" v-on="on"/>
-            </template>
+        <v-dialog v-model="addStreamModal" max-width="500">
             <v-card>
-                <v-card-title>
-                    <span class="headline">Validation</span>
-                </v-card-title>
+                <v-card-title class="headline">Add stream</v-card-title>
                 <v-card-text>
-                    <v-container grid-list-md>
-                        <v-layout wrap>
-                            <v-flex xs12>
-                                <v-text-field label="id" v-model="validateData._id"></v-text-field>
-                            </v-flex>
-                            <v-flex xs12>
-                                <v-text-field v-model="validateData.vodId" label="vod"></v-text-field>
-                            </v-flex>
-                            <v-flex xs12>
-                                <v-checkbox v-model="validateData.skipMuted" label="Skip muted"></v-checkbox>
-                            </v-flex>
-                        </v-layout>
-                    </v-container>
+                    <v-select
+                            v-model="addStreamForm.type"
+                            :items="['user', 'vod']"
+                            label="Type"
+                            hint="user - current stream, vod - past"
+                            persistent-hint
+                    ></v-select>
+                    <v-text-field
+                            v-model="addStreamForm.value"
+                            label="Value"
+                            hint="Vod value or streamer username"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-layout row wrap>
+                        <v-flex xs1>
+                            <v-checkbox
+                                    v-model="addStreamFormOptional.enableWriteTo"
+                            ></v-checkbox>
+                        </v-flex>
+                        <v-flex xs11>
+                            <v-text-field
+                                    v-model="addStreamFormOptional.writeTo"
+                                    label="Streamer"
+                                    hint="Add stream to special streamer. Activate checkbox to unlock"
+                                    persistent-hint
+                                    :disabled="!addStreamFormOptional.enableWriteTo"
+                            ></v-text-field>
+                        </v-flex>
+                    </v-layout>
+                    <v-alert :value="addStreamError" type="error">Form is incorrect.</v-alert>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
-                    <v-btn color="blue darken-1" flat @click="validate">Validate</v-btn>
+                    <v-btn color="darken-1" depressed @click="cancel">Cancel</v-btn>
+                    <v-btn color="primary darken-1" depressed @click="addStream">Add</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
-
-        <v-dialog v-model="deleteDialog" max-width="500px">
-            <template v-slot:activator="{ on }">
-                <input type="hidden" v-on="on"/>
-            </template>
+        <v-dialog v-model="validateStreamModal" max-width="500">
             <v-card>
-                <v-card-title>
-                    <span class="headline">Delete</span>
-                </v-card-title>
+                <v-card-title class="headline">Validate stream</v-card-title>
                 <v-card-text>
-                    <v-container grid-list-md>
-                        <v-layout wrap>
-                            <v-flex xs12> Are you sure to delete stream with id: {{ deleteData._id }}.</v-flex>
-                            <v-flex xs12>
-                                <v-checkbox v-model="deleteData.deleteMedia" label="Delete media"></v-checkbox>
-                            </v-flex>
-                        </v-layout>
-                    </v-container>
+                    <v-text-field
+                            v-model="validateStreamForm.uuid"
+                            label="UUID"
+                            hint="Stream database ID"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-text-field
+                            v-model="validateStreamForm.value"
+                            label="VOD"
+                            hint="Vod value"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-checkbox
+                            v-model="validateStreamForm.skipMuted"
+                            label="Skip muted"
+                            hint="Skip muted pieces"
+                            persistent-hint
+                    ></v-checkbox>
+                    <v-alert :value="validateStreamError" type="error">Form is incorrect.</v-alert>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
-                    <v-btn color="blue darken-1" flat @click="deleteItem">Delete</v-btn>
+                    <v-btn color="darken-1" depressed @click="cancel">Cancel</v-btn>
+                    <v-btn color="warning darken-1" depressed @click="validateStream">Validate</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
-
-        <v-dialog v-model="stopDialog" max-width="500px">
-            <template v-slot:activator="{ on }">
-                <input type="hidden" v-on="on"/>
-            </template>
+        <v-dialog v-model="subscribeModal" max-width="500">
             <v-card>
-                <v-card-title>
-                    <span class="headline">Stop?</span>
+                <v-card-title class="headline">Enter username and choose quality
                 </v-card-title>
                 <v-card-text>
-                    <v-container grid-list-md>
-                        <v-layout wrap>
-                            <v-flex xs12> Are you sure to stop stream with id: {{ stopUUID }}.</v-flex>
-                        </v-layout>
-                    </v-container>
+                    <v-text-field
+                            v-model="subscribeForm.username"
+                            label="Streamer"
+                            hint="Streamer username"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-text-field
+                            v-model="subscribeForm.quality"
+                            label="Quality"
+                            hint="Downloading quality. Enter a comma-separated"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-alert :value="subscribeError" type="error">
+                        Form is incorrect.
+                    </v-alert>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer></v-spacer>
-                    <v-btn color="blue darken-1" flat @click="close">Cancel</v-btn>
-                    <v-btn color="blue darken-1" flat @click="stop">Stop</v-btn>
+                    <v-btn flat @click="cancel">Cancel</v-btn>
+                    <v-btn flat @click="subscribe">Add subscription</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+        <v-dialog v-model="unsubscribeModal" max-width="290">
+            <v-card>
+                <v-card-title class="headline">Accept deleting</v-card-title>
+                <v-card-text>Are you sure you want to delete {{unsubscribeTarget}} from
+                    subscriptions?
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="darken-1" depressed @click="cancel">No, cancel
+                    </v-btn>
+                    <v-btn color="error darken-1" depressed @click="unsubscribe">
+                        Yes, delete
+                    </v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
     </v-app>
 </div>
 
-<script>
-    new Vue({
-        el: '#app',
-        data: {
-            BASE_URL: window.location.origin,
-            search: "",
-            streamers: [],
-            streamer: "",
-            headers: [
-                {text: "id", align: "left", value: "_id"},
-                {text: "Title", value: "title"},
-                {text: "Date", value: "date"},
-                {text: "Genre", value: "game"},
-                {text: "Actions", value: "name", sortable: false}
-            ],
-            streams: [],
-            pagination: {
-                rowsPerPage: 25,
-                descending: true,
-                sortBy: "date"
-            },
-            pages: 0,
-
-            searchStatus: "",
-            headersStatus: [
-                {text: "id", align: "left", value: "_id"},
-                {text: "User", value: "user"},
-                {text: "Vod", value: "vodId"},
-                {text: "Date", value: "date"},
-                {text: "Started by", value: "startedBy"},
-                {text: "State", value: "state"},
-                {sortable: false}
-            ],
-            statuses: [],
-
-            addDialog: false,
-            addData: {
-                type: "vod",
-                value: "",
-                skipMuted: false
-            },
-
-            validateDialog: false,
-            validateData: {
-                _id: "",
-                vodId: "",
-                skipMuted: false
-            },
-
-            editDialog: false,
-            editedData: {
-                _id: "",
-                title: "",
-                date: 0,
-                game: ""
-            },
-
-            deleteDialog: false,
-            deleteData: {
-                _id: "",
-                deleteMedia: false
-            },
-
-            stopDialog: false,
-            stopUUID: ""
-        },
-        filters: {
-            date(value) {
-                if (!value) return "";
-                let date = new Date();
-                date.setTime(value);
-                let year = date.getFullYear();
-                let month = date.getMonth() + 1;
-                let day = date.getDate();
-                return `${day < 10 ? 0 : ""}${day}.${month < 10 ? 0 : ""}${month}.${year}`;
-            }
-        },
-        created() {
-            this.$http.get(this.BASE_URL + "/database/users").then(response => {
-                this.streamers = response.body;
-                this.streamer = response.body[0];
-                this.initialize();
-            });
-            this.$http.get(this.BASE_URL + "/api/v1/status_list").then(r = > {
-                this.statuses = r.body;
-            });
-            setInterval(() => {
-                this.$http.get(this.BASE_URL + "/api/v1/status_list").then(r = > {
-                    this.statuses = r.body;
-                });
-            }, 1000);
-        },
-        methods: {
-            initialize() {
-                this.$http.get(this.BASE_URL + "/database/streams/" + this.streamer).then(response => {
-                    this.streams = response.body;
-                    this.pagination.totalItems = response.body.length;
-                    if (this.pagination.rowsPerPage == null || this.pagination.totalItems == null) this.pages = 0;
-                    else this.pages = Math.ceil(this.pagination.totalItems / this.pagination.rowsPerPage);
-                });
-            },
-
-            openEdition(item) {
-                this.editedData = Object.assign({}, item);
-                this.editDialog = true;
-            },
-            edit() {
-                this.$http
-                    .post(`${this.BASE_URL}/database/update/${this.streamer}/${this.editedData._id}`, this.editedData)
-                    .then(() => {
-                        this.initialize();
-                        this.close();
-                    });
-            },
-            openDeletion(item) {
-                this.deleteData = Object.assign({}, {_id: item._id, deleteMedia: false});
-                this.deleteDialog = true;
-            },
-            deleteItem() {
-                this.$http
-                    .delete(`${this.BASE_URL}/database/${this.streamer}/${this.deleteData._id}`, {
-                        params: {deleteMedia: this.deleteData.deleteMedia}
-                    })
-                    .then(() => {
-                        this.initialize();
-                        this.close();
-                    });
-            },
-            openAddition() {
-                this.addData = {type: "vod", value: "", skipMuted: false};
-                this.addDialog = true;
-            },
-            add() {
-                this.$http.post(this.BASE_URL + "/database/add", this.addData).then();
-                this.initialize();
-                this.close();
-            },
-            openValidation(item) {
-                this.validateData = Object.assign(
-                    {},
-                    {
-                        _id: item !== undefined ? item._id : "",
-                        vodId: item.vodId ? item.vodId : "",
-                        skipMuted: false
-                    }
-                );
-                this.validateDialog = true;
-            },
-            validate() {
-                if (this.validateData.vodId.trim() !== "" || this.validateData._id.trim() !== "")
-                    this.$http.post(this.BASE_URL + "/database/validate", this.validateData).then(() => {
-                        this.close();
-                    });
-            },
-            close() {
-                this.editDialog = false;
-                this.validateDialog = false;
-                this.addDialog = false;
-                this.deleteDialog = false;
-                this.stopDialog = false;
-            },
-            openStopping(_id) {
-                this.stopUUID = _id;
-                this.stopDialog = true;
-            },
-            stop() {
-                this.$http.delete(this.BASE_URL + "/api/v1/status_list/" + this.stopUUID).then(() = > {
-                    this.close();
-                });
-            },
-            background(value) {
-                switch (value) {
-                    case "COMPLETE":
-                        return "green";
-                    case "INITIALIZE":
-                        return "yellow";
-                    case "RUNNING":
-                        return "blue";
-                    case "ERROR":
-                        return "red";
-                    case "STOPPED":
-                        return "black";
-                }
-            }
-        }
-    })
-</script>
+<script src="./app.js"></script>
 </body>
 </html>
