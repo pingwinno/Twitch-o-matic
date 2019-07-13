@@ -13,6 +13,10 @@
 <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="./stomp.js"></script>
+
+
 <div id="app">
     <v-app dark>
         <v-toolbar color="cyan" dark tabs>
@@ -27,7 +31,7 @@
         </v-toolbar>
 
         <v-tabs-items v-model="tabs">
-            <!-- Storage and etc tab -->
+            <!-- Server tab -->
             <v-tab-item value="server">
                 <v-card flat>
                     <v-card-text>
@@ -48,15 +52,12 @@
                                                         hint="Streamer username"
                                                         persistent-hint
                                                 ></v-text-field>
-                                                <v-select
+                                                <v-text-field
                                                         v-model="addData.quality"
-                                                        :items="quality"
-                                                        :menu-props="{ maxHeight: '300' }"
                                                         label="Quality"
-                                                        multiple
-                                                        hint="Downloading quality"
+                                                        hint="Downloading quality. Enter a comma-separated"
                                                         persistent-hint
-                                                ></v-select>
+                                                ></v-text-field>
                                                 <v-alert :value="subscriptionAlert" type="error">
                                                     Form is incorrect.
                                                 </v-alert>
@@ -134,7 +135,7 @@
                                 </v-text-field>
                                 <v-spacer></v-spacer>
                                 <v-btn color="primary" @click="openAddStreamModal">Add</v-btn>
-                                <v-btn color="primary" @click="openValidateStreamModal(null)">Validate</v-btn>
+                                <v-btn color="primary" @click="openValidateStreamModal">Validate</v-btn>
                             </v-toolbar>
                             <v-data-table hide-actions :search="search" :headers="headers" :items="streams"
                                           :pagination.sync="pagination" class="elevation-1">
@@ -148,7 +149,7 @@
                                         <v-icon small class="mx-1" @click="openDeleteStreamModal(props.item._id)">
                                             delete
                                         </v-icon>
-                                        <v-icon small @click="openValidateStreamModal(props.item._id)">refresh</v-icon>
+                                        <v-icon small @click="openValidateStreamModal(props.item)">refresh</v-icon>
                                     </td>
                                 </template>
                             </v-data-table>
@@ -292,9 +293,45 @@
                     </v-card-text>
                 </v-card>
             </v-tab-item>
+
+            <!-- Statuses tab -->
             <v-tab-item value="statuses">
                 <v-card flat>
-                    <v-card-text>Hello world</v-card-text>
+                    <v-card-text>
+
+                        <v-toolbar flat>
+                            <v-toolbar-title>Streams</v-toolbar-title>
+                            <v-divider class="mx-2" inset vertical></v-divider>
+                            <v-spacer></v-spacer>
+                            <v-text-field
+                                    v-model="searchStatus"
+                                    append-icon="search"
+                                    label="Search"
+                                    single-line
+                                    hide-details
+                            ></v-text-field>
+                            <v-spacer></v-spacer>
+                        </v-toolbar>
+                        <v-data-table :search="searchStatus" :headers="headersStatus" :items="statuses"
+                                      class="elevation-1">
+                            <template v-slot:items="props">
+                                <td :class="background(props.item.state)">{{ props.item.uuid }}</td>
+                                <td :class="background(props.item.state)">{{ props.item.user }}</td>
+                                <td :class="background(props.item.state)">{{ props.item.vodId }}</td>
+                                <td :class="background(props.item.state)">{{ props.item.date }}</td>
+                                <td :class="background(props.item.state)">{{ props.item.startedBy }}</td>
+                                <td :class="background(props.item.state)">{{ props.item.state }}</td>
+                                <td :class="background(props.item.state)">
+                                    <v-icon @click="openValidateStreamModal(props.item)">refresh</v-icon>
+                                    <v-icon :disabled="props.item.state !== 'RUNNING'"
+                                            @click="stopTask(props.item.uuid)">
+                                        stop
+                                    </v-icon>
+                                </td>
+                            </template>
+                        </v-data-table>
+
+                    </v-card-text>
                 </v-card>
             </v-tab-item>
         </v-tabs-items>

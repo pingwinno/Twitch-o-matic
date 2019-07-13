@@ -1,7 +1,7 @@
 let app = new Vue({
     el: '#app',
     data: {
-        tabs: "server",
+        tabs: "streams",
         streamers: {},
         storage: [],
         streamer: "",
@@ -47,7 +47,19 @@ let app = new Vue({
         // validate
         validateStreamModal: false,
         validateStreamForm: {},
-        validateStreamError: false
+        validateStreamError: false,
+        // Status tab
+        searchStatus: "",
+        headersStatus: [
+            {text: "uuid", align: "left", value: "uuid"},
+            {text: "User", value: "user"},
+            {text: "Vod", value: "vodId"},
+            {text: "Date", value: "date"},
+            {text: "Started by", value: "startedBy"},
+            {text: "State", value: "state"},
+            {sortable: false}
+        ],
+        statuses: [],
     },
     filters: {
         date(value) {
@@ -63,19 +75,41 @@ let app = new Vue({
             this.streamer = Object.keys(this.streamers)[0];
         });
         this.getStorage();
+        this.getStatuses();
+
+        let u = this.updateStatus;
+        let stompClient = Stomp.client("ws://localhost:8080/status");
+        stompClient.connect({}, function () {
+            stompClient.subscribe('/topic/status', message => {
+                us(JSON.parse(message.body));
+            });
+        });
     },
     watch: {
         streamer() {
             this.getStreams();
+        },
+        streamers() {
+            // if (this.streamers.indexOf(this.streamer) === -1) this.streamer = this.streamers[0];
         }
     },
     methods: {
+        updateStatus(element) {
+            function getIndex() {
+                for (let i = 0; i < app.statuses.length; i += 1) if (app.statuses[i].uuid === element.uuid) return i;
+                return -1;
+            }
+
+            let index = getIndex();
+            let statuses = this.statuses;
+            if (index !== -1) statuses[index] = element;
+            else statuses.push(element);
+            this.statuses = [...statuses];
+        },
         // Server tab
         // Server status api
         getStorage() {
-            this.$http.get('/api/v1/server/storage').then(response => {
-                this.storage = response.data;
-            });
+            this.$http.get('/api/v1/server/storage').then(response => this.storage = response.data);
         },
         importData() {
             this.$http.get('/api/v1/server/import');
@@ -85,15 +119,15 @@ let app = new Vue({
         },
         // Subscription api
         getStreamers() {
-            this.$http.get('/api/v1/subscriptions').then(response => {
-                this.streamers = response.data;
-            });
+            this.$http.get('/api/v1/subscriptions').then(response => this.streamers = response.data);
         },
         addSubscription() {
-            if (this.addData.quality.length === 0 || !this.addData.username) {
-                this.subscriptionAlert = true;
-            } else {
-                this.$http.put('/api/v1/subscriptions/' + this.addData.username, this.addData.quality).then(() => {
+            if (!this.addData.quality || !this.addData.username) this.subscriptionAlert = true;
+            else {
+                this.$http.put(
+                    '/api/v1/subscriptions/' + this.addData.username,
+                    this.addData.quality.split(',').map(item => item.trim()).filter(item => item)
+                ).then(() => {
                     this.getStreamers();
                     this.getStorage();
                 });
@@ -181,12 +215,12 @@ let app = new Vue({
             } else this.addStreamError = true;
         },
         // Validate
-        openValidateStreamModal(uuid) {
+        openValidateStreamModal(item) {
             this.validateStreamModal = true;
             this.validateStreamForm = {
                 type: "vod",
-                value: null,
-                uuid: uuid,
+                value: !!item && !!item.vodId ? item.vodId : null,
+                uuid: !!item ? item._id || item.uuid : null,
                 skipMuted: false
             };
         },
@@ -199,12 +233,37 @@ let app = new Vue({
                 });
             } else this.validateStreamError = true;
         },
+
+        // Status tab
+        getStatuses() {
+            this.$http.get('/api/v1/status_list').then(response => {
+                this.statuses = response.data;
+            });
+        },
+        stopTask(uuid) {
+            this.$http.delete('/api/v1/status_list/' + uuid).then(() => {
+            });
+        },
         // Cancel
         cancel() {
             this.editStreamModal = false;
             this.deleteStreamModal = false;
             this.addStreamModal = false;
             this.validateStreamModal = false;
+        },
+        background(value) {
+            switch (value) {
+                case "COMPLETE":
+                    return "green";
+                case "INITIALIZE":
+                    return "yellow";
+                case "RUNNING":
+                    return "blue";
+                case "ERROR":
+                    return "red";
+                case "STOPPED":
+                    return "black";
+            }
         }
     }
 });
