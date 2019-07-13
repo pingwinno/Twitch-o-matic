@@ -42,12 +42,13 @@ public class StorageHelper {
         }
         return storageStates;
     }
-    private boolean creatingRecordedPath() throws IOException {
-        boolean pass = true;
-        for (String user : settingsProperties.getUsers().keySet()) {
-            pass = (Files.createDirectories(Paths.get(settingsProperties.getRecordedStreamPath() + user)) != null);
+
+    public boolean creatingRecordedPath(String user) throws IOException {
+
+        if (!Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + user))) {
+            return (Files.createDirectories(Paths.get(settingsProperties.getRecordedStreamPath() + user)) != null);
         }
-        return pass;
+        return true;
     }
 
     @PostConstruct
@@ -57,7 +58,7 @@ public class StorageHelper {
             if (!Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + user)) && !Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + user))) {
                 log.info("Folder not exist!");
                 log.info("Try create folder...");
-                if (!creatingRecordedPath()) {
+                if (!creatingRecordedPath(user)) {
                     pass = false;
                 } else {
                     log.info("Success!");
