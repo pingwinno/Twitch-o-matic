@@ -102,7 +102,7 @@ public class VodRecorder implements RecordThread {
             streamDocumentModel.setGame(streamDataModel.getGame());
 
             try {
-                for (String quality : settingsProperties.getUsers().get(streamDataModel.getUser())) {
+                for (String quality : settingsProperties.getUser(streamDataModel.getUser()).getQualities()) {
                     Path streamPath = Paths.get(streamFolderPath + "/" + quality);
                     if (!Files.exists(streamPath)) {
                         Files.createDirectories(streamPath);
@@ -119,17 +119,21 @@ public class VodRecorder implements RecordThread {
 
             dataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
             vodId = streamDataModel.getVodId();
-            executorService = Executors.newFixedThreadPool(settingsProperties.getUsers().get(streamDataModel.getUser()).size());
-            for (String quality : settingsProperties.getUsers().get(streamDataModel.getUser())) {
+            executorService = Executors.newFixedThreadPool(settingsProperties.getUser(streamDataModel.getUser()).getQualities().size());
+            for (String quality : settingsProperties.getUser(streamDataModel.getUser()).getQualities()) {
                 StreamThread streamThread = new StreamThread();
                 Runnable runnable = () -> {
                     try {
                         synchronized (this) {
                             mainPlaylist = streamThread.start(quality);
                         }
-                    } catch (IOException | URISyntaxException | InterruptedException | StreamNotFoundExeption e) {
+                    } catch (IOException | URISyntaxException | StreamNotFoundExeption e) {
                         log.error("Vod downloader initialization failed. ", e);
                         recordStatusList.changeState(uuid, State.ERROR);
+                        stop();
+                    } catch (InterruptedException e) {
+                        log.error("Vod downloader manually stopped. ", e);
+                        recordStatusList.changeState(uuid, State.STOPPED);
                         stop();
                     }
                 };
@@ -138,36 +142,33 @@ public class VodRecorder implements RecordThread {
 
             executorService.shutdown();
             executorService.awaitTermination(10, TimeUnit.MINUTES);
+            if (mainPlaylist != null) {
+                log.debug("Download preview");
+                try {
+                    downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl());
 
-            log.debug("Download preview");
-            try {
-                downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl());
+                } catch (StreamNotFoundExeption e) {
+                    int streamLength = mainPlaylist.size() / 2;
 
-            } catch (StreamNotFoundExeption e) {
-                int streamLength = mainPlaylist.size() / 2;
+                    commandLineExecutor.execute("ffmpeg", "-i", streamFolderPath + "/" + streamLength + ".ts", "-s",
+                            "640x360", "-vframes", "1", streamFolderPath + "/" + settingsProperties.getUser(streamDataModel.getUser()).getQualities()
+                                    .get(settingsProperties.getUser(streamDataModel.getUser()).getQualities().size() - 1) + "/preview.jpg", "-y");
+                }
 
-                commandLineExecutor.execute("ffmpeg", "-i", streamFolderPath + "/" + streamLength + ".ts", "-s",
-                        "640x360", "-vframes", "1", streamFolderPath + "/" + settingsProperties.getUsers().
-                                get(streamDataModel.getUser()).get(settingsProperties.getUsers().
-                                get(streamDataModel.getUser()).size() - 1) + "/preview.jpg", "-y");
+                LinkedHashMap<String, String> animatedPreview = animatedPreviewGenerator.generate(streamDataModel, mainPlaylist,
+                        settingsProperties.getUser(streamDataModel.getUser()).getQualities()
+                                .get(settingsProperties.getUser(streamDataModel.getUser()).getQualities().size() - 1));
+                LinkedHashMap<String, Preview> timelinePreview = timelinePreviewGenerator.generate(streamDataModel, mainPlaylist,
+                        settingsProperties.getUser(streamDataModel.getUser()).getQualities()
+                                .get(settingsProperties.getUser(streamDataModel.getUser()).getQualities().size() - 1));
+
+
+                streamDocumentModel.setDuration(mainPlaylist.size() * 10);
+                streamDocumentModel.setAnimatedPreviews(animatedPreview);
+                streamDocumentModel.setTimeline_preview(timelinePreview);
+                dataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
+                recordStatusList.changeState(uuid, State.COMPLETE);
             }
-
-            LinkedHashMap<String, String> animatedPreview = animatedPreviewGenerator.generate(streamDataModel, mainPlaylist,
-                    settingsProperties.getUsers().
-                            get(streamDataModel.getUser()).get(settingsProperties.getUsers().
-                            get(streamDataModel.getUser()).size() - 1));
-            LinkedHashMap<String, Preview> timelinePreview = timelinePreviewGenerator.generate(streamDataModel, mainPlaylist,
-                    settingsProperties.getUsers().
-                            get(streamDataModel.getUser()).get(settingsProperties.getUsers().
-                            get(streamDataModel.getUser()).size() - 1));
-
-
-            streamDocumentModel.setDuration(mainPlaylist.size() * 10);
-            streamDocumentModel.setAnimatedPreviews(animatedPreview);
-            streamDocumentModel.setTimeline_preview(timelinePreview);
-            dataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser());
-            recordStatusList.changeState(uuid, State.COMPLETE);
-
         } catch (IOException e) {
             log.error("Vod downloader initialization failed. ", e);
             recordStatusList.changeState(uuid, State.ERROR);

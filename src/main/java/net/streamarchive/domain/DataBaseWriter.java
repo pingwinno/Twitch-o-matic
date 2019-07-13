@@ -15,11 +15,11 @@ import java.io.IOException;
 
 @Service
 public class DataBaseWriter {
+    static private org.slf4j.Logger log = LoggerFactory.getLogger(DataBaseWriter.class);
     @Autowired
     MongoTemplate mongoTemplate;
     @Autowired
     SettingsProperties settingsProperties;
-    static private org.slf4j.Logger log = LoggerFactory.getLogger(DataBaseWriter.class);
 
     public void writeToRemoteDB(StreamDocumentModel streamDocumentModel, String user) throws IOException {
 
@@ -29,10 +29,9 @@ public class DataBaseWriter {
         ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
         writer.writeValue(file, streamDocumentModel);
 
-        if (!settingsProperties.getMongoDBAddress().trim().equals("")) {
-                log.debug("Write to remote db...");
-            mongoTemplate.save(streamDocumentModel, user);
-            log.trace("Remote db endpoint: {}", settingsProperties.getMongoDBAddress());
-        }
+
+        log.debug("Write to remote db...");
+        mongoTemplate.save(streamDocumentModel, user);
+
     }
 }

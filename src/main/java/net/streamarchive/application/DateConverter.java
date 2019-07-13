@@ -3,8 +3,6 @@ package net.streamarchive.application;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 public class DateConverter {
@@ -20,12 +18,6 @@ public class DateConverter {
 
         return date;
 }
-
-    public static String convert(LocalDateTime localDateTime) {
-        DateTimeFormatter parser = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
-
-        return localDateTime.format(parser);
-    }
 
 }
 

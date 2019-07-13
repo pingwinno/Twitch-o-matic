@@ -1,7 +1,6 @@
 package net.streamarchive.presentation.management.api;
 
 
-import net.streamarchive.application.DateConverter;
 import net.streamarchive.application.StorageHelper;
 import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
 import net.streamarchive.infrastructure.RecordStatusList;
@@ -25,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
@@ -94,18 +93,18 @@ public class StreamsApi {
                     if (requestModel.getUuid() != null) {
                         streamMetadata.setUuid(requestModel.getUuid());
                         recordStatusList.addStatus
-                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, DateConverter.convert(LocalDateTime.now()),
+                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, Date.from(Instant.now()),
                                         State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
                         //if record exist in status DB then run validation
                     } else if (statusRepository.existsById(streamMetadata.getVodId())) {
                         streamMetadata.setUuid(statusRepository.findById(streamMetadata.getVodId()).get().getUuid());
                         recordStatusList.addStatus
-                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, DateConverter.convert(LocalDateTime.now()),
+                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, Date.from(Instant.now()),
                                         State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
                     } else {
                         streamMetadata.setUuid(storageHelper.getUuidName());
                         recordStatusList.addStatus
-                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.MANUAL, DateConverter.convert(LocalDateTime.now()),
+                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.MANUAL, Date.from(Instant.now()),
                                         State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
                     }
 
@@ -141,7 +140,7 @@ public class StreamsApi {
      */
     @RequestMapping(value = "{user}/{uuid}", method = RequestMethod.DELETE)
     public void deleteStream(@PathVariable("uuid") String uuid, @PathVariable("user") String user, @RequestParam("deleteMedia") String deleteMedia) {
-        if (settingsProperties.getUsers().containsKey(user)) {
+        if (settingsProperties.isUserExist(user)) {
             Query query = new Query();
             query.addCriteria(Criteria.where("_id").is(uuid));
 
@@ -195,7 +194,7 @@ public class StreamsApi {
         log.trace(user);
         Query query = new Query();
         query.fields().include("title").include("date").include("game");
-        if (settingsProperties.getUsers().containsKey(user)) {
+        if (settingsProperties.isUserExist(user)) {
             log.debug("Streams for {}", user);
             return mongoTemplate.find(query, StreamDocumentModel.class, user);
         } else throw new NotFoundException();

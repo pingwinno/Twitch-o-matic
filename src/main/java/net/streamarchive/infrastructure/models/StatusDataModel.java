@@ -5,6 +5,7 @@ import net.streamarchive.infrastructure.enums.State;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import java.util.Date;
 import java.util.UUID;
 
 @Entity
@@ -15,11 +16,11 @@ public class StatusDataModel {
     private Integer vodId;
     private UUID uuid;
     private StartedBy startedBy;
-    private String date;
+    private Date date;
     private State state;
     private String user;
 
-    public StatusDataModel(int vodId, StartedBy startedBy, String date, State state, UUID uuid, String user) {
+    public StatusDataModel(int vodId, StartedBy startedBy, Date date, State state, UUID uuid, String user) {
         this.vodId = vodId;
         this.startedBy = startedBy;
         this.date = date;
@@ -63,11 +64,11 @@ public class StatusDataModel {
         this.startedBy = startedBy;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 

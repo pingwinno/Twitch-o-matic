@@ -2,7 +2,6 @@ package net.streamarchive.presentation.twitch.api;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.streamarchive.application.DateConverter;
 import net.streamarchive.application.StorageHelper;
 import net.streamarchive.application.twitch.playlist.handler.RecordStatusGetter;
 import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
@@ -22,7 +21,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.Date;
 import java.util.Map;
 
 @RestController
@@ -92,8 +92,8 @@ public class TwitchApiHandler implements ApplicationContextAware {
         if (hashHandler.compare(signature, stringDataModel)) {
             log.debug("Hash confirmed");
             //check for active subscription
-            log.trace("User search res: {}", settingsProperties.getUsers().keySet().contains(user));
-            if (settingsProperties.getUsers().keySet().contains(user)) {
+            log.trace("User search res: {}", settingsProperties.isUserExist(user));
+            if (settingsProperties.isUserExist(user)) {
                 log.debug("Subscription is active");
                 StreamStatusNotificationModel dataModel =
                         new ObjectMapper().readValue(stringDataModel, StreamStatusNotificationModel.class);
@@ -129,7 +129,7 @@ public class TwitchApiHandler implements ApplicationContextAware {
                                         streamMetadata.setUuid(storageHelper.getUuidName());
 
                                         recordStatusList.addStatus
-                                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.WEBHOOK, DateConverter.convert(LocalDateTime.now()),
+                                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.WEBHOOK, Date.from(Instant.now()),
                                                         State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
 
                                         log.info("Try to start record");

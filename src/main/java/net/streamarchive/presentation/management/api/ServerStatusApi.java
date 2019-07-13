@@ -6,6 +6,7 @@ import net.streamarchive.domain.DataBaseWriter;
 import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.models.StorageState;
 import net.streamarchive.infrastructure.models.StreamDocumentModel;
+import net.streamarchive.infrastructure.models.User;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -66,9 +67,9 @@ public class ServerStatusApi {
     @GetMapping("/import")
     public void importToLocalDb() {
         try {
-            for (String user : settingsProperties.getUsers().keySet()) {
-                for (StreamDocumentModel stream : mongoTemplate.findAll(StreamDocumentModel.class, user)) {
-                    dataBaseWriter.writeToRemoteDB(stream, user);
+            for (User user : settingsProperties.getUsers()) {
+                for (StreamDocumentModel stream : mongoTemplate.findAll(StreamDocumentModel.class, user.getUser())) {
+                    dataBaseWriter.writeToRemoteDB(stream, user.getUser());
                 }
             }
         } catch (IOException e) {
@@ -84,7 +85,7 @@ public class ServerStatusApi {
     public void exportFromLocalDb() {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        for (String user : settingsProperties.getUsers().keySet()) {
+        for (User user : settingsProperties.getUsers()) {
 
             try (Stream<java.nio.file.Path> walk = Files.walk(Paths.get(settingsProperties.getRecordedStreamPath() + user))) {
 
@@ -93,7 +94,7 @@ public class ServerStatusApi {
 
                 result.forEach(x -> {
                     try {
-                        dataBaseWriter.writeToRemoteDB(objectMapper.readValue(x, StreamDocumentModel.class), user);
+                        dataBaseWriter.writeToRemoteDB(objectMapper.readValue(x, StreamDocumentModel.class), user.getUser());
                     } catch (IOException e) {
                         throw new InternalServerErrorExeption();
                     }

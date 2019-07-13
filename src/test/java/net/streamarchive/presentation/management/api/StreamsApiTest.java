@@ -10,6 +10,6 @@ class StreamsApiTest {
 
     @Test
     public void isStreamerExist() {
-        assertTrue(settingsProperties.getUsers().containsKey("olyashaa"));
+        assertTrue(settingsProperties.isUserExist("olyashaa"));
     }
 }

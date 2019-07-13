@@ -2,6 +2,7 @@ package net.streamarchive.application;
 
 import net.streamarchive.infrastructure.HashHandler;
 import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.models.User;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +26,8 @@ public class SubscriptionTimer {
     @Scheduled(fixedRate = 10000 * 1000)
     public void doSubscriptions() throws IOException {
         hashHandler.generateKey();
-        for (String user : settingsProperties.getUsers().keySet()) {
-            subscriptionRequest.sendSubscriptionRequest(user);
+        for (User user : settingsProperties.getUsers()) {
+            subscriptionRequest.sendSubscriptionRequest(user.getUser());
         }
     }
 }
