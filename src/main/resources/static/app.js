@@ -6,15 +6,11 @@ let app = new Vue({
         storage: [],
         streamer: "",
         // Server tab
-        quality: ["chunked", "720p60", "720p30", "480p30", "360p30", "160p30", "audio_only"],
-        addSubscriptionDialog: false,
-        addData: {
-            username: "",
-            quality: []
-        },
-        subscriptionAlert: false,
-        deleteAlert: false,
-        deletingStreamer: null,
+        subscribeModal: false,
+        subscribeForm: {username: "", quality: []},
+        subscribeError: false,
+        unsubscribeModal: false,
+        unsubscribeTarget: null,
         // Server tab
         headers: [
             {text: "id", align: "left", value: "_id"},
@@ -77,20 +73,18 @@ let app = new Vue({
         this.getStorage();
         this.getStatuses();
 
-        let u = this.updateStatus;
         let stompClient = Stomp.client("ws://localhost:8080/status");
-        stompClient.connect({}, function () {
-            stompClient.subscribe('/topic/status', message => {
-                us(JSON.parse(message.body));
-            });
-        });
+        stompClient.connect({}, () =>
+            stompClient.subscribe('/topic/status', message =>
+                app.updateStatus(JSON.parse(message.body)))
+        );
     },
     watch: {
         streamer() {
             this.getStreams();
         },
         streamers() {
-            // if (this.streamers.indexOf(this.streamer) === -1) this.streamer = this.streamers[0];
+            if (Object.keys(this.streamers).indexOf(this.streamer) === -1) this.streamer = Object.keys(this.streamers)[0];
         }
     },
     methods: {
@@ -121,31 +115,36 @@ let app = new Vue({
         getStreamers() {
             this.$http.get('/api/v1/subscriptions').then(response => this.streamers = response.data);
         },
-        addSubscription() {
-            if (!this.addData.quality || !this.addData.username) this.subscriptionAlert = true;
+        // subscribe
+        openSubscribeModal() {
+            this.subscribeForm = {username: "", quality: ""};
+            this.subscribeError = false;
+            this.subscribeModal = true;
+        },
+        subscribe() {
+            if (!this.subscribeForm.quality || !this.subscribeForm.username) this.subscribeError = true;
             else {
                 this.$http.put(
-                    '/api/v1/subscriptions/' + this.addData.username,
-                    this.addData.quality.split(',').map(item => item.trim()).filter(item => item)
+                    '/api/v1/subscriptions/' + this.subscribeForm.username,
+                    this.subscribeForm.quality.split(',').map(item => item.trim()).filter(item => item)
                 ).then(() => {
                     this.getStreamers();
                     this.getStorage();
                 });
-                this.closeAddSubscriptionDialog();
+                this.cancel();
             }
         },
-        deleteSubscription() {
-            this.$http.delete('/api/v1/subscriptions/' + this.deletingStreamer).then(() => {
-                this.deleteAlert = false;
+        // unsubscribe
+        openUnsubscribeModal(target) {
+            this.unsubscribeTarget = target;
+            this.unsubscribeModal = true;
+        },
+        unsubscribe() {
+            this.$http.delete('/api/v1/subscriptions/' + this.unsubscribeTarget).then(() => {
                 this.getStreamers();
                 this.getStorage();
+                this.cancel();
             });
-        },
-        //dialog
-        closeAddSubscriptionDialog() {
-            this.addData = {username: "", quality: []};
-            this.subscriptionAlert = false;
-            this.addSubscriptionDialog = false;
         },
 
         // Streams tab
@@ -236,16 +235,16 @@ let app = new Vue({
 
         // Status tab
         getStatuses() {
-            this.$http.get('/api/v1/status_list').then(response => {
-                this.statuses = response.data;
-            });
+            this.$http.get('/api/v1/status_list').then(response => this.statuses = response.data);
         },
         stopTask(uuid) {
-            this.$http.delete('/api/v1/status_list/' + uuid).then(() => {
-            });
+            this.$http.delete('/api/v1/status_list/' + uuid);
         },
         // Cancel
         cancel() {
+            this.subscribeModal = false;
+            this.unsubscribeModal = false;
+
             this.editStreamModal = false;
             this.deleteStreamModal = false;
             this.addStreamModal = false;

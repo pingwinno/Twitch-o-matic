@@ -38,39 +38,10 @@
                         <v-container fluid grid-list-md>
                             <v-layout row wrap>
                                 <v-flex xs12>
-                                    <v-dialog v-model="addSubscriptionDialog" max-width="500">
-                                        <template v-slot:activator="{ on }">
-                                            <v-btn depressed large color="primary" v-on="on">Add streamer</v-btn>
-                                        </template>
-                                        <v-card>
-                                            <v-card-title class="headline">Enter username and choose quality
-                                            </v-card-title>
-                                            <v-card-text>
-                                                <v-text-field
-                                                        v-model="addData.username"
-                                                        label="Streamer"
-                                                        hint="Streamer username"
-                                                        persistent-hint
-                                                ></v-text-field>
-                                                <v-text-field
-                                                        v-model="addData.quality"
-                                                        label="Quality"
-                                                        hint="Downloading quality. Enter a comma-separated"
-                                                        persistent-hint
-                                                ></v-text-field>
-                                                <v-alert :value="subscriptionAlert" type="error">
-                                                    Form is incorrect.
-                                                </v-alert>
-                                            </v-card-text>
-                                            <v-card-actions>
-                                                <v-spacer></v-spacer>
-                                                <v-btn flat @click="closeAddSubscriptionDialog">Cancel</v-btn>
-                                                <v-btn flat @click="addSubscription">Add subscription</v-btn>
-                                            </v-card-actions>
-                                        </v-card>
-                                    </v-dialog>
+                                    <v-btn depressed large color="primary" @click="openSubscribeModal">
+                                        Add streamer
+                                    </v-btn>
                                 </v-flex>
-
                                 <v-flex xs12 md6 lg3 v-for="item of storage" :key="item.user">
                                     <v-card>
                                         <v-card-title><h2>{{item.user}}</h2></v-card-title>
@@ -80,38 +51,21 @@
                                             Total space: {{item.totalStorage}} GB<br>
                                             Quality:
                                             <span v-for="(item2, index) in streamers[item.user]">
-                                    {{item2 + (index !== streamers[item.user].length-1 ? ", " : "") }}
-                            </span>
+                                                {{item2 + (index !== streamers[item.user].length-1 ? ", " : "") }}
+                                            </span>
                                         </v-card-text>
                                         <v-card-actions>
                                             <v-spacer></v-spacer>
-                                            <v-btn color="error" flat
-                                                   @click="deleteAlert = true; deletingStreamer = item.user">
+                                            <v-btn color="error" flat @click="openUnsubscribeModal(item.user)">
                                                 Delete subscription
-                                                <v-icon @click="deleteStreamer(streamer)">delete</v-icon>
+                                                <v-icon>delete</v-icon>
                                             </v-btn>
                                         </v-card-actions>
-                                        <v-progress-linear
-                                                :value="100-(item.freeStorage/item.totalStorage)*100"></v-progress-linear>
+                                        <v-progress-linear :value="100-(item.freeStorage/item.totalStorage)*100">
+                                        </v-progress-linear>
                                     </v-card>
                                 </v-flex>
                             </v-layout>
-                            <v-dialog v-model="deleteAlert" max-width="290">
-                                <v-card>
-                                    <v-card-title class="headline">Accept deleting</v-card-title>
-                                    <v-card-text>Are you sure you want to delete {{deletingStreamer}} from
-                                        subscriptions?
-                                    </v-card-text>
-                                    <v-card-actions>
-                                        <v-spacer></v-spacer>
-                                        <v-btn color="darken-1" depressed @click="deleteAlert = false">No, cancel
-                                        </v-btn>
-                                        <v-btn color="error darken-1" depressed @click="deleteSubscription">
-                                            Yes, delete
-                                        </v-btn>
-                                    </v-card-actions>
-                                </v-card>
-                            </v-dialog>
                         </v-container>
                     </v-card-text>
                 </v-card>
@@ -157,139 +111,6 @@
                                 <v-pagination v-model="pagination.page" :length="pages"></v-pagination>
                             </div>
                         </v-container>
-
-                        <!-- Edit modal -->
-                        <v-dialog v-model="editStreamModal" max-width="500">
-                            <v-card>
-                                <v-card-title class="headline">Edit stream</v-card-title>
-                                <v-card-text>
-                                    <v-text-field
-                                            v-model="editStreamForm.title"
-                                            label="Title"
-                                            hint="Title of stream"
-                                            persistent-hint
-                                    ></v-text-field>
-                                    <v-text-field
-                                            v-model="editStreamForm.game"
-                                            label="Game"
-                                            hint="Genre of stream"
-                                            persistent-hint
-                                    ></v-text-field>
-                                    <v-text-field
-                                            v-model="editStreamForm.date"
-                                            label="Date"
-                                            hint="Date of stream"
-                                            persistent-hint
-                                    ></v-text-field>
-                                    <v-alert :value="editStreamError" type="error">Form is incorrect.</v-alert>
-                                </v-card-text>
-                                <v-card-actions>
-                                    <v-spacer></v-spacer>
-                                    <v-btn color="darken-1" depressed @click="cancel">Cancel</v-btn>
-                                    <v-btn color="success darken-1" depressed @click="saveStream">
-                                        Save
-                                    </v-btn>
-                                </v-card-actions>
-                            </v-card>
-                        </v-dialog>
-
-                        <!-- Delete modal -->
-                        <v-dialog v-model="deleteStreamModal" max-width="500">
-                            <v-card>
-                                <v-card-title class="headline">Delete stream</v-card-title>
-                                <v-card-text>
-                                    You are going to delete stream with uuid:<br>{{deleteStreamUUID}}
-                                    <v-checkbox
-                                            v-model="deleteStreamMedia"
-                                            label="Delete media"
-                                            hint="Delete stream from hard drive"
-                                            persistent-hint
-                                    ></v-checkbox>
-                                </v-card-text>
-                                <v-card-actions>
-                                    <v-spacer></v-spacer>
-                                    <v-btn color="darken-1" depressed @click="cancel">Cancel</v-btn>
-                                    <v-btn color="error darken-1" depressed @click="deleteStream">Delete</v-btn>
-                                </v-card-actions>
-                            </v-card>
-                        </v-dialog>
-
-                        <!-- Add modal -->
-                        <v-dialog v-model="addStreamModal" max-width="500">
-                            <v-card>
-                                <v-card-title class="headline">Add stream</v-card-title>
-                                <v-card-text>
-                                    <v-select
-                                            v-model="addStreamForm.type"
-                                            :items="['user', 'vod']"
-                                            label="Type"
-                                            hint="user - current stream, vod - past"
-                                            persistent-hint
-                                    ></v-select>
-                                    <v-text-field
-                                            v-model="addStreamForm.value"
-                                            label="Value"
-                                            hint="Vod value or streamer username"
-                                            persistent-hint
-                                    ></v-text-field>
-                                    <v-layout row wrap>
-                                        <v-flex xs1>
-                                            <v-checkbox
-                                                    v-model="addStreamFormOptional.enableWriteTo"
-                                            ></v-checkbox>
-                                        </v-flex>
-                                        <v-flex xs11>
-                                            <v-text-field
-                                                    v-model="addStreamFormOptional.writeTo"
-                                                    label="Streamer"
-                                                    hint="Add stream to special streamer. Activate checkbox to unlock"
-                                                    persistent-hint
-                                                    :disabled="!addStreamFormOptional.enableWriteTo"
-                                            ></v-text-field>
-                                        </v-flex>
-                                    </v-layout>
-                                    <v-alert :value="addStreamError" type="error">Form is incorrect.</v-alert>
-                                </v-card-text>
-                                <v-card-actions>
-                                    <v-spacer></v-spacer>
-                                    <v-btn color="darken-1" depressed @click="cancel">Cancel</v-btn>
-                                    <v-btn color="primary darken-1" depressed @click="addStream">Add</v-btn>
-                                </v-card-actions>
-                            </v-card>
-                        </v-dialog>
-
-                        <!-- Validate modal -->
-                        <v-dialog v-model="validateStreamModal" max-width="500">
-                            <v-card>
-                                <v-card-title class="headline">Validate stream</v-card-title>
-                                <v-card-text>
-                                    <v-text-field
-                                            v-model="validateStreamForm.uuid"
-                                            label="UUID"
-                                            hint="Stream database ID"
-                                            persistent-hint
-                                    ></v-text-field>
-                                    <v-text-field
-                                            v-model="validateStreamForm.value"
-                                            label="VOD"
-                                            hint="Vod value"
-                                            persistent-hint
-                                    ></v-text-field>
-                                    <v-checkbox
-                                            v-model="validateStreamForm.skipMuted"
-                                            label="Skip muted"
-                                            hint="Skip muted pieces"
-                                            persistent-hint
-                                    ></v-checkbox>
-                                    <v-alert :value="validateStreamError" type="error">Form is incorrect.</v-alert>
-                                </v-card-text>
-                                <v-card-actions>
-                                    <v-spacer></v-spacer>
-                                    <v-btn color="darken-1" depressed @click="cancel">Cancel</v-btn>
-                                    <v-btn color="warning darken-1" depressed @click="validateStream">Validate</v-btn>
-                                </v-card-actions>
-                            </v-card>
-                        </v-dialog>
                     </v-card-text>
                 </v-card>
             </v-tab-item>
@@ -335,6 +156,176 @@
                 </v-card>
             </v-tab-item>
         </v-tabs-items>
+
+        <v-dialog v-model="editStreamModal" max-width="500">
+            <v-card>
+                <v-card-title class="headline">Edit stream</v-card-title>
+                <v-card-text>
+                    <v-text-field
+                            v-model="editStreamForm.title"
+                            label="Title"
+                            hint="Title of stream"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-text-field
+                            v-model="editStreamForm.game"
+                            label="Game"
+                            hint="Genre of stream"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-text-field
+                            v-model="editStreamForm.date"
+                            label="Date"
+                            hint="Date of stream"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-alert :value="editStreamError" type="error">Form is incorrect.</v-alert>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="darken-1" depressed @click="cancel">Cancel</v-btn>
+                    <v-btn color="success darken-1" depressed @click="saveStream">
+                        Save
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+        <v-dialog v-model="deleteStreamModal" max-width="500">
+            <v-card>
+                <v-card-title class="headline">Delete stream</v-card-title>
+                <v-card-text>
+                    You are going to delete stream with uuid:<br>{{deleteStreamUUID}}
+                    <v-checkbox
+                            v-model="deleteStreamMedia"
+                            label="Delete media"
+                            hint="Delete stream from hard drive"
+                            persistent-hint
+                    ></v-checkbox>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="darken-1" depressed @click="cancel">Cancel</v-btn>
+                    <v-btn color="error darken-1" depressed @click="deleteStream">Delete</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+        <v-dialog v-model="addStreamModal" max-width="500">
+            <v-card>
+                <v-card-title class="headline">Add stream</v-card-title>
+                <v-card-text>
+                    <v-select
+                            v-model="addStreamForm.type"
+                            :items="['user', 'vod']"
+                            label="Type"
+                            hint="user - current stream, vod - past"
+                            persistent-hint
+                    ></v-select>
+                    <v-text-field
+                            v-model="addStreamForm.value"
+                            label="Value"
+                            hint="Vod value or streamer username"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-layout row wrap>
+                        <v-flex xs1>
+                            <v-checkbox
+                                    v-model="addStreamFormOptional.enableWriteTo"
+                            ></v-checkbox>
+                        </v-flex>
+                        <v-flex xs11>
+                            <v-text-field
+                                    v-model="addStreamFormOptional.writeTo"
+                                    label="Streamer"
+                                    hint="Add stream to special streamer. Activate checkbox to unlock"
+                                    persistent-hint
+                                    :disabled="!addStreamFormOptional.enableWriteTo"
+                            ></v-text-field>
+                        </v-flex>
+                    </v-layout>
+                    <v-alert :value="addStreamError" type="error">Form is incorrect.</v-alert>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="darken-1" depressed @click="cancel">Cancel</v-btn>
+                    <v-btn color="primary darken-1" depressed @click="addStream">Add</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+        <v-dialog v-model="validateStreamModal" max-width="500">
+            <v-card>
+                <v-card-title class="headline">Validate stream</v-card-title>
+                <v-card-text>
+                    <v-text-field
+                            v-model="validateStreamForm.uuid"
+                            label="UUID"
+                            hint="Stream database ID"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-text-field
+                            v-model="validateStreamForm.value"
+                            label="VOD"
+                            hint="Vod value"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-checkbox
+                            v-model="validateStreamForm.skipMuted"
+                            label="Skip muted"
+                            hint="Skip muted pieces"
+                            persistent-hint
+                    ></v-checkbox>
+                    <v-alert :value="validateStreamError" type="error">Form is incorrect.</v-alert>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="darken-1" depressed @click="cancel">Cancel</v-btn>
+                    <v-btn color="warning darken-1" depressed @click="validateStream">Validate</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+        <v-dialog v-model="subscribeModal" max-width="500">
+            <v-card>
+                <v-card-title class="headline">Enter username and choose quality
+                </v-card-title>
+                <v-card-text>
+                    <v-text-field
+                            v-model="subscribeForm.username"
+                            label="Streamer"
+                            hint="Streamer username"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-text-field
+                            v-model="subscribeForm.quality"
+                            label="Quality"
+                            hint="Downloading quality. Enter a comma-separated"
+                            persistent-hint
+                    ></v-text-field>
+                    <v-alert :value="subscribeError" type="error">
+                        Form is incorrect.
+                    </v-alert>
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn flat @click="cancel">Cancel</v-btn>
+                    <v-btn flat @click="subscribe">Add subscription</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+        <v-dialog v-model="unsubscribeModal" max-width="290">
+            <v-card>
+                <v-card-title class="headline">Accept deleting</v-card-title>
+                <v-card-text>Are you sure you want to delete {{unsubscribeTarget}} from
+                    subscriptions?
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="darken-1" depressed @click="cancel">No, cancel
+                    </v-btn>
+                    <v-btn color="error darken-1" depressed @click="unsubscribe">
+                        Yes, delete
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </v-app>
 </div>
 
