@@ -1,6 +1,7 @@
 package net.streamarchive.application.twitch.playlist.handler;
 
 import net.streamarchive.infrastructure.StreamNotFoundExeption;
+import org.apache.http.auth.AuthenticationException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,9 +19,9 @@ class MasterPlaylistDownloaderTest {
     MasterPlaylistDownloader masterPlaylistDownloader1;
 
     @Test
-    void getPlaylist() throws URISyntaxException, StreamNotFoundExeption, InterruptedException, IOException {
-        masterPlaylistDownloader.getPlaylist(444505062);
-        masterPlaylistDownloader.getPlaylist(445418382);
+    void getPlaylist() throws URISyntaxException, StreamNotFoundExeption, InterruptedException, IOException, AuthenticationException {
+        masterPlaylistDownloader.getPlaylist(446377443);
+
         assertNotEquals(masterPlaylistDownloader, masterPlaylistDownloader1);
     }
 }

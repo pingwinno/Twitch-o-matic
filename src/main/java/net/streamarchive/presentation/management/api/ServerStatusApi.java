@@ -69,7 +69,7 @@ public class ServerStatusApi {
         try {
             for (User user : settingsProperties.getUsers()) {
                 for (StreamDocumentModel stream : mongoTemplate.findAll(StreamDocumentModel.class, user.getUser())) {
-                    dataBaseWriter.writeToRemoteDB(stream, user.getUser());
+                    dataBaseWriter.writeToRemoteDB(stream, user.getUser(), false);
                 }
             }
         } catch (IOException e) {
@@ -94,7 +94,7 @@ public class ServerStatusApi {
 
                 result.forEach(x -> {
                     try {
-                        dataBaseWriter.writeToRemoteDB(objectMapper.readValue(x, StreamDocumentModel.class), user.getUser());
+                        dataBaseWriter.writeToRemoteDB(objectMapper.readValue(x, StreamDocumentModel.class), user.getUser(), true);
                     } catch (IOException e) {
                         throw new InternalServerErrorExeption();
                     }

@@ -21,7 +21,7 @@ public class DataBaseWriter {
     @Autowired
     SettingsProperties settingsProperties;
 
-    public void writeToRemoteDB(StreamDocumentModel streamDocumentModel, String user) throws IOException {
+    public void writeToRemoteDB(StreamDocumentModel streamDocumentModel, String user, boolean writeToRemote) throws IOException {
 
         File file = new File(settingsProperties.getRecordedStreamPath() + user + "/" + streamDocumentModel.get_id()
                 + "/metadata.json");
@@ -31,7 +31,8 @@ public class DataBaseWriter {
 
 
         log.debug("Write to remote db...");
-        mongoTemplate.save(streamDocumentModel, user);
-
+        if (writeToRemote) {
+            mongoTemplate.save(streamDocumentModel, user);
+        }
     }
 }

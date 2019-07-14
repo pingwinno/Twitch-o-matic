@@ -3,6 +3,7 @@ package net.streamarchive.application.twitch.playlist.handler;
 
 import net.streamarchive.infrastructure.HttpSevice;
 import net.streamarchive.infrastructure.StreamNotFoundExeption;
+import org.apache.http.auth.AuthenticationException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.utils.URIBuilder;
@@ -28,14 +29,16 @@ public class MasterPlaylistDownloader {
     private HttpSevice httpSevice;
     private String accessToken;
 
-    public BufferedReader getPlaylist(int vodId) throws IOException, URISyntaxException, InterruptedException, StreamNotFoundExeption {
+    public BufferedReader getPlaylist(int vodId) throws IOException, URISyntaxException, InterruptedException, StreamNotFoundExeption, AuthenticationException {
         //make token request
 
         if (accessToken == null) {
             getToken(vodId);
         }
+        log.debug(accessToken);
         JSONObject json = new JSONObject(accessToken);
         //make playlist request with received token
+
         URIBuilder builder = new URIBuilder("https://usher.twitch.tv/vod/" + vodId);
         builder.setParameter("player", "twitchweb");
         builder.setParameter("nauth", json.get("token").toString());
@@ -47,19 +50,25 @@ public class MasterPlaylistDownloader {
         HttpGet httpGet = new HttpGet(builder.build());
         CloseableHttpResponse response = httpSevice.getService(httpGet, false);
         if (response.getStatusLine().getStatusCode() == 403) {
+            log.debug(response.getStatusLine().getReasonPhrase());
+
+            if (new JSONObject(json.get("token").toString()).getJSONObject("authorization").get("reason").equals("PREMIUM_CONTENT")) {
+                throw new AuthenticationException("Subscribers content only");
+            }
             getToken(vodId);
-        }
-        if (response.getStatusLine().getStatusCode() == 404) {
-            throw new StreamNotFoundExeption("Stream" + vodId + "not found");
-        }
-        if (response.getStatusLine().getStatusCode() == 200) {
+        } else {
+            if (response.getStatusLine().getStatusCode() == 404) {
+                throw new StreamNotFoundExeption("Stream" + vodId + "not found");
+            }
+            if (response.getStatusLine().getStatusCode() == 200) {
                 return new BufferedReader(new InputStreamReader
                         (httpSevice.getService(httpGet, false).getEntity().getContent(), StandardCharsets.UTF_8));
-        } else {
-            log.debug(response.getStatusLine().toString());
-            throw new IOException();
+            } else {
+                log.debug(response.getStatusLine().toString());
+                throw new IOException();
+            }
         }
-
+        return getPlaylist(vodId);
     }
 
     public void close() throws IOException {

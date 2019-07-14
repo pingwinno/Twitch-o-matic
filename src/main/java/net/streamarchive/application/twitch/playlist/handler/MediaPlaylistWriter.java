@@ -7,11 +7,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 public class MediaPlaylistWriter {
-    private static org.slf4j.Logger log = LoggerFactory.getLogger(MediaPlaylistParser.class.getName());
+    private org.slf4j.Logger log = LoggerFactory.getLogger(MediaPlaylistParser.class.getName());
 
-    public static void write(LinkedHashMap<String, Double> playlist, String streamFolderPath) throws IOException {
+    public void write(LinkedHashMap<String, Double> playlist, String streamFolderPath) throws IOException {
         try (FileWriter fstream = new FileWriter(streamFolderPath + "/index-dvr.m3u8")) {
             BufferedWriter out = new BufferedWriter(fstream);
             log.debug("Writing playlist...");
@@ -36,6 +35,7 @@ public class MediaPlaylistWriter {
 
             }
             out.write("#EXT-X-ENDLIST");
+            out.flush();
             log.debug("done");
         }
     }
