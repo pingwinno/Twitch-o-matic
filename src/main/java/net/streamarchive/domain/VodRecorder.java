@@ -321,7 +321,7 @@ public class VodRecorder implements RecordThread {
                 refreshDownload();
                 // Thread.sleep(20 * 1000);
             }
-            /*
+            
             log.info("Finalize record...");
             int counter = 0;
             while ((!this.refreshDownload()) && (counter <= 10)) {
@@ -332,7 +332,7 @@ public class VodRecorder implements RecordThread {
             Thread.sleep(100 * 1000);
             refreshDownload();
             log.info("End of list. Downloading last mainPlaylist");
-*/
+
             mediaPlaylistWriter.write(mainPlaylist, streamFolderPath + "/" + quality);
             log.debug("Download m3u8");
         }

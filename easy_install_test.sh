@@ -22,8 +22,7 @@ else
   mkdir /var/log/tom/
   chown tom-daemon /var/log/tom/
   chmod u+w /var/log/tom/
-  mkdir /etc/tom/
-  mv config.json /etc/tom/
+  mv application.properties /home/tom-daemon/
 fi
 
 cp twitch-o-matic.service /etc/systemd/system/twitch-o-matic.service
