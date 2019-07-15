@@ -14,6 +14,9 @@ if [[ -f ${FILE} ]]; then
 else
 ### installing dependencies
   echo -e "\033[36m Installing dependencies.\033[0m"
+  apt install ffmpeg
+  apt install git
+  apt install maven
   git clone https://github.com/pingwinno/twitch-o-matic.git
   cd ./twitch-o-matic
   mvn package
