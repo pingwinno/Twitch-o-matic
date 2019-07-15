@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 @EnableOAuth2Sso
 @RestController
 @Configuration
-@PropertySource("file:/home/shiro/application.properties")
+@PropertySource("file:${user.home}/application.properties")
 public class WebConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
