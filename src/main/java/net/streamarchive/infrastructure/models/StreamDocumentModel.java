@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.Date;
 import java.util.LinkedHashMap;
 
 //@JsonSerialize(using = DocumentModelSerializer.class)
@@ -13,7 +12,7 @@ public class StreamDocumentModel {
 
     @Id
     private String _id;
-    private Date date;
+    private long date;
     private String title;
     private String game;
     private long duration;
@@ -30,11 +29,11 @@ public class StreamDocumentModel {
         this._id = _id;
     }
 
-    public Date getDate() {
+    public long getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(long date) {
         this.date = date;
     }
 

@@ -11,14 +11,15 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 @Component
 public class SubscriptionRequest {
-
-    private static final int HUB_LEASE = 10000 * 1000;
+    @Value("${net.streamarchive.subscriptions.lease_seconds}")
+    private int hubLease;
     private static org.slf4j.Logger log = LoggerFactory.getLogger(SubscriptionRequest.class.getName());
 
     private final HttpSevice httpSevice;
@@ -40,8 +41,8 @@ public class SubscriptionRequest {
             SubscriptionQueryModel subscriptionModel = new SubscriptionQueryModel("subscribe",
                     "https://api.twitch.tv/helix/streams?user_id=" +
                             UserIdGetter.getUserId(user),
-                    settingsProperties.getCallbackAddress() + ":" + settingsProperties.getTwitchServerPort() +
-                            "/handler/" + user, HUB_LEASE, hashHandler.getKey());
+                    settingsProperties.getCallbackAddress() +
+                            "/handler/" + user, hubLease, hashHandler.getKey());
             log.trace("SubscriptionQueryModel: {}", subscriptionModel.toString());
 
             log.debug("Sending subscription query");
