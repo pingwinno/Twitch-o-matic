@@ -85,10 +85,12 @@ public class TwitchApiHandler implements ApplicationContextAware {
 
     @RequestMapping(value = "/{user}", method = RequestMethod.POST)
     public void handleStreamNotification(@RequestBody String stringDataModel
-            , @RequestHeader("X-Hub-Signature") String signature, @PathVariable("user") String user) throws InterruptedException, StreamNotFoundExeption, IOException {
+            , @RequestHeader("content-length") long lenght, @RequestHeader("X-Hub-Signature") String signature, @PathVariable("user") String user) throws InterruptedException, StreamNotFoundExeption, IOException {
 
         log.debug("Incoming stream up/down notification");
 
+        log.debug(String.valueOf(stringDataModel.length()), lenght);
+        log.debug(stringDataModel);
         if (hashHandler.compare(signature, stringDataModel)) {
             log.debug("Hash confirmed");
             //check for active subscription

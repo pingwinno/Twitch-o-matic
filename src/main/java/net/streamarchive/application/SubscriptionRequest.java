@@ -11,15 +11,14 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 @Component
 public class SubscriptionRequest {
-    @Value("${net.streamarchive.subscriptions.lease_seconds}")
-    private int hubLease;
+
+    private int hubLease = 86400;
     private static org.slf4j.Logger log = LoggerFactory.getLogger(SubscriptionRequest.class.getName());
 
     private final HttpSevice httpSevice;

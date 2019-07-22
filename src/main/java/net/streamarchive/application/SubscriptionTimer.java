@@ -23,7 +23,7 @@ public class SubscriptionTimer {
         this.settingsProperties = settingsProperties;
     }
 
-    @Scheduled(fixedRate = 10000 * 1000)
+    @Scheduled(fixedRate = 86400000)
     public void doSubscriptions() throws IOException {
         hashHandler.generateKey();
         for (User user : settingsProperties.getUsers()) {

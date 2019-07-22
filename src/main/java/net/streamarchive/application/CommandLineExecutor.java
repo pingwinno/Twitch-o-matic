@@ -3,17 +3,14 @@ package net.streamarchive.application;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 
 @Component
 public class CommandLineExecutor {
 
     private static org.slf4j.Logger log = LoggerFactory.getLogger(CommandLineExecutor.class.getName());
     private String path;
-
+    String line;
     public String getPath() {
         return path;
     }
@@ -31,11 +28,14 @@ public class CommandLineExecutor {
             }
             builder.redirectErrorStream(true);
             Process p = builder.start();
-            BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            String line = " ";
-            while (line != null) {
-                line = r.readLine();
-                log.info(line);
+            try (BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                 BufferedWriter out = new BufferedWriter(new FileWriter(path + "/ffmpeg.log", true))) {
+                while ((line = r.readLine()) != null) {
+                    out.write(line);
+                    out.newLine();
+                }
+                out.flush();
+
             }
         } catch (IOException e) {
             log.error("Can't run command. Exception: ", e);

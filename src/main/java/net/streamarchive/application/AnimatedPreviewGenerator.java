@@ -49,7 +49,7 @@ public class AnimatedPreviewGenerator {
         String path = pathString +
                 "/" + quality + "/" + chunks.get(chunkNum).replace("-muted", "");
         log.trace(path);
-
+        commandLineExecutor.setPath(pathString);
         commandLineExecutor.execute("ffmpeg", "-i", path, "-s", "640x360", "-vframes", "1", pathString +
                 "/animated_preview/preview" + i + ".jpg", "-y");
 

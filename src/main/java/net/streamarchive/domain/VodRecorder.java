@@ -17,7 +17,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.*;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -157,7 +160,7 @@ public class VodRecorder implements RecordThread {
             }
 
             executorService.shutdown();
-            executorService.awaitTermination(10, TimeUnit.MINUTES);
+            executorService.awaitTermination(100, TimeUnit.HOURS);
             if (mainPlaylist != null) {
                 log.debug("Download preview");
                 try {
@@ -186,6 +189,7 @@ public class VodRecorder implements RecordThread {
                 dataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser(),
                         settingsProperties.isUserExist(streamDataModel.getUser()));
                 recordStatusList.changeState(uuid, State.COMPLETE);
+                log.info("Complete");
             }
         } catch (IOException e) {
             log.error("Vod downloader initialization failed. ", e);
@@ -319,9 +323,9 @@ public class VodRecorder implements RecordThread {
             while (recordStatusGetter.isRecording(vodId)) {
                 log.debug("Refresh download {} {} {}", streamDataModel.getUser(), streamDataModel.getVodId(), streamDataModel.getUuid());
                 refreshDownload();
-                // Thread.sleep(20 * 1000);
+                Thread.sleep(20 * 1000);
             }
-            
+
             log.info("Finalize record...");
             int counter = 0;
             while ((!this.refreshDownload()) && (counter <= 10)) {
@@ -365,10 +369,8 @@ public class VodRecorder implements RecordThread {
                 } else {
                     log.trace("Chunk {} exist. Skipping...", fileName);
                 }
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
             } catch (IOException e) {
-                log.warn("Download failed", e);
+                stop();
             }
         }
 
