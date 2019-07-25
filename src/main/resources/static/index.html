@@ -6,19 +6,19 @@
     <link rel="icon" href="./logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
+    <link href="/webjars/vuetify/1.5.16/dist/vuetify.min.css" rel="stylesheet">
 </head>
 <body>
-<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
+<script src="/webjars/vue/2.6.10/dist/vue.min.js"></script>
+<script src="/webjars/vuetify/1.5.16/dist/vuetify.min.js"></script>
+<script src="/webjars/vue-resource/1.5.1/dist/vue-resource.min.js"></script>
 
-<script src="/webjars/stomp-websocket/stomp.js"></script>
+<script src="/webjars/stomp-websocket/2.3.3-1/stomp.min.js"></script>
 
 
 <div id="app">
     <v-app dark>
-        <v-toolbar color="cyan" dark tabs>
+        <v-toolbar color="cyan" tabs>
             <v-toolbar-title>Management</v-toolbar-title>
             <template v-slot:extension>
                 <v-tabs v-model="tabs" centered color="cyan" slider-color="yellow">
