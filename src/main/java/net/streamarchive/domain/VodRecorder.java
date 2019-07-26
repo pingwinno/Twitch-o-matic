@@ -9,9 +9,9 @@ import net.streamarchive.infrastructure.enums.State;
 import net.streamarchive.infrastructure.models.Preview;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.StreamDocumentModel;
-import org.apache.http.auth.AuthenticationException;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -53,9 +53,9 @@ public class VodRecorder implements RecordThread {
     @Autowired
     CommandLineExecutor commandLineExecutor;
     @Autowired
-    PremiumMasterPlaylistDownloader premiumMasterPlaylistDownloader;
-    @Autowired
     DashProcessing dashProcessing;
+    @Value("${net.streamarchive.dashprocessing.enabled}")
+    private boolean enabled;
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
     private String streamFolderPath;
@@ -183,9 +183,13 @@ public class VodRecorder implements RecordThread {
                 streamDocumentModel.setDuration(mainPlaylist.size() * 10);
                 streamDocumentModel.setAnimatedPreviews(animatedPreview);
                 streamDocumentModel.setTimeline_preview(timelinePreview);
-                if (settingsProperties.isUserExist(streamDataModel.getUser())) {
-                    dashProcessing.start(streamFolderPath, qualities);
+
+                if (enabled) {
+                    if (settingsProperties.isUserExist(streamDataModel.getUser())) {
+                        dashProcessing.start(streamFolderPath, qualities);
+                    }
                 }
+
                 dataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser(),
                         settingsProperties.isUserExist(streamDataModel.getUser()));
                 recordStatusList.changeState(uuid, State.COMPLETE);
@@ -217,19 +221,15 @@ public class VodRecorder implements RecordThread {
     }
 
     private class StreamThread {
+        MediaPlaylistWriter mediaPlaylistWriter = new MediaPlaylistWriter();
         private ExecutorService executorService;
         private String quality;
         private LinkedHashMap<String, Double> mainPlaylist;
-        MediaPlaylistWriter mediaPlaylistWriter = new MediaPlaylistWriter();
+
         private LinkedHashMap<String, Double> start(String quality) throws InterruptedException, IOException, URISyntaxException, StreamNotFoundExeption {
             this.quality = quality;
-            String m3u8Link = null;
-            try {
-                m3u8Link = MasterPlaylistParser.parse(
-                        masterPlaylistDownloader.getPlaylist(vodId), quality);
-            } catch (AuthenticationException e) {
-                m3u8Link = premiumMasterPlaylistDownloader.getPlaylist(streamDataModel.getUser(), String.valueOf(vodId), quality);
-            }
+            String m3u8Link;
+            m3u8Link = masterPlaylistDownloader.getPlaylist(streamDataModel.getUser(), String.valueOf(vodId), quality);
             //if stream  exist
             if (m3u8Link != null) {
                 String streamPath = StreamPathExtractor.extract(m3u8Link);
@@ -266,13 +266,10 @@ public class VodRecorder implements RecordThread {
                 //TODO Find out what the problem is
                 do {
                     try {
-                        m3u8Link = MasterPlaylistParser.parse(
-                                masterPlaylistDownloader.getPlaylist(vodId), quality);
+                        m3u8Link = masterPlaylistDownloader.getPlaylist(streamDataModel.getUser(), String.valueOf(vodId), quality);
                     } catch (UnknownHostException e) {
                         counter++;
                         log.warn("UnknownHostException. cycle:{} \n Stacktrace{}", counter, e);
-                    } catch (AuthenticationException e) {
-                        m3u8Link = premiumMasterPlaylistDownloader.getPlaylist(streamDataModel.getUser(), String.valueOf(vodId), quality);
                     }
 
                 } while (m3u8Link == null && counter < 10);
@@ -330,7 +327,7 @@ public class VodRecorder implements RecordThread {
             int counter = 0;
             while ((!this.refreshDownload()) && (counter <= 10)) {
                 log.info("Wait for renewing playlist for {} {} {}", streamDataModel.getUser(), streamDataModel.getVodId(), streamDataModel.getUuid());
-               Thread.sleep(10 * 1000);
+                Thread.sleep(10 * 1000);
                 counter++;
             }
             Thread.sleep(100 * 1000);
@@ -375,22 +372,16 @@ public class VodRecorder implements RecordThread {
         }
 
         private void stop() {
-            try {
-                log.info("Stop record");
-                log.info("Closing vod downloader...");
-                if (!executorService.isShutdown()) {
-                    executorService.shutdownNow();
-                }
-                log.debug(
-                        "Downloader pool stopped: {}", executorService.isShutdown());
-                masterPlaylistDownloader.close();
-                isRecordTerminated = true;
-                thisTread.interrupt();
-
-            } catch (IOException e) {
-                recordStatusList.changeState(uuid, State.ERROR);
-                log.error("VoD downloader unexpectedly stop.", e);
+            log.info("Stop record");
+            log.info("Closing vod downloader...");
+            if (!executorService.isShutdown()) {
+                executorService.shutdownNow();
             }
+            log.debug(
+                    "Downloader pool stopped: {}", executorService.isShutdown());
+            isRecordTerminated = true;
+            thisTread.interrupt();
+
         }
     }
 
