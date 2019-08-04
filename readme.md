@@ -1,3 +1,5 @@
+OBSOLETE. NEED TO UPDATE BEFORE RELEASE.
+
 It is an application for the automatic recording streams without mute on Twitch. The estimated working time is 24/7  mode. Streams are tracked via the Twitch webhook API.
 
 ToM uses Twitch HLS API for downloading chunks with m3u8 playlist and preview. Unfortunately, it doesn't work (yet) if streamer has disabled VoD saving. App stores streams in raw HLS. You can compile it into one file using ffmpeg. 
