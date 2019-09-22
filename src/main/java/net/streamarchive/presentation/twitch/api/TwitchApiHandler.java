@@ -5,9 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.streamarchive.application.StorageHelper;
 import net.streamarchive.application.twitch.playlist.handler.RecordStatusGetter;
 import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
-import net.streamarchive.infrastructure.*;
+import net.streamarchive.infrastructure.RecordStatusList;
+import net.streamarchive.infrastructure.RecordThread;
+import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.StreamNotFoundException;
 import net.streamarchive.infrastructure.enums.StartedBy;
 import net.streamarchive.infrastructure.enums.State;
+import net.streamarchive.infrastructure.handlers.misc.HashHandler;
 import net.streamarchive.infrastructure.models.NotificationDataModel;
 import net.streamarchive.infrastructure.models.StatusDataModel;
 import net.streamarchive.infrastructure.models.StreamDataModel;
@@ -85,7 +89,7 @@ public class TwitchApiHandler implements ApplicationContextAware {
 
     @RequestMapping(value = "/{user}", method = RequestMethod.POST)
     public void handleStreamNotification(@RequestBody String stringDataModel
-            , @RequestHeader("content-length") long lenght, @RequestHeader("X-Hub-Signature") String signature, @PathVariable("user") String user) throws InterruptedException, StreamNotFoundExeption, IOException {
+            , @RequestHeader("content-length") long lenght, @RequestHeader("X-Hub-Signature") String signature, @PathVariable("user") String user) throws InterruptedException, StreamNotFoundException, IOException {
 
         log.debug("Incoming stream up/down notification");
 
@@ -122,7 +126,7 @@ public class TwitchApiHandler implements ApplicationContextAware {
                                         log.warn("vod is not created yet... cycle " + counter);
                                         counter++;
                                         if (counter > 60) {
-                                            throw new StreamNotFoundExeption("new vod not found");
+                                            throw new StreamNotFoundException("new vod not found");
                                         }
                                     }
 
@@ -143,8 +147,8 @@ public class TwitchApiHandler implements ApplicationContextAware {
                                     } else log.warn("Stream duplicate. Skip...");
                                 } catch (IOException | InterruptedException e) {
                                     log.error("DB error ", e);
-                                } catch (StreamNotFoundExeption streamNotFoundExeption) {
-                                    streamNotFoundExeption.printStackTrace();
+                                } catch (StreamNotFoundException streamNotFoundException) {
+                                    streamNotFoundException.printStackTrace();
                                 }
 
 

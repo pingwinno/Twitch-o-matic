@@ -2,7 +2,7 @@ package net.streamarchive.application;
 
 import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
 import net.streamarchive.infrastructure.RecordThread;
-import net.streamarchive.infrastructure.StreamNotFoundExeption;
+import net.streamarchive.infrastructure.StreamNotFoundException;
 import net.streamarchive.infrastructure.enums.State;
 import net.streamarchive.infrastructure.models.StatusDataModel;
 import net.streamarchive.infrastructure.models.StreamDataModel;
@@ -56,7 +56,7 @@ public class RecoveryRecordHandler implements ApplicationContextAware {
                         new Thread(() -> {
                             recordThread.start(streamDataModel);
                         }).start();
-                    } catch (StreamNotFoundExeption streamNotFoundExeption) {
+                    } catch (StreamNotFoundException streamNotFoundException) {
                         log.warn("Stream {} not found. Delete stream...", dataModel.getVodId());
                         statusRepository.delete(dataModel);
                     } catch (InterruptedException | IOException e) {

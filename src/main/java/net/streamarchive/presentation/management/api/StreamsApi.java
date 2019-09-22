@@ -6,7 +6,7 @@ import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
 import net.streamarchive.infrastructure.RecordStatusList;
 import net.streamarchive.infrastructure.RecordThread;
 import net.streamarchive.infrastructure.SettingsProperties;
-import net.streamarchive.infrastructure.StreamNotFoundExeption;
+import net.streamarchive.infrastructure.StreamNotFoundException;
 import net.streamarchive.infrastructure.enums.StartedBy;
 import net.streamarchive.infrastructure.enums.State;
 import net.streamarchive.infrastructure.models.AddRequestModel;
@@ -14,15 +14,10 @@ import net.streamarchive.infrastructure.models.StatusDataModel;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.StreamDocumentModel;
 import net.streamarchive.repository.StatusRepository;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
@@ -41,8 +36,7 @@ public class StreamsApi {
     RecordStatusList recordStatusList;
     private final
     RecordThread vodRecorder;
-    private final
-    MongoTemplate mongoTemplate;
+
     private final
     VodMetadataHelper vodMetadataHelper;
     private final
@@ -52,11 +46,10 @@ public class StreamsApi {
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
-    public StreamsApi(StatusRepository statusRepository, RecordStatusList recordStatusList, RecordThread vodRecorder, MongoTemplate mongoTemplate, VodMetadataHelper vodMetadataHelper, StorageHelper storageHelper, SettingsProperties settingsProperties) {
+    public StreamsApi(StatusRepository statusRepository, RecordStatusList recordStatusList, RecordThread vodRecorder, VodMetadataHelper vodMetadataHelper, StorageHelper storageHelper, SettingsProperties settingsProperties) {
         this.statusRepository = statusRepository;
         this.recordStatusList = recordStatusList;
         this.vodRecorder = vodRecorder;
-        this.mongoTemplate = mongoTemplate;
         this.vodMetadataHelper = vodMetadataHelper;
         this.storageHelper = storageHelper;
         this.settingsProperties = settingsProperties;
@@ -123,7 +116,7 @@ public class StreamsApi {
             } else {
                 throw new NotAcceptableExeption();
             }
-        } catch (IOException | InterruptedException | StreamNotFoundExeption e) {
+        } catch (IOException | InterruptedException | StreamNotFoundException e) {
             log.error("Can't start record ", e);
             throw new NotFoundException();
         }
@@ -140,6 +133,8 @@ public class StreamsApi {
      */
     @RequestMapping(value = "{user}/{uuid}", method = RequestMethod.DELETE)
     public void deleteStream(@PathVariable("uuid") String uuid, @PathVariable("user") String user, @RequestParam("deleteMedia") String deleteMedia) {
+        //TODO update db method
+            /*
         if (settingsProperties.isUserExist(user)) {
             Query query = new Query();
             query.addCriteria(Criteria.where("_id").is(uuid));
@@ -161,6 +156,8 @@ public class StreamsApi {
             throw new NotFoundException();
         }
 
+             */
+
     }
 
     /**
@@ -179,7 +176,11 @@ public class StreamsApi {
         streamDocumentModel.setGame(dataModel.getGame());
         streamDocumentModel.setDate(dataModel.getDate());
         streamDocumentModel.setTitle(dataModel.getTitle());
+        //TODO update db method
+            /*
         mongoTemplate.save(streamDocumentModel, user);
+
+             */
     }
 
     /**
@@ -191,13 +192,19 @@ public class StreamsApi {
      */
     @RequestMapping(value = "/{user}", method = RequestMethod.GET)
     public List<StreamDocumentModel> getStreamsList(@PathVariable("user") String user) {
+        //TODO update db method
+            /*
         log.trace(user);
         Query query = new Query();
         query.fields().include("title").include("date").include("game");
+
         if (settingsProperties.isUserExist(user)) {
             log.debug("Streams for {}", user);
             return mongoTemplate.find(query, StreamDocumentModel.class, user);
         } else throw new NotFoundException();
+
+             */
+        return null;
     }
 
     @ResponseStatus(HttpStatus.NOT_MODIFIED)

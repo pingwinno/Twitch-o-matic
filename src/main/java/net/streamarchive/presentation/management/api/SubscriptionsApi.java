@@ -4,7 +4,7 @@ package net.streamarchive.presentation.management.api;
 import net.streamarchive.application.StorageHelper;
 import net.streamarchive.application.SubscriptionRequest;
 import net.streamarchive.infrastructure.SettingsProperties;
-import net.streamarchive.infrastructure.models.User;
+import net.streamarchive.infrastructure.models.Streamer;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -48,8 +48,8 @@ public class SubscriptionsApi {
     public Map<String, List<String>> getTimers() {
 
         Map<String, List<String>> users = new HashMap<>();
-        for (User user : settingsProperties.getUsers()) {
-            users.put(user.getUser(), user.getQualities());
+        for (Streamer streamer : settingsProperties.getUsers()) {
+            users.put(streamer.getUser(), streamer.getQualities());
         }
 
         return users;
@@ -66,11 +66,11 @@ public class SubscriptionsApi {
     public void addSubscription(@PathVariable("user") String user, @RequestBody List<String> quality) {
         try {
             subscriptionRequest.sendSubscriptionRequest(user);
-            User userEntity = new User();
-            userEntity.setUser(user);
+            Streamer streamerEntity = new Streamer();
+            streamerEntity.setUser(user);
             quality.sort(Comparator.comparing(String::length));
-            userEntity.setQualities(quality);
-            settingsProperties.addUser(userEntity);
+            streamerEntity.setQualities(quality);
+            settingsProperties.addUser(streamerEntity);
             storageHelper.creatingRecordedPath(user);
         } catch (IOException e) {
             throw new InternalServerErrorException();

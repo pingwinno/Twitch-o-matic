@@ -2,7 +2,7 @@ package net.streamarchive.application.twitch.playlist.handler;
 
 import net.streamarchive.application.DateConverter;
 import net.streamarchive.infrastructure.HttpSevice;
-import net.streamarchive.infrastructure.StreamNotFoundExeption;
+import net.streamarchive.infrastructure.StreamNotFoundException;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
@@ -19,7 +19,7 @@ public class VodMetadataHelper {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(VodMetadataHelper.class.getName());
 
     public StreamDataModel getLastVod(String user) throws IOException, InterruptedException,
-            StreamNotFoundExeption {
+            StreamNotFoundException {
 
         HttpSevice httpSevice = new HttpSevice();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/channels/" + user +
@@ -41,7 +41,7 @@ public class VodMetadataHelper {
         }
 
     public StreamDataModel getVodMetadata(int vodId) throws IOException,
-            InterruptedException, StreamNotFoundExeption {
+            InterruptedException, StreamNotFoundException {
 
         HttpSevice httpSevice = new HttpSevice();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/videos/" + vodId);
@@ -65,10 +65,10 @@ public class VodMetadataHelper {
                 httpSevice.close();
             } catch (IllegalStateException | JSONException e) {
                 log.error("{}", e);
-                throw new StreamNotFoundExeption("Stream " + vodId + "not found");
+                throw new StreamNotFoundException("Stream " + vodId + "not found");
             }
         } else {
-            throw new StreamNotFoundExeption("Stream " + vodId + "not found");
+            throw new StreamNotFoundException("Stream " + vodId + "not found");
         }
         return streamMetadata;
     }

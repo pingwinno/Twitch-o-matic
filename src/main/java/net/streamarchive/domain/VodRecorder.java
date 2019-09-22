@@ -11,7 +11,6 @@ import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.StreamDocumentModel;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -38,8 +37,7 @@ public class VodRecorder implements RecordThread {
     RecordStatusList recordStatusList;
     private final
     RecordThreadSupervisor recordThreadSupervisor;
-    private final
-    DataBaseWriter dataBaseWriter;
+
     private final
     SettingsProperties settingsProperties;
     private final
@@ -54,8 +52,7 @@ public class VodRecorder implements RecordThread {
     CommandLineExecutor commandLineExecutor;
     @Autowired
     DashProcessing dashProcessing;
-    @Value("${net.streamarchive.dashprocessing.enabled}")
-    private boolean enabled;
+    private boolean enabled = false;
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
     private String streamFolderPath;
@@ -70,11 +67,11 @@ public class VodRecorder implements RecordThread {
     private StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
 
 
-    public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, DataBaseWriter dataBaseWriter, SettingsProperties settingsProperties, RecordStatusGetter recordStatusGetter, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator) {
+    public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, SettingsProperties settingsProperties, RecordStatusGetter recordStatusGetter, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator) {
         this.recordStatusList = recordStatusList;
         this.masterPlaylistDownloader = masterPlaylistDownloader;
         this.recordThreadSupervisor = recordThreadSupervisor;
-        this.dataBaseWriter = dataBaseWriter;
+
         this.settingsProperties = settingsProperties;
         this.recordStatusGetter = recordStatusGetter;
         this.vodMetadataHelper = vodMetadataHelper;
@@ -134,9 +131,13 @@ public class VodRecorder implements RecordThread {
                 log.error("Can't create file or folder for VoD downloader. ", e);
             }
 
+            //TODO update db method
+            /*
             dataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser(),
                     settingsProperties.isUserExist(streamDataModel.getUser()));
+            */
             vodId = streamDataModel.getVodId();
+
 
             executorService = Executors.newFixedThreadPool(qualities.size());
             for (String quality : qualities) {
@@ -146,7 +147,7 @@ public class VodRecorder implements RecordThread {
                         synchronized (this) {
                             mainPlaylist = streamThread.start(quality);
                         }
-                    } catch (IOException | URISyntaxException | StreamNotFoundExeption e) {
+                    } catch (IOException | URISyntaxException | StreamNotFoundException e) {
                         log.error("Vod downloader initialization failed. ", e);
                         recordStatusList.changeState(uuid, State.ERROR);
                         stop();
@@ -166,7 +167,7 @@ public class VodRecorder implements RecordThread {
                 try {
                     downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl());
 
-                } catch (StreamNotFoundExeption e) {
+                } catch (StreamNotFoundException e) {
                     int streamLength = mainPlaylist.size() / 2;
 
                     commandLineExecutor.execute("ffmpeg", "-i", streamFolderPath + "/" + streamLength + ".ts", "-s",
@@ -189,9 +190,11 @@ public class VodRecorder implements RecordThread {
                         dashProcessing.start(streamFolderPath, qualities);
                     }
                 }
-
+                //TODO update db method
+            /*
                 dataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser(),
                         settingsProperties.isUserExist(streamDataModel.getUser()));
+                        */
                 recordStatusList.changeState(uuid, State.COMPLETE);
                 log.info("Complete");
             }
@@ -226,7 +229,7 @@ public class VodRecorder implements RecordThread {
         private String quality;
         private LinkedHashMap<String, Double> mainPlaylist;
 
-        private LinkedHashMap<String, Double> start(String quality) throws InterruptedException, IOException, URISyntaxException, StreamNotFoundExeption {
+        private LinkedHashMap<String, Double> start(String quality) throws InterruptedException, IOException, URISyntaxException, StreamNotFoundException {
             this.quality = quality;
             String m3u8Link;
             m3u8Link = masterPlaylistDownloader.getPlaylist(streamDataModel.getUser(), String.valueOf(vodId), quality);
@@ -307,7 +310,7 @@ public class VodRecorder implements RecordThread {
                 } else {
                     log.warn("UnknownHostException again. Why? I don't give a fuck.");
                 }
-            } catch (IOException | URISyntaxException | StreamNotFoundExeption e) {
+            } catch (IOException | URISyntaxException | StreamNotFoundException e) {
                 log.error("Vod downloader refresh failed. ", e);
                 recordStatusList.changeState(uuid, State.ERROR);
                 stop();

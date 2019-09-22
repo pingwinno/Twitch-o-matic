@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Entity
-public class User {
+public class Streamer {
     @Id
     private String user;
     private String[] qualities;

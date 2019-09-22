@@ -3,9 +3,9 @@ package net.streamarchive.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.streamarchive.application.twitch.playlist.handler.UserIdGetter;
-import net.streamarchive.infrastructure.HashHandler;
 import net.streamarchive.infrastructure.HttpSevice;
 import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.handlers.misc.HashHandler;
 import net.streamarchive.infrastructure.models.SubscriptionQueryModel;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;

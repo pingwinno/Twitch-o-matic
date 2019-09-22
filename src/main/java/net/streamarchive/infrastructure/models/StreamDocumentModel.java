@@ -2,13 +2,12 @@ package net.streamarchive.infrastructure.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
 
 //@JsonSerialize(using = DocumentModelSerializer.class)
-@Document
+
 public class StreamDocumentModel {
 
     @Id

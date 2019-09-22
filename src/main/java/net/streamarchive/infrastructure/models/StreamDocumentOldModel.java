@@ -1,8 +1,6 @@
 package net.streamarchive.infrastructure.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.bson.codecs.pojo.annotations.BsonId;
-import org.bson.codecs.pojo.annotations.BsonProperty;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -11,15 +9,13 @@ import java.util.LinkedList;
 //@JsonSerialize(using = DocumentModelSerializer.class)
 public class StreamDocumentOldModel {
 
-    @BsonId
+
     private String uuid;
     private Date date;
     private String title;
     private String game;
     private long duration;
-    @BsonProperty("animated_preview")
     private LinkedList<AnimatedPreview> animatedPreviews;
-    @BsonProperty("timeline_preview")
     private LinkedHashMap<String, Preview> timelinePreviews;
 
     public String getUuid() {
