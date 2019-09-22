@@ -49,7 +49,7 @@ public class SubscriptionsApi {
 
         Map<String, List<String>> users = new HashMap<>();
         for (Streamer streamer : settingsProperties.getUsers()) {
-            users.put(streamer.getUser(), streamer.getQualities());
+            users.put(streamer.getName(), streamer.getQualities());
         }
 
         return users;
@@ -67,7 +67,7 @@ public class SubscriptionsApi {
         try {
             subscriptionRequest.sendSubscriptionRequest(user);
             Streamer streamerEntity = new Streamer();
-            streamerEntity.setUser(user);
+            streamerEntity.setName(user);
             quality.sort(Comparator.comparing(String::length));
             streamerEntity.setQualities(quality);
             settingsProperties.addUser(streamerEntity);

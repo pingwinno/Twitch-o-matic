@@ -136,7 +136,7 @@ public class TwitchApiHandler implements ApplicationContextAware {
 
                                         recordStatusList.addStatus
                                                 (new StatusDataModel(streamMetadata.getVodId(), StartedBy.WEBHOOK, Date.from(Instant.now()),
-                                                        State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getUser()));
+                                                        State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getStreamerName()));
 
                                         log.info("Try to start record");
 

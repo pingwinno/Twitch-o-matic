@@ -6,9 +6,10 @@ import net.streamarchive.application.TimelinePreviewGenerator;
 import net.streamarchive.application.twitch.playlist.handler.*;
 import net.streamarchive.infrastructure.*;
 import net.streamarchive.infrastructure.enums.State;
-import net.streamarchive.infrastructure.models.Preview;
+import net.streamarchive.infrastructure.handlers.db.ArchiveDBHandler;
+import net.streamarchive.infrastructure.models.Stream;
 import net.streamarchive.infrastructure.models.StreamDataModel;
-import net.streamarchive.infrastructure.models.StreamDocumentModel;
+import net.streamarchive.infrastructure.models.StreamerNotFoundException;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -32,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Scope("prototype")
 public class VodRecorder implements RecordThread {
+
     private final MasterPlaylistDownloader masterPlaylistDownloader;
     private final
     RecordStatusList recordStatusList;
@@ -52,6 +54,8 @@ public class VodRecorder implements RecordThread {
     CommandLineExecutor commandLineExecutor;
     @Autowired
     DashProcessing dashProcessing;
+    @Autowired
+    ArchiveDBHandler archiveDBHandler;
     private boolean enabled = false;
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
@@ -64,7 +68,7 @@ public class VodRecorder implements RecordThread {
     private ExecutorService executorService;
     private Thread thisTread = Thread.currentThread();
     private boolean isRecordTerminated;
-    private StreamDocumentModel streamDocumentModel = new StreamDocumentModel();
+    private Stream stream = new Stream();
 
 
     public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, SettingsProperties settingsProperties, RecordStatusGetter recordStatusGetter, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator) {
@@ -81,10 +85,10 @@ public class VodRecorder implements RecordThread {
 
     @Override
     public void start(StreamDataModel streamDataModel) {
-        log.debug("Starting {} {} {}", streamDataModel.getUser(), streamDataModel.getVodId(), streamDataModel.getUuid());
+        log.debug("Starting {} {} {}", streamDataModel.getStreamerName(), streamDataModel.getVodId(), streamDataModel.getUuid());
         this.streamDataModel = streamDataModel;
         uuid = streamDataModel.getUuid();
-        streamFolderPath = settingsProperties.getRecordedStreamPath() + streamDataModel.getUser() + "/" + uuid.toString();
+        streamFolderPath = settingsProperties.getRecordedStreamPath() + streamDataModel.getStreamerName() + "/" + uuid.toString();
         vodId = streamDataModel.getVodId();
         recordThreadSupervisor.add(uuid, this);
         try {
@@ -100,13 +104,14 @@ public class VodRecorder implements RecordThread {
         }
         try {
             recordStatusList.changeState(uuid, State.RUNNING);
-            streamDocumentModel.set_id(streamDataModel.getUuid().toString());
-            streamDocumentModel.setTitle(streamDataModel.getTitle());
-            streamDocumentModel.setDate(streamDataModel.getDate());
-            streamDocumentModel.setGame(streamDataModel.getGame());
+            stream.setUuid(streamDataModel.getUuid());
+            stream.setTitle(streamDataModel.getTitle());
+            stream.setDate(streamDataModel.getDate());
+            stream.setGame(streamDataModel.getGame());
+            stream.setStreamer(streamDataModel.getStreamerName());
             List<String> qualities = new ArrayList<>();
-            if (settingsProperties.isUserExist(streamDataModel.getUser())) {
-                qualities = settingsProperties.getUser(streamDataModel.getUser()).getQualities();
+            if (settingsProperties.isUserExist(streamDataModel.getStreamerName())) {
+                qualities = settingsProperties.getUser(streamDataModel.getStreamerName()).getQualities();
             } else {
                 qualities.add("chunked");
             }
@@ -131,11 +136,7 @@ public class VodRecorder implements RecordThread {
                 log.error("Can't create file or folder for VoD downloader. ", e);
             }
 
-            //TODO update db method
-            /*
-            dataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser(),
-                    settingsProperties.isUserExist(streamDataModel.getUser()));
-            */
+            archiveDBHandler.addStream(stream);
             vodId = streamDataModel.getVodId();
 
 
@@ -171,34 +172,29 @@ public class VodRecorder implements RecordThread {
                     int streamLength = mainPlaylist.size() / 2;
 
                     commandLineExecutor.execute("ffmpeg", "-i", streamFolderPath + "/" + streamLength + ".ts", "-s",
-                            "640x360", "-vframes", "1", streamFolderPath + "/" + settingsProperties.getUser(streamDataModel.getUser()).getQualities()
-                                    .get(settingsProperties.getUser(streamDataModel.getUser()).getQualities().size() - 1) + "/preview.jpg", "-y");
+                            "640x360", "-vframes", "1", streamFolderPath + "/" + settingsProperties.getUser(streamDataModel.getStreamerName()).getQualities()
+                                    .get(settingsProperties.getUser(streamDataModel.getStreamerName()).getQualities().size() - 1) + "/preview.jpg", "-y");
                 }
 
-                LinkedHashMap<String, String> animatedPreview = animatedPreviewGenerator.generate(streamDataModel, mainPlaylist,
+                animatedPreviewGenerator.generate(streamDataModel, mainPlaylist,
                         qualities.get(qualities.size() - 1));
-                LinkedHashMap<String, Preview> timelinePreview = timelinePreviewGenerator.generate(streamDataModel, mainPlaylist,
+                timelinePreviewGenerator.generate(streamDataModel, mainPlaylist,
                         qualities.get(qualities.size() - 1));
 
 
-                streamDocumentModel.setDuration(mainPlaylist.size() * 10);
-                streamDocumentModel.setAnimatedPreviews(animatedPreview);
-                streamDocumentModel.setTimeline_preview(timelinePreview);
+                stream.setDuration(mainPlaylist.size() * 10);
+
 
                 if (enabled) {
-                    if (settingsProperties.isUserExist(streamDataModel.getUser())) {
+                    if (settingsProperties.isUserExist(streamDataModel.getStreamerName())) {
                         dashProcessing.start(streamFolderPath, qualities);
                     }
                 }
-                //TODO update db method
-            /*
-                dataBaseWriter.writeToRemoteDB(streamDocumentModel, streamDataModel.getUser(),
-                        settingsProperties.isUserExist(streamDataModel.getUser()));
-                        */
+                archiveDBHandler.updateStream(stream);
                 recordStatusList.changeState(uuid, State.COMPLETE);
                 log.info("Complete");
             }
-        } catch (IOException e) {
+        } catch (IOException | StreamerNotFoundException | StreamNotFoundException e) {
             log.error("Vod downloader initialization failed. ", e);
             recordStatusList.changeState(uuid, State.ERROR);
             stop();
@@ -232,7 +228,7 @@ public class VodRecorder implements RecordThread {
         private LinkedHashMap<String, Double> start(String quality) throws InterruptedException, IOException, URISyntaxException, StreamNotFoundException {
             this.quality = quality;
             String m3u8Link;
-            m3u8Link = masterPlaylistDownloader.getPlaylist(streamDataModel.getUser(), String.valueOf(vodId), quality);
+            m3u8Link = masterPlaylistDownloader.getPlaylist(streamDataModel.getStreamerName(), String.valueOf(vodId), quality);
             //if stream  exist
             if (m3u8Link != null) {
                 String streamPath = StreamPathExtractor.extract(m3u8Link);
@@ -269,7 +265,7 @@ public class VodRecorder implements RecordThread {
                 //TODO Find out what the problem is
                 do {
                     try {
-                        m3u8Link = masterPlaylistDownloader.getPlaylist(streamDataModel.getUser(), String.valueOf(vodId), quality);
+                        m3u8Link = masterPlaylistDownloader.getPlaylist(streamDataModel.getStreamerName(), String.valueOf(vodId), quality);
                     } catch (UnknownHostException e) {
                         counter++;
                         log.warn("UnknownHostException. cycle:{} \n Stacktrace{}", counter, e);
@@ -321,7 +317,7 @@ public class VodRecorder implements RecordThread {
         private void recordCycle() throws IOException, InterruptedException {
 
             while (recordStatusGetter.isRecording(vodId)) {
-                log.debug("Refresh download {} {} {}", streamDataModel.getUser(), streamDataModel.getVodId(), streamDataModel.getUuid());
+                log.debug("Refresh download {} {} {}", streamDataModel.getStreamerName(), streamDataModel.getVodId(), streamDataModel.getUuid());
                 refreshDownload();
                 Thread.sleep(20 * 1000);
             }
@@ -329,7 +325,7 @@ public class VodRecorder implements RecordThread {
             log.info("Finalize record...");
             int counter = 0;
             while ((!this.refreshDownload()) && (counter <= 10)) {
-                log.info("Wait for renewing playlist for {} {} {}", streamDataModel.getUser(), streamDataModel.getVodId(), streamDataModel.getUuid());
+                log.info("Wait for renewing playlist for {} {} {}", streamDataModel.getStreamerName(), streamDataModel.getVodId(), streamDataModel.getUuid());
                 Thread.sleep(10 * 1000);
                 counter++;
             }

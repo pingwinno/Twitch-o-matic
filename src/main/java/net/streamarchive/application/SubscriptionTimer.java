@@ -27,7 +27,7 @@ public class SubscriptionTimer {
     public void doSubscriptions() throws IOException {
         hashHandler.generateKey();
         for (Streamer streamer : settingsProperties.getUsers()) {
-            subscriptionRequest.sendSubscriptionRequest(streamer.getUser());
+            subscriptionRequest.sendSubscriptionRequest(streamer.getName());
         }
     }
 }

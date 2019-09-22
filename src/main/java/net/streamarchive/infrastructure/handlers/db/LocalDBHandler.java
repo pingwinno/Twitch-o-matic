@@ -62,8 +62,8 @@ public class LocalDBHandler implements ArchiveDBHandler {
     }
 
     @Override
-    public void addStream(Stream stream) throws StreamNotFoundException {
-        try {
+    public void addStream(Stream stream) throws IOException {
+
             if (!Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamer() + "/" + stream.getUuid()
                     + "/metadata.json"))) {
                 File file = new File(settingsProperties.getRecordedStreamPath() + stream.getStreamer() + "/" + stream.getUuid()
@@ -75,10 +75,7 @@ public class LocalDBHandler implements ArchiveDBHandler {
 
             } else log.error("Stream" + stream.getUuid() + "exist");
 
-        } catch (IOException e) {
-            log.error("Writing failed", e);
-            throw new StreamNotFoundException("Stream" + stream.getUuid() + "exist");
-        }
+
     }
 
     @Override

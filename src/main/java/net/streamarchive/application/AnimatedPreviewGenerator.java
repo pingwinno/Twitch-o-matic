@@ -25,7 +25,7 @@ public class AnimatedPreviewGenerator {
     public LinkedHashMap<String, String> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet, String quality) throws IOException {
         LinkedHashMap<String, String> previewList = new LinkedHashMap<>();
         ArrayList<String> chunks = new ArrayList<>(chunksSet.keySet());
-        String pathString = settingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid();
+        String pathString = settingsProperties.getRecordedStreamPath() + model.getStreamerName() + "/" + model.getUuid();
         Files.createDirectories(Paths.get(pathString + "/animated_preview/"));
         if (chunks.size() > 10) {
             int chunkNum = 0;

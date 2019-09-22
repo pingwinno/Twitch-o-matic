@@ -26,8 +26,8 @@ public class TimelinePreviewGenerator {
 
     public LinkedHashMap<String, Preview> generate(StreamDataModel model, LinkedHashMap<String, Double> chunksSet, String quality)
             throws IOException {
-        String pathString = settingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid();
-        Files.createDirectories(Paths.get(settingsProperties.getRecordedStreamPath() + model.getUser() + "/" + model.getUuid() +
+        String pathString = settingsProperties.getRecordedStreamPath() + model.getStreamerName() + "/" + model.getUuid();
+        Files.createDirectories(Paths.get(settingsProperties.getRecordedStreamPath() + model.getStreamerName() + "/" + model.getUuid() +
                 "/timeline_preview/"));
         LinkedHashMap<String, Preview> previewList = new LinkedHashMap<>();
         int chunkNum = 0;

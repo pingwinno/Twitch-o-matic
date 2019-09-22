@@ -27,7 +27,7 @@ public class StorageHelper {
     public Map<String, Integer> getFreeSpace() throws IOException {
         Map<String, Integer> freeSpace = new HashMap<>();
         for (Streamer streamer : settingsProperties.getUsers()) {
-            freeSpace.put(streamer.getUser(), (int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getUser())).getUsableSpace() / 1073741824));
+            freeSpace.put(streamer.getName(), (int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getName())).getUsableSpace() / 1073741824));
         }
         return freeSpace;
     }
@@ -36,9 +36,9 @@ public class StorageHelper {
         List<StorageState> storageStates = new ArrayList<>();
         for (Streamer streamer : settingsProperties.getUsers()) {
             StorageState storageState = new StorageState();
-            storageState.setUser(streamer.getUser());
-            storageState.setTotalStorage((int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getUser())).getTotalSpace() / 1073741824));
-            storageState.setFreeStorage((int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getUser())).getUsableSpace() / 1073741824));
+            storageState.setUser(streamer.getName());
+            storageState.setTotalStorage((int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getName())).getTotalSpace() / 1073741824));
+            storageState.setFreeStorage((int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getName())).getUsableSpace() / 1073741824));
             storageStates.add(storageState);
         }
         return storageStates;
@@ -59,19 +59,19 @@ public class StorageHelper {
             if (!Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + streamer)) && !Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + streamer))) {
                 log.info("Folder not exist!");
                 log.info("Try create folder...");
-                if (!creatingRecordedPath(streamer.getUser())) {
+                if (!creatingRecordedPath(streamer.getName())) {
                     pass = false;
                 } else {
                     log.info("Success!");
                 }
-            } else if (!Files.isWritable(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getUser()))) {
+            } else if (!Files.isWritable(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getName()))) {
                 log.warn("Can't write in {}", settingsProperties.getRecordedStreamPath());
                 log.warn("Check permissions or change RecordedStreamPath in config_test.prop");
                 pass = false;
             }
         }
         for (Streamer streamer : settingsProperties.getUsers()) {
-            log.info("Free space for {} is: {} GB", streamer, getFreeSpace().get(streamer.getUser()));
+            log.info("Free space for {} is: {} GB", streamer, getFreeSpace().get(streamer.getName()));
         }
         return pass;
 

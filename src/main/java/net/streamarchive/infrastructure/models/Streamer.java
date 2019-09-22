@@ -8,16 +8,16 @@ import java.util.List;
 @Entity
 public class Streamer {
     @Id
-    private String user;
+    private String name;
     private String[] qualities;
     private String redirect;
 
-    public String getUser() {
-        return user;
+    public String getName() {
+        return name;
     }
 
-    public void setUser(String user) {
-        this.user = user;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public List<String> getQualities() {
