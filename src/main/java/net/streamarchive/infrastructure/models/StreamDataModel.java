@@ -20,18 +20,18 @@ public class StreamDataModel {
     @JsonProperty
     private String game;
     @JsonProperty
-    private String user;
+    private String streamerName;
 
     public StreamDataModel() {
 
     }
 
-    public String getUser() {
-        return user;
+    public String getStreamerName() {
+        return streamerName;
     }
 
-    public void setUser(String user) {
-        this.user = user;
+    public void setStreamerName(String streamerName) {
+        this.streamerName = streamerName;
     }
 
     public String getGame() {
@@ -77,7 +77,7 @@ public class StreamDataModel {
                 ", date='" + date + '\'' +
                 ", title='" + title + '\'' +
                 ", game='" + game + '\'' +
-                ", user='" + user + '\'' +
+                ", user='" + streamerName + '\'' +
                 '}';
     }
 

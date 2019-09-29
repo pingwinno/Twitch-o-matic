@@ -4,7 +4,8 @@
 <head>
     <title>Management and statuses</title>
     <link rel="icon" href="./logo.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, streamer-scalable=no, minimal-ui"
+          name="viewport">
     <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet">
     <link href="/webjars/vuetify/1.5.16/dist/vuetify.min.css" rel="stylesheet">
 </head>
@@ -41,21 +42,21 @@
                                         Add streamer
                                     </v-btn>
                                 </v-flex>
-                                <v-flex xs12 md6 lg3 v-for="item of storage" :key="item.user">
+                                <v-flex :key="item.streamer" lg3 md6 v-for="item of storage" xs12>
                                     <v-card>
-                                        <v-card-title><h2>{{item.user}}</h2></v-card-title>
+                                        <v-card-title><h2>{{item.streamer}}</h2></v-card-title>
                                         <v-card-text>
                                             Used space: <i>{{item.totalStorage - item.freeStorage}} GB</i> <br>
                                             Free space: {{item.freeStorage}} GB<br>
                                             Total space: {{item.totalStorage}} GB<br>
                                             Quality:
-                                            <span v-for="(item2, index) in streamers[item.user]">
-                                                {{item2 + (index !== streamers[item.user].length-1 ? ", " : "") }}
+                                            <span v-for="(item2, index) in streamers[item.streamer]">
+                                                {{item2 + (index !== streamers[item.streamer].length-1 ? ", " : "") }}
                                             </span>
                                         </v-card-text>
                                         <v-card-actions>
                                             <v-spacer></v-spacer>
-                                            <v-btn color="error" flat @click="openUnsubscribeModal(item.user)">
+                                            <v-btn @click="openUnsubscribeModal(item.streamer)" color="error" flat>
                                                 Delete subscription
                                                 <v-icon>delete</v-icon>
                                             </v-btn>
@@ -136,7 +137,7 @@
                                       class="elevation-1">
                             <template v-slot:items="props">
                                 <td :class="background(props.item.state)">{{ props.item.uuid }}</td>
-                                <td :class="background(props.item.state)">{{ props.item.user }}</td>
+                                <td :class="background(props.item.state)">{{ props.item.streamer }}</td>
                                 <td :class="background(props.item.state)">{{ props.item.vodId }}</td>
                                 <td :class="background(props.item.state)">{{ props.item.date }}</td>
                                 <td :class="background(props.item.state)">{{ props.item.startedBy }}</td>
@@ -214,9 +215,9 @@
                 <v-card-text>
                     <v-select
                             v-model="addStreamForm.type"
-                            :items="['user', 'vod']"
+                            :items="['streamer', 'vod']"
                             label="Type"
-                            hint="user - current stream, vod - past"
+                            hint="streamer - current stream, vod - past"
                             persistent-hint
                     ></v-select>
                     <v-text-field

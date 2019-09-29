@@ -1,7 +1,7 @@
 package net.streamarchive.application.twitch.playlist.handler;
 
 import net.streamarchive.infrastructure.HttpSevice;
-import net.streamarchive.infrastructure.StreamNotFoundExeption;
+import net.streamarchive.infrastructure.StreamNotFoundException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
@@ -18,7 +18,7 @@ import java.net.URISyntaxException;
 public class MasterPlaylistDownloader {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(MasterPlaylistDownloader.class.getName());
 
-    public String getPlaylist(String user, String vodId, String quality) throws IOException, InterruptedException, URISyntaxException, StreamNotFoundExeption {
+    public String getPlaylist(String user, String vodId, String quality) throws IOException, InterruptedException, URISyntaxException, StreamNotFoundException {
 
         HttpSevice httpSevice = new HttpSevice();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/videos/" + vodId);
@@ -37,7 +37,7 @@ public class MasterPlaylistDownloader {
 
         }
         if (httpSevice.getService(httpGet, true).getStatusLine().getStatusCode() == 404) {
-            throw new StreamNotFoundExeption("Stream " + vodId + " not found");
+            throw new StreamNotFoundException("Stream " + vodId + " not found");
         }
         throw new IOException("Can't get substream link");
 

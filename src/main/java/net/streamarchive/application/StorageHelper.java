@@ -2,7 +2,7 @@ package net.streamarchive.application;
 
 import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.models.StorageState;
-import net.streamarchive.infrastructure.models.User;
+import net.streamarchive.infrastructure.models.Streamer;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
@@ -26,19 +26,19 @@ public class StorageHelper {
 
     public Map<String, Integer> getFreeSpace() throws IOException {
         Map<String, Integer> freeSpace = new HashMap<>();
-        for (User user : settingsProperties.getUsers()) {
-            freeSpace.put(user.getUser(), (int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + user.getUser())).getUsableSpace() / 1073741824));
+        for (Streamer streamer : settingsProperties.getUsers()) {
+            freeSpace.put(streamer.getName(), (int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getName())).getUsableSpace() / 1073741824));
         }
         return freeSpace;
     }
 
     public List<StorageState> getStorageState() throws IOException {
         List<StorageState> storageStates = new ArrayList<>();
-        for (User user : settingsProperties.getUsers()) {
+        for (Streamer streamer : settingsProperties.getUsers()) {
             StorageState storageState = new StorageState();
-            storageState.setUser(user.getUser());
-            storageState.setTotalStorage((int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + user.getUser())).getTotalSpace() / 1073741824));
-            storageState.setFreeStorage((int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + user.getUser())).getUsableSpace() / 1073741824));
+            storageState.setUser(streamer.getName());
+            storageState.setTotalStorage((int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getName())).getTotalSpace() / 1073741824));
+            storageState.setFreeStorage((int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getName())).getUsableSpace() / 1073741824));
             storageStates.add(storageState);
         }
         return storageStates;
@@ -55,23 +55,23 @@ public class StorageHelper {
     @PostConstruct
     public boolean initialStorageCheck() throws IOException {
         boolean pass = true;
-        for (User user : settingsProperties.getUsers()) {
-            if (!Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + user)) && !Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + user))) {
+        for (Streamer streamer : settingsProperties.getUsers()) {
+            if (!Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + streamer)) && !Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + streamer))) {
                 log.info("Folder not exist!");
                 log.info("Try create folder...");
-                if (!creatingRecordedPath(user.getUser())) {
+                if (!creatingRecordedPath(streamer.getName())) {
                     pass = false;
                 } else {
                     log.info("Success!");
                 }
-            } else if (!Files.isWritable(Paths.get(settingsProperties.getRecordedStreamPath() + user.getUser()))) {
+            } else if (!Files.isWritable(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getName()))) {
                 log.warn("Can't write in {}", settingsProperties.getRecordedStreamPath());
                 log.warn("Check permissions or change RecordedStreamPath in config_test.prop");
                 pass = false;
             }
         }
-        for (User user : settingsProperties.getUsers()) {
-            log.info("Free space for {} is: {} GB", user, getFreeSpace().get(user.getUser()));
+        for (Streamer streamer : settingsProperties.getUsers()) {
+            log.info("Free space for {} is: {} GB", streamer, getFreeSpace().get(streamer.getName()));
         }
         return pass;
 
