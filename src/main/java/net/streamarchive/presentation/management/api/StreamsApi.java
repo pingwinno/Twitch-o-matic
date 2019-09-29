@@ -203,11 +203,11 @@ public class StreamsApi {
     }
 
     @ResponseStatus(HttpStatus.NOT_MODIFIED)
-    private class NotFoundException extends RuntimeException {
+    private class NotModifiedException extends RuntimeException {
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    private class NotModifiedException extends RuntimeException {
+    private class NotFoundException extends RuntimeException {
     }
 
     @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)

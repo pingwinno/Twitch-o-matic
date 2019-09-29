@@ -23,12 +23,12 @@ public class EnabledDBHandler implements ArchiveDBHandler {
 
     @Override
     public List<Stream> getAllStreams(String streamer) throws StreamerNotFoundException {
-        return localDBHandler.getAllStreams(streamer);
+        return jpaDBHandler.getAllStreams(streamer);
     }
 
     @Override
     public Stream getStream(String streamer, UUID uuid) throws StreamNotFoundException {
-        return localDBHandler.getStream(streamer, uuid);
+        return jpaDBHandler.getStream(streamer, uuid);
     }
 
     @Override

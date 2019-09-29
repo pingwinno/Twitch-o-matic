@@ -20,12 +20,12 @@ public class RestDBHandler implements ArchiveDBHandler {
     SettingsProperties settingsProperties;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private RestTemplate restTemplateWithCredentials;
 
     @Override
     public List<Stream> getAllStreams(String streamer) throws StreamerNotFoundException {
 
-        ResponseEntity<List<Stream>> response = restTemplate.exchange(
+        ResponseEntity<List<Stream>> response = restTemplateWithCredentials.exchange(
                 settingsProperties.getRemoteDBAddress() + "streams/" + streamer,
                 HttpMethod.GET,
                 null,
@@ -39,7 +39,7 @@ public class RestDBHandler implements ArchiveDBHandler {
 
     @Override
     public Stream getStream(String streamer, UUID uuid) throws StreamNotFoundException {
-        ResponseEntity<Stream> response = restTemplate.exchange(
+        ResponseEntity<Stream> response = restTemplateWithCredentials.exchange(
                 settingsProperties.getRemoteDBAddress() + "streams/" + streamer + "/" + uuid,
                 HttpMethod.GET,
                 null, Stream.class);
@@ -51,18 +51,18 @@ public class RestDBHandler implements ArchiveDBHandler {
 
     @Override
     public void addStream(Stream stream) {
-        restTemplate.postForObject(settingsProperties.getRemoteDBAddress() + "streams/" + stream.getStreamer(), stream, Stream.class);
+        restTemplateWithCredentials.postForObject(settingsProperties.getRemoteDBAddress() + "streams/" + stream.getStreamer(), stream, Stream.class);
 
     }
 
     @Override
     public void updateStream(Stream stream) {
-        restTemplate.postForObject(settingsProperties.getRemoteDBAddress() + "streams/" + stream.getStreamer(), stream, Stream.class);
+        restTemplateWithCredentials.postForObject(settingsProperties.getRemoteDBAddress() + "streams/" + stream.getStreamer(), stream, Stream.class);
     }
 
     @Override
     public void deleteStream(Stream stream) throws StreamNotFoundException {
-        restTemplate.delete(settingsProperties.getRemoteDBAddress() + "streams/" + stream.getStreamer() + "/" + stream.getUuid().toString());
+        restTemplateWithCredentials.delete(settingsProperties.getRemoteDBAddress() + "streams/" + stream.getStreamer() + "/" + stream.getUuid().toString());
     }
 
 }
