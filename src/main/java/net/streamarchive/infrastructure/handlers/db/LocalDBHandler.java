@@ -80,7 +80,7 @@ public class LocalDBHandler implements ArchiveDBHandler {
 
     @Override
     public void updateStream(Stream stream) throws StreamNotFoundException, StreamerNotFoundException {
-        if (Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + stream.getUuid()
+        if (Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamer() + "/" + stream.getUuid()
                 + "/metadata.json"))) {
 
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();

@@ -67,7 +67,7 @@ public class SubscriptionsApi {
         try {
             subscriptionRequest.sendSubscriptionRequest(user);
             Streamer streamerEntity = new Streamer();
-            streamerEntity.setName(user);
+            streamerEntity.setName(user.toLowerCase());
             quality.sort(Comparator.comparing(String::length));
             streamerEntity.setQualities(quality);
             settingsProperties.addUser(streamerEntity);
