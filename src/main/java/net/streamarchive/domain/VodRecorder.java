@@ -42,8 +42,7 @@ public class VodRecorder implements RecordThread {
 
     private final
     SettingsProperties settingsProperties;
-    private final
-    RecordStatusGetter recordStatusGetter;
+
     private final
     VodMetadataHelper vodMetadataHelper;
     private final
@@ -71,13 +70,12 @@ public class VodRecorder implements RecordThread {
     private Stream stream = new Stream();
 
 
-    public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, SettingsProperties settingsProperties, RecordStatusGetter recordStatusGetter, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator) {
+    public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, SettingsProperties settingsProperties, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator) {
         this.recordStatusList = recordStatusList;
         this.masterPlaylistDownloader = masterPlaylistDownloader;
         this.recordThreadSupervisor = recordThreadSupervisor;
 
         this.settingsProperties = settingsProperties;
-        this.recordStatusGetter = recordStatusGetter;
         this.vodMetadataHelper = vodMetadataHelper;
         this.animatedPreviewGenerator = animatedPreviewGenerator;
         this.timelinePreviewGenerator = timelinePreviewGenerator;
@@ -92,7 +90,7 @@ public class VodRecorder implements RecordThread {
         vodId = streamDataModel.getVodId();
         recordThreadSupervisor.add(uuid, this);
         try {
-            if (recordStatusGetter.isRecording(vodId)) {
+            if (vodMetadataHelper.isRecording(vodId)) {
                 threadsNumber = 2;
                 log.info("Wait for creating vod...");
             } else {
@@ -166,7 +164,7 @@ public class VodRecorder implements RecordThread {
             if (mainPlaylist != null) {
                 log.debug("Download preview");
                 try {
-                    downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl());
+                    downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getBaseUrl());
 
                 } catch (StreamNotFoundException e) {
                     int streamLength = mainPlaylist.size() / 2;
@@ -316,7 +314,7 @@ public class VodRecorder implements RecordThread {
 
         private void recordCycle() throws IOException, InterruptedException {
 
-            while (recordStatusGetter.isRecording(vodId)) {
+            while (vodMetadataHelper.isRecording(vodId)) {
                 log.debug("Refresh download {} {} {}", streamDataModel.getStreamerName(), streamDataModel.getVodId(), streamDataModel.getUuid());
                 refreshDownload();
                 Thread.sleep(20 * 1000);

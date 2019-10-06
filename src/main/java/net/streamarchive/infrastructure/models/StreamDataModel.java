@@ -9,7 +9,7 @@ public class StreamDataModel {
 
 
     private int vodId;
-    private String previewUrl;
+    private String baseUrl;
     private boolean skipMuted;
     @JsonProperty
     private UUID uuid;
@@ -71,7 +71,7 @@ public class StreamDataModel {
     public String toString() {
         return "StreamDataModel{" +
                 "vodId='" + vodId + '\'' +
-                ", previewUrl='" + previewUrl + '\'' +
+                ", previewUrl='" + baseUrl + '\'' +
                 ", skipMuted=" + skipMuted +
                 ", uuid=" + uuid +
                 ", date='" + date + '\'' +
@@ -98,12 +98,12 @@ public class StreamDataModel {
     }
 
 
-    public String getPreviewUrl() {
-        return previewUrl;
+    public String getBaseUrl() {
+        return baseUrl;
     }
 
-    public void setPreviewUrl(String previewUrl) {
-        this.previewUrl = previewUrl;
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 
 

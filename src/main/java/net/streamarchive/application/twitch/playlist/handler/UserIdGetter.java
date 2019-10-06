@@ -14,7 +14,7 @@ public class UserIdGetter {
 
     private static Logger log = Logger.getLogger(UserIdGetter.class.getName());
 
-    public static String getUserId(String user) throws IOException, InterruptedException {
+    public static long getUserId(String user) throws IOException, InterruptedException {
 
         HttpSevice httpSevice = new HttpSevice();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/helix/users?login=" + user);
@@ -22,11 +22,11 @@ public class UserIdGetter {
         log.fine(httpGet.toString());
         JSONObject jsonObj =
                 new JSONObject(EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity()));
-        String userId;
+        long userId;
         try {
             JSONArray params = jsonObj.getJSONArray("data");
             JSONObject dataObj = params.getJSONObject(0);
-            userId = dataObj.get("id").toString();
+            userId = Long.parseLong(dataObj.get("id").toString());
 
         } catch (JSONException exception){
             userId = getUserId(user);

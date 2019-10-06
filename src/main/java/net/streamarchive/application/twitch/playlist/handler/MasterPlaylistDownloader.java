@@ -23,6 +23,7 @@ public class MasterPlaylistDownloader {
         HttpSevice httpSevice = new HttpSevice();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/videos/" + vodId);
         httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
+        httpGet.addHeader("Accept", "application/vnd.twitchtv.v5+json");
         JSONObject jsonObj =
                 new JSONObject(EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity()));
         String previewUrl = null;

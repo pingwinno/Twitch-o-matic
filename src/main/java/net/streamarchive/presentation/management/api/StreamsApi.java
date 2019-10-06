@@ -2,6 +2,7 @@ package net.streamarchive.presentation.management.api;
 
 
 import net.streamarchive.application.StorageHelper;
+import net.streamarchive.application.twitch.playlist.handler.UserIdGetter;
 import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
 import net.streamarchive.infrastructure.RecordStatusList;
 import net.streamarchive.infrastructure.RecordThread;
@@ -75,9 +76,9 @@ public class StreamsApi {
             log.trace("type: {}", requestModel.getType());
             log.trace("value: {}", requestModel.getValue());
             if (requestModel.getType().equals("user")) {
-                streamMetadata = vodMetadataHelper.getLastVod(requestModel.getValue());
+                streamMetadata = vodMetadataHelper.getLastVod(UserIdGetter.getUserId(requestModel.getValue()));
             } else if (requestModel.getType().equals("vod")) {
-                streamMetadata = vodMetadataHelper.getVodMetadata(Integer.valueOf(requestModel.getValue()));
+                streamMetadata = vodMetadataHelper.getVodMetadata(Integer.parseInt(requestModel.getValue()));
             }
             if (streamMetadata != null) {
                 //set another parent folder/db for stream ( for example if streamer is guest on another chanel)

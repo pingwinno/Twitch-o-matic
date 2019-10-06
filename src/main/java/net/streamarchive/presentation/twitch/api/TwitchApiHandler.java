@@ -3,7 +3,7 @@ package net.streamarchive.presentation.twitch.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.streamarchive.application.StorageHelper;
-import net.streamarchive.application.twitch.playlist.handler.RecordStatusGetter;
+import net.streamarchive.application.twitch.playlist.handler.UserIdGetter;
 import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
 import net.streamarchive.infrastructure.RecordStatusList;
 import net.streamarchive.infrastructure.RecordThread;
@@ -41,24 +41,20 @@ public class TwitchApiHandler implements ApplicationContextAware {
     private final
     VodMetadataHelper vodMetadataHelper;
     private final
-    RecordStatusGetter recordStatusGetter;
-    private final
     SettingsProperties settingsProperties;
-    @Autowired
+    private final
     StorageHelper storageHelper;
     private ApplicationContext applicationContext;
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @Autowired
-    public TwitchApiHandler(StatusRepository statusRepository, RecordStatusList recordStatusList, VodMetadataHelper vodMetadataHelper, RecordStatusGetter recordStatusGetter, HashHandler hashHandler, SettingsProperties settingsProperties) {
+    public TwitchApiHandler(StatusRepository statusRepository, RecordStatusList recordStatusList, VodMetadataHelper vodMetadataHelper, HashHandler hashHandler, SettingsProperties settingsProperties, StorageHelper storageHelper) {
         this.statusRepository = statusRepository;
         this.recordStatusList = recordStatusList;
-
         this.hashHandler = hashHandler;
         this.vodMetadataHelper = vodMetadataHelper;
-        this.recordStatusGetter = recordStatusGetter;
-
         this.settingsProperties = settingsProperties;
+        this.storageHelper = storageHelper;
     }
 
     @RequestMapping(value = "/{user}", method = RequestMethod.GET)
@@ -89,11 +85,12 @@ public class TwitchApiHandler implements ApplicationContextAware {
 
     @RequestMapping(value = "/{user}", method = RequestMethod.POST)
     public void handleStreamNotification(@RequestBody String stringDataModel
-            , @RequestHeader("content-length") long lenght, @RequestHeader("X-Hub-Signature") String signature, @PathVariable("user") String user) throws InterruptedException, StreamNotFoundException, IOException {
+            , @RequestHeader("content-length") long length, @RequestHeader("X-Hub-Signature") String signature, @PathVariable("user") String user) throws InterruptedException, StreamNotFoundException, IOException {
 
+        long userId = UserIdGetter.getUserId(user);
         log.debug("Incoming stream up/down notification");
 
-        log.debug(String.valueOf(stringDataModel.length()), lenght);
+        log.debug(String.valueOf(stringDataModel.length()), length);
         log.debug(stringDataModel);
         if (hashHandler.compare(signature, stringDataModel)) {
             log.debug("Hash confirmed");
@@ -111,16 +108,16 @@ public class TwitchApiHandler implements ApplicationContextAware {
 
                     if (notificationModel.getType().equals("live")) {
 
-                        if (vodMetadataHelper.getLastVod(user).getVodId() != 0) {
+                        if (vodMetadataHelper.getLastVod(userId).getVodId() != 0) {
                             new Thread(() -> {
                                 try {
                                     Thread.sleep(10 * 1000);
-                                    StreamDataModel streamMetadata = vodMetadataHelper.getLastVod(user);
+                                    StreamDataModel streamMetadata = vodMetadataHelper.getLastVod(userId);
                                     int counter = 0;
                                     log.trace(streamMetadata.toString());
-                                    while (!recordStatusGetter.isRecording(streamMetadata.getVodId())) {
+                                    while (!vodMetadataHelper.isRecording(streamMetadata.getVodId())) {
                                         log.trace("vodId: {}", streamMetadata.getVodId());
-                                        streamMetadata = vodMetadataHelper.getLastVod(user);
+                                        streamMetadata = vodMetadataHelper.getLastVod(userId);
                                         log.info("waiting for creating vod...");
                                         Thread.sleep(20 * 1000);
                                         log.warn("vod is not created yet... cycle " + counter);
