@@ -267,6 +267,25 @@ let app = new Vue({
                 case "STOPPED":
                     return "black";
             }
-        }
+        },
+
+        exportDB() {
+            this.$http.get('/api/v1/server/export').then(response => console.log(response));
+        },
+        importDB() {
+            this.$http.get('/api/v1/server/import').then(response => console.log(response));
+        },
+
+        // logging
+        logging(uuid) {
+            this.$http.get('/api/v1/log/' + uuid).then(response => {
+                let w = window.open();
+                let d = w.document;
+                d.open('text/plain', 'replace');
+                d.charset = "utf-8";
+                d.write(response.bodyText.replace(new RegExp('\n', 'g'), '<br />'));
+                d.close();
+            });
+        },
     }
 });

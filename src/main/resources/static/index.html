@@ -38,25 +38,30 @@
                         <v-container fluid grid-list-md>
                             <v-layout row wrap>
                                 <v-flex xs12>
-                                    <v-btn depressed large color="primary" @click="openSubscribeModal">
-                                        Add streamer
-                                    </v-btn>
+                                    <v-layout row>
+                                        <v-btn depressed large color="primary" @click="openSubscribeModal">
+                                            Add streamer
+                                        </v-btn>
+                                        <v-spacer></v-spacer>
+                                        <v-btn depressed large color="primary" @click="exportDB">Export db</v-btn>
+                                        <v-btn depressed large color="primary" @click="importDB">Import db</v-btn>
+                                    </v-layout>
                                 </v-flex>
                                 <v-flex :key="item.streamer" lg3 md6 v-for="item of storage" xs12>
                                     <v-card>
-                                        <v-card-title><h2>{{item.streamer}}</h2></v-card-title>
+                                        <v-card-title><h2>{{item.user}}</h2></v-card-title>
                                         <v-card-text>
                                             Used space: <i>{{item.totalStorage - item.freeStorage}} GB</i> <br>
                                             Free space: {{item.freeStorage}} GB<br>
                                             Total space: {{item.totalStorage}} GB<br>
                                             Quality:
-                                            <span v-for="(item2, index) in streamers[item.streamer]">
-                                                {{item2 + (index !== streamers[item.streamer].length-1 ? ", " : "") }}
+                                            <span v-for="(item2, index) in streamers[item.user]">
+                                                {{item2 + (index !== streamers[item.user].length-1 ? ", " : "") }}
                                             </span>
                                         </v-card-text>
                                         <v-card-actions>
                                             <v-spacer></v-spacer>
-                                            <v-btn @click="openUnsubscribeModal(item.streamer)" color="error" flat>
+                                            <v-btn @click="openUnsubscribeModal(item.user)" color="error" flat>
                                                 Delete subscription
                                                 <v-icon>delete</v-icon>
                                             </v-btn>
@@ -137,11 +142,19 @@
                                       class="elevation-1">
                             <template v-slot:items="props">
                                 <td :class="background(props.item.state)">{{ props.item.uuid }}</td>
-                                <td :class="background(props.item.state)">{{ props.item.streamer }}</td>
-                                <td :class="background(props.item.state)">{{ props.item.vodId }}</td>
+                                <td :class="background(props.item.state)">{{ props.item.user }}</td>
+                                <td :class="background(props.item.state)">
+                                    <v-btn flat @click="window.open('https://www.twitch.tv/videos/'+props.item.vodId)" targer="_blank">
+                                        {{ props.item.vodId }}
+                                    </v-btn>
+                                </td>
                                 <td :class="background(props.item.state)">{{ props.item.date }}</td>
                                 <td :class="background(props.item.state)">{{ props.item.startedBy }}</td>
-                                <td :class="background(props.item.state)">{{ props.item.state }}</td>
+                                <td :class="background(props.item.state)">
+                                    <v-btn @click="logging(props.item.uuid)" flat>
+                                        {{ props.item.state }}
+                                    </v-btn>
+                                </td>
                                 <td :class="background(props.item.state)">
                                     <v-icon @click="openValidateStreamModal(props.item)">refresh</v-icon>
                                     <v-icon :disabled="props.item.state !== 'RUNNING'"
