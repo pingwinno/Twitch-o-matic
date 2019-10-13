@@ -33,7 +33,7 @@ public class StatusApiHandler {
      * @return list of record tasks
      */
     @GetMapping()
-    List<StatusDataModel> all() {
+    public List<StatusDataModel> all() {
         return statusRepository.findAll();
     }
 

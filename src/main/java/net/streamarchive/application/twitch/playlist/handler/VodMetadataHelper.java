@@ -22,7 +22,7 @@ public class VodMetadataHelper {
 
         HttpSevice httpSevice = new HttpSevice();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/helix/videos?user_id=" + userId);
-        httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
+        httpGet.addHeader("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
         JSONObject jsonObj =
                 new JSONObject(EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity()));
         StreamDataModel streamMetadata = new StreamDataModel();
@@ -40,7 +40,7 @@ public class VodMetadataHelper {
 
         HttpSevice httpSevice = new HttpSevice();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/videos/" + vodId);
-        httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
+        httpGet.addHeader("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
         httpGet.addHeader("Accept","application/vnd.twitchtv.v5+json");
         JSONObject dataObj =
                 new JSONObject(EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity()));
@@ -72,7 +72,7 @@ public class VodMetadataHelper {
 
         HttpSevice httpSevice = new HttpSevice();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/videos/" + vodId);
-        httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
+        httpGet.addHeader("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
         httpGet.addHeader("Accept", "application/vnd.twitchtv.v5+json");
         JSONObject jsonObj =
                 new JSONObject(EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity()));

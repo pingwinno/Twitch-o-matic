@@ -90,7 +90,7 @@ public class TwitchApiHandler implements ApplicationContextAware {
         long userId = UserIdGetter.getUserId(user);
         log.debug("Incoming stream up/down notification");
 
-        log.debug(String.valueOf(stringDataModel.length()), length);
+        log.debug("data length {} body length {} ", stringDataModel.length(), length);
         log.debug(stringDataModel);
         if (hashHandler.compare(signature, stringDataModel)) {
             log.debug("Hash confirmed");
