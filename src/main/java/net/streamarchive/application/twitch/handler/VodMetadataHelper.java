@@ -1,7 +1,7 @@
-package net.streamarchive.application.twitch.playlist.handler;
+package net.streamarchive.application.twitch.handler;
 
 import net.streamarchive.application.DateConverter;
-import net.streamarchive.infrastructure.StreamNotFoundException;
+import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import org.json.JSONException;
 import org.json.JSONObject;

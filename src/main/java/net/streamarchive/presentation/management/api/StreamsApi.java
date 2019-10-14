@@ -2,14 +2,14 @@ package net.streamarchive.presentation.management.api;
 
 
 import net.streamarchive.application.StorageHelper;
-import net.streamarchive.application.twitch.playlist.handler.UserIdGetter;
-import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
+import net.streamarchive.application.twitch.handler.UserIdGetter;
+import net.streamarchive.application.twitch.handler.VodMetadataHelper;
 import net.streamarchive.infrastructure.RecordStatusList;
 import net.streamarchive.infrastructure.RecordThread;
 import net.streamarchive.infrastructure.SettingsProperties;
-import net.streamarchive.infrastructure.StreamNotFoundException;
 import net.streamarchive.infrastructure.enums.StartedBy;
 import net.streamarchive.infrastructure.enums.State;
+import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import net.streamarchive.infrastructure.handlers.db.ArchiveDBHandler;
 import net.streamarchive.infrastructure.models.*;
 import net.streamarchive.repository.StatusRepository;

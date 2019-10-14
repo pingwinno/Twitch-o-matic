@@ -1,4 +1,4 @@
-package net.streamarchive.infrastructure;
+package net.streamarchive.infrastructure.exceptions;
 
 public class StreamNotFoundException extends Exception {
 

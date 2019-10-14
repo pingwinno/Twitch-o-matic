@@ -1,6 +1,6 @@
 package net.streamarchive.infrastructure.handlers.db;
 
-import net.streamarchive.infrastructure.StreamNotFoundException;
+import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import net.streamarchive.infrastructure.models.Stream;
 import net.streamarchive.infrastructure.models.StreamerNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;

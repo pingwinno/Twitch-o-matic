@@ -1,7 +1,7 @@
-package net.streamarchive.application.twitch.playlist.handler;
+package net.streamarchive.application.twitch.handler;
 
 
-import net.streamarchive.infrastructure.StreamNotFoundException;
+import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

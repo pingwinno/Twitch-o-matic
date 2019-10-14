@@ -1,4 +1,4 @@
-package net.streamarchive.application.twitch.playlist.handler;
+package net.streamarchive.application.twitch.handler;
 
 
 import org.json.JSONArray;

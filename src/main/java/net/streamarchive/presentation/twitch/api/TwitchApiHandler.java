@@ -3,14 +3,14 @@ package net.streamarchive.presentation.twitch.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.streamarchive.application.StorageHelper;
-import net.streamarchive.application.twitch.playlist.handler.UserIdGetter;
-import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
+import net.streamarchive.application.twitch.handler.UserIdGetter;
+import net.streamarchive.application.twitch.handler.VodMetadataHelper;
 import net.streamarchive.infrastructure.RecordStatusList;
 import net.streamarchive.infrastructure.RecordThread;
 import net.streamarchive.infrastructure.SettingsProperties;
-import net.streamarchive.infrastructure.StreamNotFoundException;
 import net.streamarchive.infrastructure.enums.StartedBy;
 import net.streamarchive.infrastructure.enums.State;
+import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import net.streamarchive.infrastructure.handlers.misc.HashHandler;
 import net.streamarchive.infrastructure.models.NotificationDataModel;
 import net.streamarchive.infrastructure.models.StatusDataModel;

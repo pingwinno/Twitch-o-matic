@@ -1,9 +1,9 @@
 package net.streamarchive.application;
 
-import net.streamarchive.application.twitch.playlist.handler.VodMetadataHelper;
+import net.streamarchive.application.twitch.handler.VodMetadataHelper;
 import net.streamarchive.infrastructure.RecordThread;
-import net.streamarchive.infrastructure.StreamNotFoundException;
 import net.streamarchive.infrastructure.enums.State;
+import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import net.streamarchive.infrastructure.models.StatusDataModel;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.repository.StatusRepository;
