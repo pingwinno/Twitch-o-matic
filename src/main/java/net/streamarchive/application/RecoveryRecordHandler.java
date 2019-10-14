@@ -15,7 +15,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.io.IOException;
 import java.util.List;
 
 @Service
@@ -59,8 +58,6 @@ public class RecoveryRecordHandler implements ApplicationContextAware {
                     } catch (StreamNotFoundException streamNotFoundException) {
                         log.warn("Stream {} not found. Delete stream...", dataModel.getVodId());
                         statusRepository.delete(dataModel);
-                    } catch (InterruptedException | IOException e) {
-                        log.error("Can't recover stream recording {}", dataModel.getUuid(), e);
                     }
                 }
             }

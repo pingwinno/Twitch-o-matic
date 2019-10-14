@@ -56,9 +56,15 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     RestTemplate restTemplateWithCredentials(RestTemplateBuilder restTemplateBuilder) {
         return restTemplateBuilder.basicAuthentication(settingsProperties.getDbUsername(), settingsProperties.getDbPassword()).build();
+    }
+
+    @Bean
+    RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
+        return restTemplateBuilder.build();
     }
 
     @Bean

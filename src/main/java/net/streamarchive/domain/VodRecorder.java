@@ -109,7 +109,7 @@ public class VodRecorder implements RecordThread {
             } else {
                 threadsNumber = 10;
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (InterruptedException e) {
             log.error("Can't start record. ", e);
             recordStatusList.changeState(uuid, State.ERROR);
         }
@@ -235,7 +235,7 @@ public class VodRecorder implements RecordThread {
         private LinkedHashMap<String, Double> start(String quality) throws InterruptedException, IOException, URISyntaxException, StreamNotFoundException {
             this.quality = quality;
             String m3u8Link;
-            m3u8Link = masterPlaylistDownloader.getPlaylist(streamDataModel.getStreamerName(), String.valueOf(vodId), quality);
+            m3u8Link = masterPlaylistDownloader.getPlaylist(String.valueOf(vodId), quality);
             //if stream  exist
             if (m3u8Link != null) {
                 String streamPath = StreamPathExtractor.extract(m3u8Link);
@@ -272,7 +272,7 @@ public class VodRecorder implements RecordThread {
                 //TODO Find out what the problem is
                 do {
                     try {
-                        m3u8Link = masterPlaylistDownloader.getPlaylist(streamDataModel.getStreamerName(), String.valueOf(vodId), quality);
+                        m3u8Link = masterPlaylistDownloader.getPlaylist(String.valueOf(vodId), quality);
                     } catch (UnknownHostException e) {
                         counter++;
                         log.warn("UnknownHostException. cycle:{} \n Stacktrace{}", counter, e);

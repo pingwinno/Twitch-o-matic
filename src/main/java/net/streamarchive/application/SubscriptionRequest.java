@@ -3,39 +3,39 @@ package net.streamarchive.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.streamarchive.application.twitch.playlist.handler.UserIdGetter;
-import net.streamarchive.infrastructure.HttpSevice;
 import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.handlers.misc.HashHandler;
 import net.streamarchive.infrastructure.models.SubscriptionQueryModel;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 
 @Component
 public class SubscriptionRequest {
 
-    private int hubLease = 86400;
     private static org.slf4j.Logger log = LoggerFactory.getLogger(SubscriptionRequest.class.getName());
-
-    private final HttpSevice httpSevice;
+    private final
+    RestTemplate restTemplate;
     private final
     HashHandler hashHandler;
     private final
     SettingsProperties settingsProperties;
+    private int hubLease = 86400;
 
-    private CloseableHttpResponse httpResponse;
-
-    public SubscriptionRequest(HttpSevice httpSevice, HashHandler hashHandler, SettingsProperties settingsProperties) {
-        this.httpSevice = httpSevice;
+    public SubscriptionRequest(HashHandler hashHandler, SettingsProperties settingsProperties, RestTemplate restTemplate) {
         this.hashHandler = hashHandler;
         this.settingsProperties = settingsProperties;
+        this.restTemplate = restTemplate;
     }
 
     public int sendSubscriptionRequest(String user) throws IOException {
+
         try {
             SubscriptionQueryModel subscriptionModel = new SubscriptionQueryModel("subscribe",
                     "https://api.twitch.tv/helix/streams?user_id=" +
@@ -45,28 +45,23 @@ public class SubscriptionRequest {
             log.trace("SubscriptionQueryModel: {}", subscriptionModel.toString());
 
             log.debug("Sending subscription query");
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.add("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
+            httpHeaders.add("Content-Type", "application/json");
+            HttpEntity<String> requestEntity = new HttpEntity<>(new ObjectMapper().writeValueAsString(subscriptionModel),
+                    httpHeaders);
+            ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/helix/webhooks/hub",
+                    HttpMethod.POST, requestEntity, String.class);
 
-
-            HttpPost httpPost = new HttpPost("https://api.twitch.tv/helix/webhooks/hub");
-            StringEntity postBody = new StringEntity(new ObjectMapper().writeValueAsString(subscriptionModel));
-            httpPost.addHeader("Content-Type", "application/json");
-            httpPost.addHeader("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
-            httpPost.setEntity(postBody);
-            log.debug("Subscription query send.");
-            httpResponse = httpSevice.getService(httpPost, true);
-            int responseCode = httpResponse.getStatusLine().getStatusCode();
-            log.debug("Response code: {}", responseCode);
+            log.debug("Response code: {}", responseEntity.getStatusCode().value());
 
             log.debug("Waiting for hub.challenge request");
 
-            return responseCode;
+            return responseEntity.getStatusCode().value();
 
         } catch (IOException | InterruptedException e) {
             log.error("Subscription timer request failed. {}", e.toString());
             throw new IOException("Subscription failed");
-        } finally {
-            httpResponse.close();
-            httpSevice.close();
         }
 
     }

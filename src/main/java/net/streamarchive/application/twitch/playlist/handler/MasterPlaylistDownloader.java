@@ -1,31 +1,37 @@
 package net.streamarchive.application.twitch.playlist.handler;
 
-import net.streamarchive.infrastructure.HttpSevice;
+
 import net.streamarchive.infrastructure.StreamNotFoundException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Scope;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 @Service
-@Scope("prototype")
 public class MasterPlaylistDownloader {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(MasterPlaylistDownloader.class.getName());
 
-    public String getPlaylist(String user, String vodId, String quality) throws IOException, InterruptedException, URISyntaxException, StreamNotFoundException {
+    @Autowired
+    RestTemplate restTemplate;
 
-        HttpSevice httpSevice = new HttpSevice();
-        HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/videos/" + vodId);
-        httpGet.addHeader("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
-        httpGet.addHeader("Accept", "application/vnd.twitchtv.v5+json");
+    public String getPlaylist(String vodId, String quality) throws IOException, InterruptedException, URISyntaxException, StreamNotFoundException {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
+        httpHeaders.add("Accept", "application/vnd.twitchtv.v5+json");
+        HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
+        ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/kraken/videos/" + vodId,
+                HttpMethod.GET, requestEntity, String.class);
         JSONObject jsonObj =
-                new JSONObject(EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity()));
+                new JSONObject(responseEntity.getBody());
         String previewUrl = null;
 
         previewUrl = jsonObj.get("animated_preview_url").toString();
@@ -37,7 +43,7 @@ public class MasterPlaylistDownloader {
                     url.getPath().substring(0, url.getPath().indexOf("/", 1)) + "/" + quality + "/index-dvr.m3u8";
 
         }
-        if (httpSevice.getService(httpGet, true).getStatusLine().getStatusCode() == 404) {
+        if (responseEntity.getStatusCode().value() == 404) {
             throw new StreamNotFoundException("Stream " + vodId + " not found");
         }
         throw new IOException("Can't get substream link");
