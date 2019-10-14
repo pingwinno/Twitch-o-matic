@@ -16,10 +16,18 @@ public class HashHandler {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(HashHandler.class.getName());
     private String key;
 
+    private static String createSignatureWithSHA256(String secret, String payload)
+            throws NoSuchAlgorithmException, InvalidKeyException {
+        Mac mac = Mac.getInstance("HmacSHA256");
+        SecretKeySpec signingKey = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
+        mac.init(signingKey);
+        byte[] rawHmac = mac.doFinal(payload.getBytes());
+        return Hex.encodeHexString(rawHmac);
+    }
 
     public void generateKey() {
         key = RandomStringUtils.randomNumeric(8);
-            log.trace("key {}", key);
+        log.trace("key {}", key);
     }
 
     public boolean compare(String header, String dataModel) {
@@ -40,16 +48,6 @@ public class HashHandler {
 
     public String getKey() {
         return key;
-    }
-
-
-    private static String createSignatureWithSHA256(String secret, String payload)
-            throws NoSuchAlgorithmException, InvalidKeyException {
-        Mac mac = Mac.getInstance("HmacSHA256");
-        SecretKeySpec signingKey = new SecretKeySpec(secret.getBytes(), "HmacSHA256");
-        mac.init(signingKey);
-        byte[] rawHmac = mac.doFinal(payload.getBytes());
-        return Hex.encodeHexString(rawHmac);
     }
 
 }

@@ -1,15 +1,18 @@
 package net.streamarchive.application.twitch.playlist.handler;
 
 import net.streamarchive.application.DateConverter;
-import net.streamarchive.infrastructure.HttpSevice;
 import net.streamarchive.infrastructure.StreamNotFoundException;
 import net.streamarchive.infrastructure.models.StreamDataModel;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 
@@ -17,33 +20,39 @@ import java.io.IOException;
 public class VodMetadataHelper {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(VodMetadataHelper.class.getName());
 
-    public StreamDataModel getLastVod(long userId) throws IOException, InterruptedException,
-            StreamNotFoundException {
+    @Autowired
+    RestTemplate restTemplate;
 
-        HttpSevice httpSevice = new HttpSevice();
-        HttpGet httpGet = new HttpGet("https://api.twitch.tv/helix/videos?user_id=" + userId);
-        httpGet.addHeader("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
+    public StreamDataModel getLastVod(long userId) throws IOException, InterruptedException, StreamNotFoundException {
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
+        HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
+        ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/helix/videos?user_id=" + userId,
+                HttpMethod.GET, requestEntity, String.class);
         JSONObject jsonObj =
-                new JSONObject(EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity()));
+                new JSONObject(responseEntity.getBody());
         StreamDataModel streamMetadata = new StreamDataModel();
         if (jsonObj.getJSONArray("data") != null) {
             streamMetadata = getVodMetadata(Integer.parseInt(jsonObj.getJSONArray("data")
                     .getJSONObject(0).get("id").toString()));
-            httpSevice.close();
-
         }
         return streamMetadata;
-        }
+    }
 
     public StreamDataModel getVodMetadata(int vodId) throws IOException,
             InterruptedException, StreamNotFoundException {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
+        httpHeaders.add("Accept", "application/vnd.twitchtv.v5+json");
+        HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
+        ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/kraken/videos/" + vodId,
+                HttpMethod.GET, requestEntity, String.class);
 
-        HttpSevice httpSevice = new HttpSevice();
-        HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/videos/" + vodId);
-        httpGet.addHeader("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
-        httpGet.addHeader("Accept","application/vnd.twitchtv.v5+json");
         JSONObject dataObj =
-                new JSONObject(EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity()));
+                new JSONObject(responseEntity.getBody());
+
+
         StreamDataModel streamMetadata = new StreamDataModel();
         log.trace("{}", dataObj);
         if (!dataObj.toString().equals("")) {
@@ -57,7 +66,6 @@ public class VodMetadataHelper {
                 if (!dataObj.get("game").toString().equals("")) {
                     streamMetadata.setGame(dataObj.get("game").toString());
                 } else streamMetadata.setGame("");
-                httpSevice.close();
             } catch (IllegalStateException | JSONException e) {
                 log.error("{}", e);
                 throw new StreamNotFoundException("Stream " + vodId + "not found");
@@ -69,15 +77,17 @@ public class VodMetadataHelper {
     }
 
     public boolean isRecording(int vodId) throws IOException, InterruptedException {
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
+        httpHeaders.add("Accept", "application/vnd.twitchtv.v5+json");
+        HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
+        ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/kraken/videos/" + vodId,
+                HttpMethod.GET, requestEntity, String.class);
 
-        HttpSevice httpSevice = new HttpSevice();
-        HttpGet httpGet = new HttpGet("https://api.twitch.tv/kraken/videos/" + vodId);
-        httpGet.addHeader("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
-        httpGet.addHeader("Accept", "application/vnd.twitchtv.v5+json");
         JSONObject jsonObj =
-                new JSONObject(EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity()));
+                new JSONObject(responseEntity.getBody());
         log.trace("{}", jsonObj);
-        httpSevice.close();
+
         return jsonObj.get("status").toString().equals("recording");
     }
 
