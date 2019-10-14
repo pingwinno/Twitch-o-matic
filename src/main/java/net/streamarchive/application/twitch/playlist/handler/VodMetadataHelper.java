@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -40,15 +41,19 @@ public class VodMetadataHelper {
         return streamMetadata;
     }
 
-    public StreamDataModel getVodMetadata(int vodId) throws IOException,
-            InterruptedException, StreamNotFoundException {
+    public StreamDataModel getVodMetadata(int vodId) throws StreamNotFoundException {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
         httpHeaders.add("Accept", "application/vnd.twitchtv.v5+json");
         HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
-        ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/kraken/videos/" + vodId,
-                HttpMethod.GET, requestEntity, String.class);
-
+        ResponseEntity<String> responseEntity;
+        try {
+            responseEntity = restTemplate.exchange("https://api.twitch.tv/kraken/videos/" + vodId,
+                    HttpMethod.GET, requestEntity, String.class);
+        } catch (HttpClientErrorException.NotFound e) {
+            log.debug(e.toString());
+            throw new StreamNotFoundException("Stream " + vodId + " not found");
+        }
         JSONObject dataObj =
                 new JSONObject(responseEntity.getBody());
 
@@ -76,7 +81,7 @@ public class VodMetadataHelper {
         return streamMetadata;
     }
 
-    public boolean isRecording(int vodId) throws IOException, InterruptedException {
+    public boolean isRecording(int vodId) throws InterruptedException {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
         httpHeaders.add("Accept", "application/vnd.twitchtv.v5+json");

@@ -109,7 +109,7 @@ public class VodRecorder implements RecordThread {
             } else {
                 threadsNumber = 10;
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (InterruptedException e) {
             log.error("Can't start record. ", e);
             recordStatusList.changeState(uuid, State.ERROR);
         }
