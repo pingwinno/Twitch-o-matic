@@ -7,7 +7,6 @@ import java.util.UUID;
 
 public class StreamDataModel {
 
-
     private int vodId;
     private String baseUrl;
     private boolean skipMuted;
@@ -65,7 +64,6 @@ public class StreamDataModel {
     public void setUuid(UUID uuid) {
         this.uuid = uuid;
     }
-
 
     @Override
     public String toString() {

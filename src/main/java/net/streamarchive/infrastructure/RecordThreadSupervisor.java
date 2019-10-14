@@ -12,7 +12,6 @@ public class RecordThreadSupervisor {
     private RecordThreadSupervisor() {
     }
 
-
     public synchronized void add(UUID uuid, RecordThread recordThread) {
         threadsList.put(uuid, recordThread);
     }
@@ -21,5 +20,4 @@ public class RecordThreadSupervisor {
         threadsList.get(uuid).stop();
         threadsList.remove(uuid);
     }
-
 }

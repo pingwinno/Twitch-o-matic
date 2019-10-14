@@ -6,13 +6,10 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 @Transactional
 public interface StreamsRepository extends JpaRepository<Stream, UUID> {
     List<Stream> findAllByStreamer(String streamer);
-
-    Optional<Stream> findByUuid(UUID uuid);
 }

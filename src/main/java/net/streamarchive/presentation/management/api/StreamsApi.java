@@ -119,7 +119,7 @@ public class StreamsApi {
                     throw new NotFoundException();
                 }
             } else {
-                throw new NotAcceptableExeption();
+                throw new NotAcceptableException();
             }
         } catch (IOException | InterruptedException | StreamNotFoundException e) {
             log.error("Can't start record ", e);
@@ -153,14 +153,10 @@ public class StreamsApi {
                         log.error("can't delete media {] ", e);
                         throw new NotModifiedException();
                     }
-
             }
         } else {
             throw new NotFoundException();
         }
-
-
-
     }
 
     /**
@@ -204,15 +200,15 @@ public class StreamsApi {
     }
 
     @ResponseStatus(HttpStatus.NOT_MODIFIED)
-    private class NotModifiedException extends RuntimeException {
+    private static class NotModifiedException extends RuntimeException {
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    private class NotFoundException extends RuntimeException {
+    private static class NotFoundException extends RuntimeException {
     }
 
     @ResponseStatus(HttpStatus.NOT_ACCEPTABLE)
-    private class NotAcceptableExeption extends RuntimeException {
+    private static class NotAcceptableException extends RuntimeException {
     }
 
 }

@@ -34,17 +34,7 @@ public class MediaPlaylistParser {
         return chunks;
     }
 
-    public static long getTotalSec(BufferedReader reader) throws IOException {
-        String header;
-        long time = 0;
-        while ((header = reader.readLine()) != null) {
-            log.trace(header);
-            if (header.contains("#EXT-X-TWITCH-TOTAL-SECS")) {
-                time = (long) Double.parseDouble(header.substring(header.lastIndexOf(":") + 1));
-                log.trace("Stream duration: {}", time);
-            }
-        }
-        reader.close();
-        return time;
+    public static long getTotalSec(LinkedHashMap<String, Double> playlist) {
+        return (long) playlist.values().stream().mapToDouble(Double::doubleValue).sum();
     }
 }

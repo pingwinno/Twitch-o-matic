@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 public class LocalDBHandler implements ArchiveDBHandler {
 
     static private org.slf4j.Logger log = LoggerFactory.getLogger(LocalDBHandler.class);
+
     @Autowired
     SettingsProperties settingsProperties;
 
@@ -72,10 +73,7 @@ public class LocalDBHandler implements ArchiveDBHandler {
                 ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
 
                 writer.writeValue(file, stream);
-
-            } else log.error("Stream" + stream.getUuid() + "exist");
-
-
+            } else log.info("Stream " + stream.getUuid() + " exist");
     }
 
     @Override

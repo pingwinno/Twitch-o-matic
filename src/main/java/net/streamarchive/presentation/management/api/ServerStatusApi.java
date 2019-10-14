@@ -9,10 +9,8 @@ import net.streamarchive.infrastructure.models.Streamer;
 import net.streamarchive.infrastructure.models.StreamerNotFoundException;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -54,7 +52,7 @@ public class ServerStatusApi {
     }
 
     /**
-     * Method does import to local json files from MongoDB
+     * Method does import to local db from remote
      */
     @GetMapping("/import")
     public void importToLocalDb() throws StreamerNotFoundException {
@@ -69,7 +67,7 @@ public class ServerStatusApi {
     }
 
     /**
-     * Method does export from local db to MongoDB
+     * Method does export from local db to remote
      */
     @GetMapping("/export")
     public void exportFromLocalDb() throws StreamerNotFoundException {
@@ -83,11 +81,5 @@ public class ServerStatusApi {
         }
 
     }
-
-
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    private class InternalServerErrorExeption extends RuntimeException {
-    }
-
 
 }

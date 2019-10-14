@@ -32,9 +32,8 @@ public class MasterPlaylistDownloader {
                 HttpMethod.GET, requestEntity, String.class);
         JSONObject jsonObj =
                 new JSONObject(responseEntity.getBody());
-        String previewUrl = null;
 
-        previewUrl = jsonObj.get("animated_preview_url").toString();
+        String previewUrl = jsonObj.get("animated_preview_url").toString();
 
 
         if (previewUrl != null) {

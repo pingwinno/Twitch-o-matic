@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-
 public class Stream implements Serializable {
     @Id
     private UUID uuid;

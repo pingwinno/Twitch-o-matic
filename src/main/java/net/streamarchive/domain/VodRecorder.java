@@ -11,7 +11,7 @@ import net.streamarchive.infrastructure.handlers.db.ArchiveDBHandler;
 import net.streamarchive.infrastructure.models.Stream;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.StreamerNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -39,23 +39,24 @@ public class VodRecorder implements RecordThread {
     RecordStatusList recordStatusList;
     private final
     RecordThreadSupervisor recordThreadSupervisor;
-
     private final
     SettingsProperties settingsProperties;
-
     private final
     VodMetadataHelper vodMetadataHelper;
     private final
     AnimatedPreviewGenerator animatedPreviewGenerator;
     private final
     TimelinePreviewGenerator timelinePreviewGenerator;
-    @Autowired
+    private final
     CommandLineExecutor commandLineExecutor;
-    @Autowired
+    private final
     DashProcessing dashProcessing;
-    @Autowired
+    private final
     ArchiveDBHandler archiveDBHandler;
-    private boolean enabled = false;
+
+    @Value("${net.streamarchive.dashprocessing.enabled}")
+    private boolean enabled;
+
     private org.slf4j.Logger log;
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
     private String streamFolderPath;
@@ -70,7 +71,7 @@ public class VodRecorder implements RecordThread {
     private Stream stream = new Stream();
 
 
-    public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, SettingsProperties settingsProperties, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator) {
+    public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, SettingsProperties settingsProperties, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator, CommandLineExecutor commandLineExecutor, DashProcessing dashProcessing, ArchiveDBHandler archiveDBHandler) {
         this.recordStatusList = recordStatusList;
         this.masterPlaylistDownloader = masterPlaylistDownloader;
         this.recordThreadSupervisor = recordThreadSupervisor;
@@ -78,6 +79,9 @@ public class VodRecorder implements RecordThread {
         this.vodMetadataHelper = vodMetadataHelper;
         this.animatedPreviewGenerator = animatedPreviewGenerator;
         this.timelinePreviewGenerator = timelinePreviewGenerator;
+        this.commandLineExecutor = commandLineExecutor;
+        this.dashProcessing = dashProcessing;
+        this.archiveDBHandler = archiveDBHandler;
     }
 
     @Override
@@ -189,9 +193,7 @@ public class VodRecorder implements RecordThread {
                 timelinePreviewGenerator.generate(streamDataModel, mainPlaylist,
                         qualities.get(qualities.size() - 1));
 
-
-                stream.setDuration(mainPlaylist.size() * 10);
-
+                stream.setDuration(MediaPlaylistParser.getTotalSec(mainPlaylist));
 
                 if (enabled) {
                     if (settingsProperties.isUserExist(streamDataModel.getStreamerName())) {
@@ -365,7 +367,7 @@ public class VodRecorder implements RecordThread {
                     try (InputStream in = website.openStream()) {
 
                         Files.copy(in, Paths.get(streamFolderPath + "/" + quality + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
-                        if (Integer.valueOf(fileName.replaceAll(".ts", "")) % 10 == 0) {
+                        if (Integer.parseInt(fileName.replaceAll(".ts", "")) % 10 == 0) {
                             log.info(fileName + " complete");
                         }
                         log.trace(fileName + " complete");

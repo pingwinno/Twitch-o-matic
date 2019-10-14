@@ -88,7 +88,6 @@ public class SettingsProperties {
         return recordStreamPath;
     }
 
-
 }
 
 

@@ -34,7 +34,6 @@ public class HashHandler {
 
         log.trace("header {} ", header);
 
-
         String sha256hex = null;
         try {
             sha256hex = "sha256=" +

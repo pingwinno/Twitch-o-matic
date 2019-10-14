@@ -52,7 +52,6 @@ public class RestDBHandler implements ArchiveDBHandler {
     @Override
     public void addStream(Stream stream) {
         restTemplateWithCredentials.postForObject(settingsProperties.getRemoteDBAddress() + "streams/" + stream.getStreamer(), stream, Stream.class);
-
     }
 
     @Override

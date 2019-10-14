@@ -17,9 +17,8 @@ public class MediaPlaylistDownloader {
     public BufferedReader getMediaPlaylist(String m3u8Link) throws InterruptedException, IOException {
         try {
         URL url = new URL(m3u8Link);
-            URLConnection connection = null;
 
-            connection = url.openConnection();
+            URLConnection connection = url.openConnection();
 
             return new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
         } catch (IOException e) {

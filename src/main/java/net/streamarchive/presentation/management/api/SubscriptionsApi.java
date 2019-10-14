@@ -89,7 +89,7 @@ public class SubscriptionsApi {
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    private class InternalServerErrorException extends RuntimeException {
+    private static class InternalServerErrorException extends RuntimeException {
     }
 
 }

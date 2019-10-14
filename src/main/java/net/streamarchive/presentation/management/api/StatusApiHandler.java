@@ -3,7 +3,6 @@ package net.streamarchive.presentation.management.api;
 import net.streamarchive.infrastructure.RecordThreadSupervisor;
 import net.streamarchive.infrastructure.models.StatusDataModel;
 import net.streamarchive.repository.StatusRepository;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +19,6 @@ public class StatusApiHandler {
     StatusRepository statusRepository;
     private final
     RecordThreadSupervisor recordThreadSupervisor;
-    private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     public StatusApiHandler(StatusRepository statusRepository, RecordThreadSupervisor recordThreadSupervisor) {
         this.statusRepository = statusRepository;
@@ -29,7 +27,6 @@ public class StatusApiHandler {
 
     /**
      * This method returns list of record task
-     *
      * @return list of record tasks
      */
     @GetMapping()
@@ -39,7 +36,6 @@ public class StatusApiHandler {
 
     /**
      * This method stops stream task.
-     *
      * @param uuid UUID of stream
      */
     @DeleteMapping("/{uuid}")

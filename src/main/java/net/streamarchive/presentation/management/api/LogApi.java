@@ -26,7 +26,7 @@ public class LogApi {
      * This method returns record log
      *
      * @param uuid is a record id
-     * @return list of record tasks
+     * @return log file of stream
      */
     @RequestMapping(value = "{uuid}", method = RequestMethod.GET)
     @ResponseBody
