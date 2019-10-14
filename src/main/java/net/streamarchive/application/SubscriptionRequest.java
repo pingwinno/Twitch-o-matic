@@ -50,7 +50,7 @@ public class SubscriptionRequest {
             HttpPost httpPost = new HttpPost("https://api.twitch.tv/helix/webhooks/hub");
             StringEntity postBody = new StringEntity(new ObjectMapper().writeValueAsString(subscriptionModel));
             httpPost.addHeader("Content-Type", "application/json");
-            httpPost.addHeader("Client-ID", "4zswqk0crwt2wy4b76aaltk2z02m67");
+            httpPost.addHeader("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
             httpPost.setEntity(postBody);
             log.debug("Subscription query send.");
             httpResponse = httpSevice.getService(httpPost, true);

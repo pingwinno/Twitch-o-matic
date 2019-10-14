@@ -18,7 +18,7 @@ public class UserIdGetter {
 
         HttpSevice httpSevice = new HttpSevice();
         HttpGet httpGet = new HttpGet("https://api.twitch.tv/helix/users?login=" + user);
-        httpGet.addHeader("Client-ID", "s9onp1rs4s93xvfscjfdxui9pracer");
+        httpGet.addHeader("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
         log.fine(httpGet.toString());
         JSONObject jsonObj =
                 new JSONObject(EntityUtils.toString(httpSevice.getService(httpGet, true).getEntity()));

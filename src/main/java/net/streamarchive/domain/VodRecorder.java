@@ -10,7 +10,6 @@ import net.streamarchive.infrastructure.handlers.db.ArchiveDBHandler;
 import net.streamarchive.infrastructure.models.Stream;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.StreamerNotFoundException;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -56,7 +55,7 @@ public class VodRecorder implements RecordThread {
     @Autowired
     ArchiveDBHandler archiveDBHandler;
     private boolean enabled = false;
-    private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
+    private org.slf4j.Logger log;
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
     private String streamFolderPath;
     private int vodId;
@@ -74,7 +73,6 @@ public class VodRecorder implements RecordThread {
         this.recordStatusList = recordStatusList;
         this.masterPlaylistDownloader = masterPlaylistDownloader;
         this.recordThreadSupervisor = recordThreadSupervisor;
-
         this.settingsProperties = settingsProperties;
         this.vodMetadataHelper = vodMetadataHelper;
         this.animatedPreviewGenerator = animatedPreviewGenerator;
@@ -83,10 +81,25 @@ public class VodRecorder implements RecordThread {
 
     @Override
     public void start(StreamDataModel streamDataModel) {
-        log.debug("Starting {} {} {}", streamDataModel.getStreamerName(), streamDataModel.getVodId(), streamDataModel.getUuid());
         this.streamDataModel = streamDataModel;
+
+        stream.setUuid(streamDataModel.getUuid());
+        stream.setTitle(streamDataModel.getTitle());
+        stream.setDate(streamDataModel.getDate());
+        stream.setGame(streamDataModel.getGame());
+        stream.setStreamer(streamDataModel.getStreamerName());
+        streamFolderPath = settingsProperties.getRecordedStreamPath() + streamDataModel.getStreamerName() + "/" + stream.getUuid().toString();
+        try {
+            Files.createDirectories(Paths.get(streamFolderPath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        log = new InternalLogger(getClass(), streamFolderPath);
+
+        log.debug("Starting {} {} {}", streamDataModel.getStreamerName(), streamDataModel.getVodId(), streamDataModel.getUuid());
+
         uuid = streamDataModel.getUuid();
-        streamFolderPath = settingsProperties.getRecordedStreamPath() + streamDataModel.getStreamerName() + "/" + uuid.toString();
+
         vodId = streamDataModel.getVodId();
         recordThreadSupervisor.add(uuid, this);
         try {
@@ -102,11 +115,7 @@ public class VodRecorder implements RecordThread {
         }
         try {
             recordStatusList.changeState(uuid, State.RUNNING);
-            stream.setUuid(streamDataModel.getUuid());
-            stream.setTitle(streamDataModel.getTitle());
-            stream.setDate(streamDataModel.getDate());
-            stream.setGame(streamDataModel.getGame());
-            stream.setStreamer(streamDataModel.getStreamerName());
+
             List<String> qualities = new ArrayList<>();
             if (settingsProperties.isUserExist(streamDataModel.getStreamerName())) {
                 qualities = settingsProperties.getUser(streamDataModel.getStreamerName()).getQualities();
