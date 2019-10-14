@@ -5,6 +5,7 @@ import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.handlers.db.ArchiveDBHandler;
 import net.streamarchive.infrastructure.handlers.db.EnabledDBHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +29,12 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     SettingsProperties settingsProperties;
 
+    @Value("${net.streamarchive.auth.user}")
+    private String user;
+
+    @Value("${net.streamarchive.auth.password}")
+    private String password;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -48,7 +55,7 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         auth.inMemoryAuthentication()
-                .withUser("user1").password(passwordEncoder().encode("user1Pass")).authorities("ROLE_USER");
+                .withUser(user).password(passwordEncoder().encode(password)).authorities("ROLE_USER");
         ;
     }
 
