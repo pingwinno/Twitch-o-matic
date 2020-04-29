@@ -1,9 +1,11 @@
 package net.streamarchive.infrastructure.models;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Data;
 
 import java.util.UUID;
 
+@Data
 public class AddRequestModel {
     //Should contain "user"(live broadcasts) or "vod"(past broadcasts) value.
     private String type;
@@ -20,44 +22,4 @@ public class AddRequestModel {
     //UUID of saved stream
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private UUID uuid;
-
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getWriteTo() {
-        return writeTo;
-    }
-
-    public void setWriteTo(String writeTo) {
-        this.writeTo = writeTo;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public boolean isSkipMuted() {
-        return skipMuted;
-    }
-
-    public void setSkipMuted(boolean skipMuted) {
-        this.skipMuted = skipMuted;
-    }
 }

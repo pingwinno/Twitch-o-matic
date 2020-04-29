@@ -25,7 +25,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -63,12 +65,11 @@ public class VodRecorder implements RecordThread {
     private int vodId;
     private StreamDataModel streamDataModel;
     private int threadsNumber = 1;
-    private volatile LinkedHashMap<String, Double> mainPlaylist;
     private UUID uuid;
-    private ExecutorService executorService;
     private Thread thisTread = Thread.currentThread();
     private boolean isRecordTerminated;
     private Stream stream = new Stream();
+    private StreamThread streamThread = new StreamThread();
 
 
     public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, SettingsProperties settingsProperties, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator, CommandLineExecutor commandLineExecutor, DashProcessing dashProcessing, ArchiveDBHandler archiveDBHandler) {
@@ -120,27 +121,22 @@ public class VodRecorder implements RecordThread {
         }
         try {
             recordStatusList.changeState(uuid, State.RUNNING);
-
-            List<String> qualities = new ArrayList<>();
+            String quality;
             if (settingsProperties.isUserExist(streamDataModel.getStreamerName())) {
-                qualities = settingsProperties.getUser(streamDataModel.getStreamerName()).getQualities();
+                quality = settingsProperties.getUser(streamDataModel.getStreamerName()).getQuality();
             } else {
-                qualities.add("chunked");
+                quality = "chunked";
             }
             try {
 
-                for (String quality : qualities) {
-                    Path streamPath = Paths.get(streamFolderPath + "/" + quality);
-                    if (!Files.exists(streamPath)) {
-                        Files.createDirectories(streamPath);
-                    } else {
-                        log.warn("Stream folder exist. Maybe it's unfinished task. " +
-                                "If task can't be complete, it will be remove from task list.");
-                        log.info("Trying finish download...");
-                    }
+                Path streamPath = Paths.get(streamFolderPath);
+                if (!Files.exists(streamPath)) {
+                    Files.createDirectories(streamPath);
+                } else {
+                    log.warn("Stream folder exist. Maybe it's unfinished task. " +
+                            "If task can't be complete, it will be remove from task list.");
+                    log.info("Trying finish download...");
                 }
-
-                Path streamPath = Paths.get(streamFolderPath + "/chunked");
                 Files.createDirectories(streamPath);
 
             } catch (IOException e) {
@@ -152,29 +148,8 @@ public class VodRecorder implements RecordThread {
             vodId = streamDataModel.getVodId();
 
 
-            executorService = Executors.newFixedThreadPool(qualities.size());
-            for (String quality : qualities) {
-                StreamThread streamThread = new StreamThread();
-                Runnable runnable = () -> {
-                    try {
-                        synchronized (this) {
-                            mainPlaylist = streamThread.start(quality);
-                        }
-                    } catch (IOException | URISyntaxException | StreamNotFoundException e) {
-                        log.error("Vod downloader initialization failed. ", e);
-                        recordStatusList.changeState(uuid, State.ERROR);
-                        stop();
-                    } catch (InterruptedException e) {
-                        log.error("Vod downloader manually stopped. ", e);
-                        recordStatusList.changeState(uuid, State.STOPPED);
-                        stop();
-                    }
-                };
-                executorService.execute(runnable);
-            }
+            LinkedHashMap<String, Double> mainPlaylist = streamThread.start(quality);
 
-            executorService.shutdown();
-            executorService.awaitTermination(100, TimeUnit.HOURS);
             if (mainPlaylist != null) {
                 log.debug("Download preview");
                 try {
@@ -184,22 +159,14 @@ public class VodRecorder implements RecordThread {
                     int streamLength = mainPlaylist.size() / 2;
 
                     commandLineExecutor.execute("ffmpeg", "-i", streamFolderPath + "/" + streamLength + ".ts", "-s",
-                            "640x360", "-vframes", "1", streamFolderPath + "/" + settingsProperties.getUser(streamDataModel.getStreamerName()).getQualities()
-                                    .get(settingsProperties.getUser(streamDataModel.getStreamerName()).getQualities().size() - 1) + "/preview.jpg", "-y");
+                            "640x360", "-vframes", "1", streamFolderPath + "/" + streamFolderPath + "/preview.jpg", "-y");
                 }
 
-                animatedPreviewGenerator.generate(streamDataModel, mainPlaylist,
-                        qualities.get(qualities.size() - 1));
-                timelinePreviewGenerator.generate(streamDataModel, mainPlaylist,
-                        qualities.get(qualities.size() - 1));
+                animatedPreviewGenerator.generate(streamDataModel, mainPlaylist);
+                timelinePreviewGenerator.generate(streamDataModel, mainPlaylist);
 
                 stream.setDuration(MediaPlaylistParser.getTotalSec(mainPlaylist));
 
-                if (enabled) {
-                    if (settingsProperties.isUserExist(streamDataModel.getStreamerName())) {
-                        dashProcessing.start(streamFolderPath, qualities);
-                    }
-                }
                 archiveDBHandler.updateStream(stream);
                 recordStatusList.changeState(uuid, State.COMPLETE);
                 log.info("Complete");
@@ -208,7 +175,7 @@ public class VodRecorder implements RecordThread {
             log.error("Vod downloader initialization failed. ", e);
             recordStatusList.changeState(uuid, State.ERROR);
             stop();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException | URISyntaxException e) {
             log.error("Vod downloader process failed. ", e);
             recordStatusList.changeState(uuid, State.ERROR);
             stop();
@@ -217,12 +184,11 @@ public class VodRecorder implements RecordThread {
 
     @Override
     public void stop() {
-        executorService.shutdownNow();
+        streamThread.stop();
     }
 
 
     private void downloadPreview(String url) throws IOException {
-
         try (InputStream in = new URL(url).openStream()) {
             Files.copy(in, Paths.get(streamFolderPath + "/" + "preview.jpg"), StandardCopyOption.REPLACE_EXISTING);
             log.info("preview.jpg" + " complete");
@@ -230,7 +196,7 @@ public class VodRecorder implements RecordThread {
     }
 
     private class StreamThread {
-        MediaPlaylistWriter mediaPlaylistWriter = new MediaPlaylistWriter();
+        private MediaPlaylistWriter mediaPlaylistWriter = new MediaPlaylistWriter();
         private ExecutorService executorService;
         private String quality;
         private LinkedHashMap<String, Double> mainPlaylist;
@@ -299,8 +265,9 @@ public class VodRecorder implements RecordThread {
                             if (!mainPlaylist.containsKey(chunkName)) {
                                 log.trace("chunk: {}", chunkName);
                                 Runnable runnable = () -> {
-                                    if (!isRecordTerminated)
+                                    if (!isRecordTerminated) {
                                         downloadChunk(streamPath, chunkName);
+                                    }
 
                                 };
                                 executorService.execute(runnable);

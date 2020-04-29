@@ -91,19 +91,19 @@ public class StreamsApi {
                     if (requestModel.getUuid() != null) {
                         streamMetadata.setUuid(requestModel.getUuid());
                         recordStatusList.addStatus
-                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, Date.from(Instant.now()),
-                                        State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getStreamerName()));
+                                (new StatusDataModel(streamMetadata.getVodId(), streamMetadata.getUuid(), StartedBy.VALIDATION, Date.from(Instant.now()),
+                                        State.INITIALIZE, streamMetadata.getStreamerName()));
                         //if record exist in status DB then run validation
                     } else if (statusRepository.existsById(streamMetadata.getVodId())) {
                         streamMetadata.setUuid(statusRepository.findById(streamMetadata.getVodId()).get().getUuid());
                         recordStatusList.addStatus
-                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.VALIDATION, Date.from(Instant.now()),
-                                        State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getStreamerName()));
+                                (new StatusDataModel(streamMetadata.getVodId(), streamMetadata.getUuid(), StartedBy.VALIDATION, Date.from(Instant.now()),
+                                        State.INITIALIZE, streamMetadata.getStreamerName()));
                     } else {
                         streamMetadata.setUuid(storageHelper.getUuidName());
                         recordStatusList.addStatus
-                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.MANUAL, Date.from(Instant.now()),
-                                        State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getStreamerName()));
+                                (new StatusDataModel(streamMetadata.getVodId(), streamMetadata.getUuid(), StartedBy.MANUAL, Date.from(Instant.now()),
+                                        State.INITIALIZE, streamMetadata.getStreamerName()));
                     }
 
                     streamMetadata.setSkipMuted(requestModel.isSkipMuted());
@@ -145,14 +145,14 @@ public class StreamsApi {
                 log.error("Stream not found");
                 throw new NotModifiedException();
             }
-                log.info("delete stream {}", uuid);
-                if (deleteMedia.equals("true")) {
-                    try {
-                        FileUtils.deleteDirectory(new File(settingsProperties.getRecordedStreamPath() + "" + user + "/" + uuid));
-                    } catch (IOException e) {
-                        log.error("can't delete media {] ", e);
-                        throw new NotModifiedException();
-                    }
+            log.info("delete stream {}", uuid);
+            if (deleteMedia.equals("true")) {
+                try {
+                    FileUtils.deleteDirectory(new File(settingsProperties.getRecordedStreamPath() + "" + user + "/" + uuid));
+                } catch (IOException e) {
+                    log.error("can't delete media {] ", e);
+                    throw new NotModifiedException();
+                }
             }
         } else {
             throw new NotFoundException();

@@ -45,15 +45,13 @@ public class SubscriptionsApi {
      * @return list of current active subscriptions.
      */
     @RequestMapping(method = RequestMethod.GET)
-    public Map<String, List<String>> getTimers() {
+    public Map<String, String> getTimers() {
 
-        Map<String, List<String>> users = new HashMap<>();
+        Map<String, String> users = new HashMap<>();
         for (Streamer streamer : settingsProperties.getUsers()) {
-            users.put(streamer.getName(), streamer.getQualities());
+            users.put(streamer.getName(), streamer.getQuality());
         }
-
         return users;
-
     }
 
     /**
@@ -69,7 +67,7 @@ public class SubscriptionsApi {
             Streamer streamerEntity = new Streamer();
             streamerEntity.setName(user.toLowerCase());
             quality.sort(Comparator.comparing(String::length));
-            streamerEntity.setQualities(quality);
+            streamerEntity.setQuality(quality.get(0));
             settingsProperties.addUser(streamerEntity);
             storageHelper.creatingRecordedPath(user);
         } catch (IOException e) {

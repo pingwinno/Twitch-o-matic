@@ -78,7 +78,9 @@ public class TwitchApiHandler implements ApplicationContextAware {
                 return allParams.get("hub.challenge");
 
             }
-        } else log.warn("Subscription query is not correct. Try restart Twitch-o-matic.");
+        } else {
+            log.warn("Subscription query is not correct. Try restart Twitch-o-matic.");
+        }
 
         return null;
     }
@@ -132,8 +134,9 @@ public class TwitchApiHandler implements ApplicationContextAware {
                                         streamMetadata.setUuid(storageHelper.getUuidName());
 
                                         recordStatusList.addStatus
-                                                (new StatusDataModel(streamMetadata.getVodId(), StartedBy.WEBHOOK, Date.from(Instant.now()),
-                                                        State.INITIALIZE, streamMetadata.getUuid(), streamMetadata.getStreamerName()));
+                                                (new StatusDataModel(streamMetadata.getVodId(), streamMetadata.getUuid(),
+                                                        StartedBy.WEBHOOK, Date.from(Instant.now()),
+                                                        State.INITIALIZE, streamMetadata.getStreamerName()));
 
                                         log.info("Try to start record");
 
@@ -141,7 +144,9 @@ public class TwitchApiHandler implements ApplicationContextAware {
                                         log.info("check for duplicate notification");
                                         RecordThread recordThread = applicationContext.getBean(RecordThread.class);
                                         recordThread.start(streamMetadata);
-                                    } else log.warn("Stream duplicate. Skip...");
+                                    } else {
+                                        log.warn("Stream duplicate. Skip...");
+                                    }
                                 } catch (IOException | InterruptedException e) {
                                     log.error("DB error ", e);
                                 } catch (StreamNotFoundException streamNotFoundException) {

@@ -2,8 +2,14 @@ package net.streamarchive.infrastructure.models;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 //subscription query object
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class SubscriptionQueryModel {
 
     @JsonProperty("hub.mode")
@@ -16,26 +22,4 @@ public class SubscriptionQueryModel {
     private int hubLeaseSeconds;
     @JsonProperty("hub.secret")
     private String hubSecret;
-
-    public SubscriptionQueryModel
-            (String hubMode, String hubTopic, String hubCallback, int hubLeaseSeconds, String hubSecret) {
-        this.hubTopic = hubTopic;
-        this.hubCallback = hubCallback;
-        this.hubLeaseSeconds = hubLeaseSeconds;
-        this.hubMode = hubMode;
-        this.hubSecret = hubSecret;
-    }
-
-    public int getHubLeaseSeconds() {
-        return hubLeaseSeconds;
-    }
-
-    @Override
-    public String toString() {
-        return ("hubMode:" + hubMode + ", hubTopic:" + hubTopic + "," +
-                " hubCallback:" + hubCallback + ", hubLeaseSeconds:" + hubLeaseSeconds +
-                " , hubSecret:" + hubSecret);
-    }
-
-
 }
