@@ -1,6 +1,6 @@
 package net.streamarchive.presentation.management.api;
 
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.repository.StatusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -18,7 +18,7 @@ import java.util.UUID;
 public class LogApi {
 
     @Autowired
-    SettingsProperties settingsProperties;
+    SettingsProvider settingsProperties;
     @Autowired
     StatusRepository statusRepository;
 

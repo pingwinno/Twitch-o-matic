@@ -1,10 +1,9 @@
 package net.streamarchive.application.twitch.handler;
 
 
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import org.json.JSONObject;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -24,7 +23,7 @@ public class MasterPlaylistDownloader {
     private RestTemplate restTemplate;
 
     @Autowired
-    private SettingsProperties settingsProperties;
+    private SettingsProvider settingsProperties;
 
     public String getPlaylist(String vodId, String quality) throws IOException, URISyntaxException, StreamNotFoundException {
         HttpHeaders httpHeaders = new HttpHeaders();

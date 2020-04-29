@@ -1,7 +1,7 @@
 package net.streamarchive.infrastructure.configuration;
 
 
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.handlers.db.ArchiveDBHandler;
 import net.streamarchive.infrastructure.handlers.db.EnabledDBHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,10 +25,11 @@ import org.springframework.web.client.RestTemplate;
 @RestController
 @Configuration
 @EnableWebSecurity
+@Profile("production")
 public class WebConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    SettingsProperties settingsProperties;
+    private SettingsProvider settingsProperties;
 
     @Value("${net.streamarchive.auth.user}")
     private String user;

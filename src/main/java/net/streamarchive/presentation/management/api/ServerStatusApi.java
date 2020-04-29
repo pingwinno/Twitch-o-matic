@@ -1,7 +1,7 @@
 package net.streamarchive.presentation.management.api;
 
 import net.streamarchive.application.StorageHelper;
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.handlers.db.JpaDBHandler;
 import net.streamarchive.infrastructure.handlers.db.RestDBHandler;
 import net.streamarchive.infrastructure.models.StorageState;
@@ -24,7 +24,7 @@ import java.util.List;
 @RequestMapping("/api/v1/server")
 public class ServerStatusApi {
     private final
-    SettingsProperties settingsProperties;
+    SettingsProvider settingsProperties;
     private final
     StorageHelper storageHelper;
     @Autowired
@@ -34,7 +34,7 @@ public class ServerStatusApi {
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @Autowired
-    public ServerStatusApi(SettingsProperties settingsProperties, StorageHelper storageHelper) {
+    public ServerStatusApi(SettingsProvider settingsProperties, StorageHelper storageHelper) {
 
         this.settingsProperties = settingsProperties;
 

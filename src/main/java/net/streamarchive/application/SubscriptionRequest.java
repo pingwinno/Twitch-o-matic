@@ -3,7 +3,7 @@ package net.streamarchive.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.streamarchive.application.twitch.handler.UserIdGetter;
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.handlers.misc.HashHandler;
 import net.streamarchive.infrastructure.models.SubscriptionQueryModel;
 import org.slf4j.LoggerFactory;
@@ -26,12 +26,12 @@ public class SubscriptionRequest {
     private final
     HashHandler hashHandler;
     private final
-    SettingsProperties settingsProperties;
+    SettingsProvider settingsProperties;
     private int hubLease = 86400;
     @Autowired
     private UserIdGetter userIdGetter;
 
-    public SubscriptionRequest(HashHandler hashHandler, SettingsProperties settingsProperties, RestTemplate restTemplate) {
+    public SubscriptionRequest(HashHandler hashHandler, SettingsProvider settingsProperties, RestTemplate restTemplate) {
         this.hashHandler = hashHandler;
         this.settingsProperties = settingsProperties;
         this.restTemplate = restTemplate;

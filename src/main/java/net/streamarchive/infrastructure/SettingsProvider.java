@@ -7,6 +7,7 @@ import net.streamarchive.infrastructure.models.Settings;
 import net.streamarchive.infrastructure.models.Streamer;
 import net.streamarchive.repository.UserSubscriptionsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.restart.RestartEndpoint;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
@@ -18,10 +19,16 @@ import java.util.List;
 @Slf4j
 @Service
 @Order(1)
-public class SettingsProperties {
+public class SettingsProvider {
 
     @Autowired
     private UserSubscriptionsRepository subscriptionsRepository;
+
+    @Autowired
+    private DataValidator dataValidator;
+
+    @Autowired
+    private RestartEndpoint restartEndpoint;
 
     private boolean settingsIsLoaded;
     private ObjectMapper mapper = new ObjectMapper();
@@ -40,7 +47,7 @@ public class SettingsProperties {
         return settingsIsLoaded;
     }
 
-    public boolean isInitialized(){
+    public boolean isInitialized() {
         return settingsIsLoaded;
     }
 
@@ -91,7 +98,13 @@ public class SettingsProperties {
     }
 
     public void saveSettings(Settings settings) throws IOException {
+        dataValidator.validate(settings);
         mapper.writeValue(settingsFile, settings);
+        restartEndpoint.restart();
+    }
+
+    public Settings getSettings() {
+        return settings;
     }
 
     public String getUser() {

@@ -6,7 +6,7 @@ import net.streamarchive.application.twitch.handler.UserIdGetter;
 import net.streamarchive.application.twitch.handler.VodMetadataHelper;
 import net.streamarchive.infrastructure.RecordStatusList;
 import net.streamarchive.infrastructure.RecordThread;
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.enums.StartedBy;
 import net.streamarchive.infrastructure.enums.State;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
@@ -45,7 +45,7 @@ public class StreamsApi {
     private final
     StorageHelper storageHelper;
     private final
-    SettingsProperties settingsProperties;
+    SettingsProvider settingsProperties;
     @Autowired
     ArchiveDBHandler archiveDBHandler;
     @Autowired
@@ -53,7 +53,7 @@ public class StreamsApi {
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
-    public StreamsApi(StatusRepository statusRepository, RecordStatusList recordStatusList, RecordThread vodRecorder, VodMetadataHelper vodMetadataHelper, StorageHelper storageHelper, SettingsProperties settingsProperties) {
+    public StreamsApi(StatusRepository statusRepository, RecordStatusList recordStatusList, RecordThread vodRecorder, VodMetadataHelper vodMetadataHelper, StorageHelper storageHelper, SettingsProvider settingsProperties) {
         this.statusRepository = statusRepository;
         this.recordStatusList = recordStatusList;
         this.vodRecorder = vodRecorder;

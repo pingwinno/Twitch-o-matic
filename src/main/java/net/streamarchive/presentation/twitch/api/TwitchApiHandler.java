@@ -8,7 +8,7 @@ import net.streamarchive.application.twitch.handler.UserIdGetter;
 import net.streamarchive.application.twitch.handler.VodMetadataHelper;
 import net.streamarchive.infrastructure.RecordStatusList;
 import net.streamarchive.infrastructure.RecordThread;
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.enums.StartedBy;
 import net.streamarchive.infrastructure.enums.State;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
@@ -42,7 +42,7 @@ public class TwitchApiHandler implements ApplicationContextAware {
     private final
     VodMetadataHelper vodMetadataHelper;
     private final
-    SettingsProperties settingsProperties;
+    SettingsProvider settingsProperties;
     private final
     StorageHelper storageHelper;
     private ApplicationContext applicationContext;
@@ -52,7 +52,7 @@ public class TwitchApiHandler implements ApplicationContextAware {
 
 
     @Autowired
-    public TwitchApiHandler(StatusRepository statusRepository, RecordStatusList recordStatusList, VodMetadataHelper vodMetadataHelper, HashHandler hashHandler, SettingsProperties settingsProperties, StorageHelper storageHelper) {
+    public TwitchApiHandler(StatusRepository statusRepository, RecordStatusList recordStatusList, VodMetadataHelper vodMetadataHelper, HashHandler hashHandler, SettingsProvider settingsProperties, StorageHelper storageHelper) {
         this.statusRepository = statusRepository;
         this.recordStatusList = recordStatusList;
         this.hashHandler = hashHandler;

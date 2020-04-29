@@ -1,6 +1,6 @@
 package net.streamarchive.application;
 
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.models.StorageState;
 import net.streamarchive.infrastructure.models.Streamer;
 import org.slf4j.LoggerFactory;
@@ -16,11 +16,11 @@ import java.util.*;
 @Service
 public class StorageHelper {
     private final
-    SettingsProperties settingsProperties;
+    SettingsProvider settingsProperties;
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(StorageHelper.class.getName());
 
-    public StorageHelper(SettingsProperties settingsProperties) {
+    public StorageHelper(SettingsProvider settingsProperties) {
         this.settingsProperties = settingsProperties;
     }
 

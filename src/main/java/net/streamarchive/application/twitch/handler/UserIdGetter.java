@@ -2,7 +2,7 @@ package net.streamarchive.application.twitch.handler;
 
 
 import lombok.extern.slf4j.Slf4j;
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,7 +19,7 @@ import org.springframework.web.client.RestTemplate;
 public class UserIdGetter {
 
     @Autowired
-    private SettingsProperties settingsProperties;
+    private SettingsProvider settingsProperties;
     @Autowired
     private RestTemplate restTemplate;
 

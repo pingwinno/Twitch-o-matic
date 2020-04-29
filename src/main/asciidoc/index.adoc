@@ -1,0 +1,52 @@
+= API Doc
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 5
+:sectlinks:
+:operation-curl-request-title: Example request
+:operation-http-response-title: Example response
+
+[[overview]]
+= Overview
+
+You can use this API to operate streamarchive recorder.
+
+[[overview-settings-api]]
+== User API
+
+[[overview-get-settings]]
+=== GET
+
+[[overview-get-settings-success]]
+==== Success
+
+The method returns server settings.
+
+operation::settings/shouldReturnSettingsWhenCallGet[]
+
+[[overview-get-settings-failed]]
+==== Failed
+
+The method returns 404 code when file isn't exist (for example at first run).
+
+operation::settings/shouldReturn404WhenCallGetOnEmptySettings[snippets='http-response']
+
+[[overview-post-settings]]
+=== POST
+
+[[overview-save-settings-success]]
+==== Success
+
+The method saves settings.
+After successful save method going to reboot server.
+
+operation::settings/shouldReturn200WhenSaveSettings[]
+
+[[overview-post-settings-failed]]
+==== Failed
+
+The method returns 400 when settings object has wrong params.
+
+operation::settings/shouldReturn400WhenSaveWrongSettings[snippets='http-response']

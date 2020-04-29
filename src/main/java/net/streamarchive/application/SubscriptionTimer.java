@@ -1,13 +1,14 @@
 package net.streamarchive.application;
 
 import lombok.extern.slf4j.Slf4j;
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.handlers.misc.HashHandler;
 import net.streamarchive.infrastructure.models.Streamer;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+
 @Slf4j
 @Service
 public class SubscriptionTimer {
@@ -16,9 +17,9 @@ public class SubscriptionTimer {
     private final
     HashHandler hashHandler;
     private final
-    SettingsProperties settingsProperties;
+    SettingsProvider settingsProperties;
 
-    public SubscriptionTimer(SubscriptionRequest subscriptionRequest, HashHandler hashHandler, SettingsProperties settingsProperties) {
+    public SubscriptionTimer(SubscriptionRequest subscriptionRequest, HashHandler hashHandler, SettingsProvider settingsProperties) {
         this.subscriptionRequest = subscriptionRequest;
         this.hashHandler = hashHandler;
         this.settingsProperties = settingsProperties;
@@ -32,7 +33,8 @@ public class SubscriptionTimer {
             for (Streamer streamer : settingsProperties.getStreamers()) {
                 subscriptionRequest.sendSubscriptionRequest(streamer.getName());
             }
+        } else {
+            log.warn("Settings aren't loaded. Can't subscribe to webhooks");
         }
-        log.warn("Settings aren't loaded. Can't subscribe to webhooks");
     }
 }

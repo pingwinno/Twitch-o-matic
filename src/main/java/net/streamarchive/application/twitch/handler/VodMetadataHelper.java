@@ -1,7 +1,7 @@
 package net.streamarchive.application.twitch.handler;
 
 import net.streamarchive.application.DateConverter;
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import org.json.JSONException;
@@ -24,7 +24,7 @@ public class VodMetadataHelper {
     private RestTemplate restTemplate;
 
     @Autowired
-    private SettingsProperties settingsProperties;
+    private SettingsProvider settingsProperties;
 
 
     public StreamDataModel getLastVod(long userId) throws StreamNotFoundException {
