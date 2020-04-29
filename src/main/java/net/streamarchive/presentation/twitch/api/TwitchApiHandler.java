@@ -18,7 +18,6 @@ import net.streamarchive.infrastructure.models.StatusDataModel;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.StreamStatusNotificationModel;
 import net.streamarchive.repository.StatusRepository;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -102,8 +101,8 @@ public class TwitchApiHandler implements ApplicationContextAware {
         if (hashHandler.compare(signature, stringDataModel)) {
             log.debug("Hash confirmed");
             //check for active subscription
-            log.trace("User search res: {}", settingsProperties.isUserExist(user));
-            if (settingsProperties.isUserExist(user)) {
+            log.trace("User search res: {}", settingsProperties.isStreamerExist(user));
+            if (settingsProperties.isStreamerExist(user)) {
                 log.debug("Subscription is active");
                 StreamStatusNotificationModel dataModel =
                         new ObjectMapper().readValue(stringDataModel, StreamStatusNotificationModel.class);
@@ -152,7 +151,7 @@ public class TwitchApiHandler implements ApplicationContextAware {
                                     } else {
                                         log.warn("Stream duplicate. Skip...");
                                     }
-                                } catch (IOException | InterruptedException e) {
+                                } catch (InterruptedException e) {
                                     log.error("DB error ", e);
                                 } catch (StreamNotFoundException streamNotFoundException) {
                                     streamNotFoundException.printStackTrace();

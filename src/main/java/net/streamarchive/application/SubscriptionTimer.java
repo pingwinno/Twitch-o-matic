@@ -29,7 +29,7 @@ public class SubscriptionTimer {
         if (settingsProperties.isInitialized()) {
             log.info("Start subscribing to webhooks...");
             hashHandler.generateKey();
-            for (Streamer streamer : settingsProperties.getUsers()) {
+            for (Streamer streamer : settingsProperties.getStreamers()) {
                 subscriptionRequest.sendSubscriptionRequest(streamer.getName());
             }
         }

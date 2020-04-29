@@ -49,7 +49,7 @@ public class SubscriptionRequest {
 
             log.debug("Sending subscription query");
             HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.add("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
+            httpHeaders.add("Client-ID",    settingsProperties.getClientID());
             httpHeaders.add("Content-Type", "application/json");
             HttpEntity<String> requestEntity = new HttpEntity<>(new ObjectMapper().writeValueAsString(subscriptionModel),
                     httpHeaders);

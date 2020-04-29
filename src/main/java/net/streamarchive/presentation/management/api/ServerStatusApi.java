@@ -56,7 +56,7 @@ public class ServerStatusApi {
      */
     @GetMapping("/import")
     public void importToLocalDb() throws StreamerNotFoundException {
-        for (Streamer streamer : settingsProperties.getUsers()) {
+        for (Streamer streamer : settingsProperties.getStreamers()) {
             for (net.streamarchive.infrastructure.models.Stream stream : restDBHandler.getAllStreams(streamer.getName())) {
                 stream.setStreamer(streamer.getName());
                 log.trace("Saving " + stream.toString());
@@ -71,7 +71,7 @@ public class ServerStatusApi {
      */
     @GetMapping("/export")
     public void exportFromLocalDb() throws StreamerNotFoundException {
-        for (Streamer streamer : settingsProperties.getUsers()) {
+        for (Streamer streamer : settingsProperties.getStreamers()) {
             for (net.streamarchive.infrastructure.models.Stream stream : jpaDBHandler.getAllStreams(streamer.getName())) {
                 stream.setStreamer(streamer.getName());
                 log.trace("Saving " + stream.toString());

@@ -1,6 +1,7 @@
 package net.streamarchive.application.twitch.handler;
 
 
+import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
@@ -18,14 +19,16 @@ import java.net.URISyntaxException;
 
 @Service
 public class MasterPlaylistDownloader {
-    private static org.slf4j.Logger log = LoggerFactory.getLogger(MasterPlaylistDownloader.class.getName());
 
     @Autowired
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
-    public String getPlaylist(String vodId, String quality) throws IOException, InterruptedException, URISyntaxException, StreamNotFoundException {
+    @Autowired
+    private SettingsProperties settingsProperties;
+
+    public String getPlaylist(String vodId, String quality) throws IOException, URISyntaxException, StreamNotFoundException {
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
+        httpHeaders.add("Client-ID", settingsProperties.getClientID());
         httpHeaders.add("Accept", "application/vnd.twitchtv.v5+json");
         HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
         ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/kraken/videos/" + vodId,

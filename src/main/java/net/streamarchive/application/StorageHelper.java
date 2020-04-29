@@ -26,7 +26,7 @@ public class StorageHelper {
 
     public Map<String, Integer> getFreeSpace() throws IOException {
         Map<String, Integer> freeSpace = new HashMap<>();
-        for (Streamer streamer : settingsProperties.getUsers()) {
+        for (Streamer streamer : settingsProperties.getStreamers()) {
             freeSpace.put(streamer.getName(), (int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getName())).getUsableSpace() / 1073741824));
         }
         return freeSpace;
@@ -34,7 +34,7 @@ public class StorageHelper {
 
     public List<StorageState> getStorageState() throws IOException {
         List<StorageState> storageStates = new ArrayList<>();
-        for (Streamer streamer : settingsProperties.getUsers()) {
+        for (Streamer streamer : settingsProperties.getStreamers()) {
             StorageState storageState = new StorageState();
             storageState.setUser(streamer.getName());
             storageState.setTotalStorage((int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getName())).getTotalSpace() / 1073741824));
@@ -55,7 +55,7 @@ public class StorageHelper {
     @PostConstruct
     public boolean initialStorageCheck() throws IOException {
         boolean pass = true;
-        for (Streamer streamer : settingsProperties.getUsers()) {
+        for (Streamer streamer : settingsProperties.getStreamers()) {
             if (!Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + streamer)) && !Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + streamer))) {
                 log.info("Folder not exist!");
                 log.info("Try create folder...");
@@ -70,7 +70,7 @@ public class StorageHelper {
                 pass = false;
             }
         }
-        for (Streamer streamer : settingsProperties.getUsers()) {
+        for (Streamer streamer : settingsProperties.getStreamers()) {
             log.info("Free space for {} is: {} GB", streamer, getFreeSpace().get(streamer.getName()));
         }
         return pass;

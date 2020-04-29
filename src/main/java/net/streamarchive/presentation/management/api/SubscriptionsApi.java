@@ -48,7 +48,7 @@ public class SubscriptionsApi {
     public Map<String, String> getTimers() {
 
         Map<String, String> users = new HashMap<>();
-        for (Streamer streamer : settingsProperties.getUsers()) {
+        for (Streamer streamer : settingsProperties.getStreamers()) {
             users.put(streamer.getName(), streamer.getQuality());
         }
         return users;
@@ -68,7 +68,7 @@ public class SubscriptionsApi {
             streamerEntity.setName(user.toLowerCase());
             quality.sort(Comparator.comparing(String::length));
             streamerEntity.setQuality(quality.get(0));
-            settingsProperties.addUser(streamerEntity);
+            settingsProperties.addStreamer(streamerEntity);
             storageHelper.creatingRecordedPath(user);
         } catch (IOException e) {
             throw new InternalServerErrorException();

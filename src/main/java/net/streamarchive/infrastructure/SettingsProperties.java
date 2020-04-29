@@ -48,47 +48,31 @@ public class SettingsProperties {
         return settings.getRemoteDBAddress();
     }
 
-    public void setRemoteDBAddress(String remoteDBAddress) {
-        settings.setRemoteDBAddress(remoteDBAddress);
-    }
-
     public String getDbUsername() {
         return settings.getDbUsername();
-    }
-
-    public void setDbUsername(String dbUsername) {
-        settings.setDbUsername(dbUsername);
     }
 
     public String getDbPassword() {
         return settings.getDbPassword();
     }
 
-    public void setDbPassword(String dbPassword) {
-        settings.setDbPassword(dbPassword);
-    }
-
     public String getCallbackAddress() {
         return settings.getCallbackAddress();
     }
 
-    public void setCallbackAddress(String callbackAddress) {
-        settings.setCallbackAddress(callbackAddress);
-    }
-
-    public boolean isUserExist(String user) {
-        return subscriptionsRepository.existsById(user);
+    public boolean isStreamerExist(String streamer) {
+        return subscriptionsRepository.existsById(streamer);
     }
 
     public Streamer getUser(String user) {
         return subscriptionsRepository.getOne(user);
     }
 
-    public List<Streamer> getUsers() {
+    public List<Streamer> getStreamers() {
         return subscriptionsRepository.findAll();
     }
 
-    public void addUser(Streamer streamer) {
+    public void addStreamer(Streamer streamer) {
         log.debug("User {} added", streamer);
         subscriptionsRepository.saveAndFlush(streamer);
     }
@@ -102,19 +86,11 @@ public class SettingsProperties {
         return settings.getRecordStreamPath();
     }
 
-    public void setRecordedStreamPath(String recordedStreamPath) {
-        settings.setRecordStreamPath(recordedStreamPath);
-    }
-
     public String getClientID() {
         return settings.getClientID();
     }
 
-    public void setClientID(String clientID) {
-        settings.setClientID(clientID);
-    }
-
-    public void saveSettings() throws IOException {
+    public void saveSettings(Settings settings) throws IOException {
         mapper.writeValue(settingsFile, settings);
     }
 
@@ -128,10 +104,6 @@ public class SettingsProperties {
 
     public String getPassword() {
         return settings.getUserPass();
-    }
-
-    public void setPassword(String password) {
-        settings.setUserPass(password);
     }
 }
 

@@ -11,7 +11,6 @@ import net.streamarchive.infrastructure.handlers.db.ArchiveDBHandler;
 import net.streamarchive.infrastructure.models.Stream;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.StreamerNotFoundException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -117,7 +116,7 @@ public class VodRecorder implements RecordThread {
         try {
             recordStatusList.changeState(uuid, State.RUNNING);
             String quality;
-            if (settingsProperties.isUserExist(streamDataModel.getStreamerName())) {
+            if (settingsProperties.isStreamerExist(streamDataModel.getStreamerName())) {
                 quality = settingsProperties.getUser(streamDataModel.getStreamerName()).getQuality();
             } else {
                 quality = "chunked";

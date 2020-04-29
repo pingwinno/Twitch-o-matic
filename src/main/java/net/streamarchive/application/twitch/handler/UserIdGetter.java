@@ -2,6 +2,7 @@ package net.streamarchive.application.twitch.handler;
 
 
 import lombok.extern.slf4j.Slf4j;
+import net.streamarchive.infrastructure.SettingsProperties;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,11 +19,13 @@ import org.springframework.web.client.RestTemplate;
 public class UserIdGetter {
 
     @Autowired
+    private SettingsProperties settingsProperties;
+    @Autowired
     private RestTemplate restTemplate;
 
     public long getUserId(String user) {
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
+        httpHeaders.add("Client-ID", settingsProperties.getClientID());
         HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
         ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/helix/users?login=" + user,
                 HttpMethod.GET, requestEntity, String.class);

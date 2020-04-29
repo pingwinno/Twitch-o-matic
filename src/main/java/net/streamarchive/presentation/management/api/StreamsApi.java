@@ -123,7 +123,7 @@ public class StreamsApi {
             } else {
                 throw new NotAcceptableException();
             }
-        } catch (IOException | InterruptedException | StreamNotFoundException e) {
+        } catch (StreamNotFoundException e) {
             log.error("Can't start record ", e);
             throw new NotFoundException();
         }
@@ -140,7 +140,7 @@ public class StreamsApi {
      */
     @RequestMapping(value = "{user}/{uuid}", method = RequestMethod.DELETE)
     public void deleteStream(@PathVariable("uuid") String uuid, @PathVariable("user") String user, @RequestParam("deleteMedia") String deleteMedia) {
-        if (settingsProperties.isUserExist(user)) {
+        if (settingsProperties.isStreamerExist(user)) {
             try {
                 archiveDBHandler.deleteStream(archiveDBHandler.getStream(user, UUID.fromString(uuid)));
             } catch (StreamNotFoundException e) {
