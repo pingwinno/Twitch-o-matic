@@ -1,6 +1,6 @@
 package net.streamarchive.application;
 
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,7 @@ import java.util.LinkedHashMap;
 @Scope("prototype")
 public class AnimatedPreviewGenerator {
     @Autowired
-    SettingsProperties settingsProperties;
+    SettingsProvider settingsProperties;
     @Autowired
     CommandLineExecutor commandLineExecutor;
     private org.slf4j.Logger log = LoggerFactory.getLogger(AnimatedPreviewGenerator.class.getName());

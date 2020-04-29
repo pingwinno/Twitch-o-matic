@@ -1,6 +1,6 @@
 package net.streamarchive.application;
 
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.models.Preview;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ import java.util.Map;
 public class TimelinePreviewGenerator {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(TimelinePreviewGenerator.class.getName());
     @Autowired
-    private SettingsProperties settingsProperties;
+    private SettingsProvider settingsProperties;
     @Autowired
     private CommandLineExecutor commandLineExecutor;
 

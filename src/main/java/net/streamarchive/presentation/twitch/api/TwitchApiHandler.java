@@ -2,12 +2,13 @@ package net.streamarchive.presentation.twitch.api;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import net.streamarchive.application.StorageHelper;
 import net.streamarchive.application.twitch.handler.UserIdGetter;
 import net.streamarchive.application.twitch.handler.VodMetadataHelper;
 import net.streamarchive.infrastructure.RecordStatusList;
 import net.streamarchive.infrastructure.RecordThread;
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.enums.StartedBy;
 import net.streamarchive.infrastructure.enums.State;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
@@ -17,7 +18,6 @@ import net.streamarchive.infrastructure.models.StatusDataModel;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.StreamStatusNotificationModel;
 import net.streamarchive.repository.StatusRepository;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/handler")
 public class TwitchApiHandler implements ApplicationContextAware {
@@ -41,14 +42,17 @@ public class TwitchApiHandler implements ApplicationContextAware {
     private final
     VodMetadataHelper vodMetadataHelper;
     private final
-    SettingsProperties settingsProperties;
+    SettingsProvider settingsProperties;
     private final
     StorageHelper storageHelper;
     private ApplicationContext applicationContext;
-    private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
     @Autowired
-    public TwitchApiHandler(StatusRepository statusRepository, RecordStatusList recordStatusList, VodMetadataHelper vodMetadataHelper, HashHandler hashHandler, SettingsProperties settingsProperties, StorageHelper storageHelper) {
+    private UserIdGetter userIdGetter;
+
+
+    @Autowired
+    public TwitchApiHandler(StatusRepository statusRepository, RecordStatusList recordStatusList, VodMetadataHelper vodMetadataHelper, HashHandler hashHandler, SettingsProvider settingsProperties, StorageHelper storageHelper) {
         this.statusRepository = statusRepository;
         this.recordStatusList = recordStatusList;
         this.hashHandler = hashHandler;
@@ -89,7 +93,7 @@ public class TwitchApiHandler implements ApplicationContextAware {
     public void handleStreamNotification(@RequestBody String stringDataModel
             , @RequestHeader("content-length") long length, @RequestHeader("X-Hub-Signature") String signature, @PathVariable("user") String user) throws InterruptedException, StreamNotFoundException, IOException {
 
-        long userId = UserIdGetter.getUserId(user);
+        long userId = userIdGetter.getUserId(user);
         log.debug("Incoming stream up/down notification");
 
         log.debug("data length {} body length {} ", stringDataModel.length(), length);
@@ -97,8 +101,8 @@ public class TwitchApiHandler implements ApplicationContextAware {
         if (hashHandler.compare(signature, stringDataModel)) {
             log.debug("Hash confirmed");
             //check for active subscription
-            log.trace("User search res: {}", settingsProperties.isUserExist(user));
-            if (settingsProperties.isUserExist(user)) {
+            log.trace("User search res: {}", settingsProperties.isStreamerExist(user));
+            if (settingsProperties.isStreamerExist(user)) {
                 log.debug("Subscription is active");
                 StreamStatusNotificationModel dataModel =
                         new ObjectMapper().readValue(stringDataModel, StreamStatusNotificationModel.class);
@@ -147,7 +151,7 @@ public class TwitchApiHandler implements ApplicationContextAware {
                                     } else {
                                         log.warn("Stream duplicate. Skip...");
                                     }
-                                } catch (IOException | InterruptedException e) {
+                                } catch (InterruptedException e) {
                                     log.error("DB error ", e);
                                 } catch (StreamNotFoundException streamNotFoundException) {
                                     streamNotFoundException.printStackTrace();

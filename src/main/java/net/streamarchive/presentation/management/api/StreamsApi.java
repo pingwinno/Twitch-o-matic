@@ -6,7 +6,7 @@ import net.streamarchive.application.twitch.handler.UserIdGetter;
 import net.streamarchive.application.twitch.handler.VodMetadataHelper;
 import net.streamarchive.infrastructure.RecordStatusList;
 import net.streamarchive.infrastructure.RecordThread;
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.enums.StartedBy;
 import net.streamarchive.infrastructure.enums.State;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
@@ -45,13 +45,15 @@ public class StreamsApi {
     private final
     StorageHelper storageHelper;
     private final
-    SettingsProperties settingsProperties;
+    SettingsProvider settingsProperties;
     @Autowired
     ArchiveDBHandler archiveDBHandler;
+    @Autowired
+    private UserIdGetter userIdGetter;
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
-    public StreamsApi(StatusRepository statusRepository, RecordStatusList recordStatusList, RecordThread vodRecorder, VodMetadataHelper vodMetadataHelper, StorageHelper storageHelper, SettingsProperties settingsProperties) {
+    public StreamsApi(StatusRepository statusRepository, RecordStatusList recordStatusList, RecordThread vodRecorder, VodMetadataHelper vodMetadataHelper, StorageHelper storageHelper, SettingsProvider settingsProperties) {
         this.statusRepository = statusRepository;
         this.recordStatusList = recordStatusList;
         this.vodRecorder = vodRecorder;
@@ -76,7 +78,7 @@ public class StreamsApi {
             log.trace("type: {}", requestModel.getType());
             log.trace("value: {}", requestModel.getValue());
             if (requestModel.getType().equals("user")) {
-                streamMetadata = vodMetadataHelper.getLastVod(UserIdGetter.getUserId(requestModel.getValue()));
+                streamMetadata = vodMetadataHelper.getLastVod(userIdGetter.getUserId(requestModel.getValue()));
             } else if (requestModel.getType().equals("vod")) {
                 streamMetadata = vodMetadataHelper.getVodMetadata(Integer.parseInt(requestModel.getValue()));
             }
@@ -121,7 +123,7 @@ public class StreamsApi {
             } else {
                 throw new NotAcceptableException();
             }
-        } catch (IOException | InterruptedException | StreamNotFoundException e) {
+        } catch (StreamNotFoundException e) {
             log.error("Can't start record ", e);
             throw new NotFoundException();
         }
@@ -138,7 +140,7 @@ public class StreamsApi {
      */
     @RequestMapping(value = "{user}/{uuid}", method = RequestMethod.DELETE)
     public void deleteStream(@PathVariable("uuid") String uuid, @PathVariable("user") String user, @RequestParam("deleteMedia") String deleteMedia) {
-        if (settingsProperties.isUserExist(user)) {
+        if (settingsProperties.isStreamerExist(user)) {
             try {
                 archiveDBHandler.deleteStream(archiveDBHandler.getStream(user, UUID.fromString(uuid)));
             } catch (StreamNotFoundException e) {

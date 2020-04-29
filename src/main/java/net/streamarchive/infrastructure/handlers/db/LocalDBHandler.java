@@ -3,7 +3,7 @@ package net.streamarchive.infrastructure.handlers.db;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import net.streamarchive.infrastructure.models.Stream;
 import net.streamarchive.infrastructure.models.StreamerNotFoundException;
@@ -29,7 +29,7 @@ public class LocalDBHandler implements ArchiveDBHandler {
     static private org.slf4j.Logger log = LoggerFactory.getLogger(LocalDBHandler.class);
 
     @Autowired
-    SettingsProperties settingsProperties;
+    SettingsProvider settingsProperties;
 
     @Override
     public List<Stream> getAllStreams(String streamer) throws StreamerNotFoundException {

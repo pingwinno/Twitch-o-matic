@@ -3,10 +3,11 @@ package net.streamarchive.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.streamarchive.application.twitch.handler.UserIdGetter;
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.handlers.misc.HashHandler;
 import net.streamarchive.infrastructure.models.SubscriptionQueryModel;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -25,10 +26,12 @@ public class SubscriptionRequest {
     private final
     HashHandler hashHandler;
     private final
-    SettingsProperties settingsProperties;
+    SettingsProvider settingsProperties;
     private int hubLease = 86400;
+    @Autowired
+    private UserIdGetter userIdGetter;
 
-    public SubscriptionRequest(HashHandler hashHandler, SettingsProperties settingsProperties, RestTemplate restTemplate) {
+    public SubscriptionRequest(HashHandler hashHandler, SettingsProvider settingsProperties, RestTemplate restTemplate) {
         this.hashHandler = hashHandler;
         this.settingsProperties = settingsProperties;
         this.restTemplate = restTemplate;
@@ -39,14 +42,15 @@ public class SubscriptionRequest {
         try {
             SubscriptionQueryModel subscriptionModel = new SubscriptionQueryModel("subscribe",
                     "https://api.twitch.tv/helix/streams?user_id=" +
-                            UserIdGetter.getUserId(user),
+                            userIdGetter.getUserId(user),
                     settingsProperties.getCallbackAddress() +
                             "/handler/" + user, hubLease, hashHandler.getKey());
             log.trace("SubscriptionQueryModel: {}", subscriptionModel.toString());
 
             log.debug("Sending subscription query");
             HttpHeaders httpHeaders = new HttpHeaders();
-            httpHeaders.add("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
+            httpHeaders.add("Client-ID", settingsProperties.getClientID());
+            httpHeaders.add("Authorization", "Bearer" + settingsProperties.getClientSecret());
             httpHeaders.add("Content-Type", "application/json");
             HttpEntity<String> requestEntity = new HttpEntity<>(new ObjectMapper().writeValueAsString(subscriptionModel),
                     httpHeaders);
@@ -59,7 +63,7 @@ public class SubscriptionRequest {
 
             return responseEntity.getStatusCode().value();
 
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             log.error("Subscription timer request failed. {}", e.toString());
             throw new IOException("Subscription failed");
         }

@@ -1,6 +1,6 @@
 package net.streamarchive.infrastructure.handlers.db;
 
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import net.streamarchive.infrastructure.models.Stream;
 import net.streamarchive.infrastructure.models.StreamerNotFoundException;
@@ -17,7 +17,7 @@ import java.util.UUID;
 @Service
 public class RestDBHandler implements ArchiveDBHandler {
     @Autowired
-    SettingsProperties settingsProperties;
+    SettingsProvider settingsProperties;
 
     @Autowired
     private RestTemplate restTemplateWithCredentials;

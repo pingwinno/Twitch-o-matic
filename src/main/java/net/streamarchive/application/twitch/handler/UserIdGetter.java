@@ -1,30 +1,36 @@
 package net.streamarchive.application.twitch.handler;
 
 
+import lombok.extern.slf4j.Slf4j;
+import net.streamarchive.infrastructure.SettingsProvider;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.IOException;
-import java.util.logging.Logger;
-
+@Slf4j
+@Component
 public class UserIdGetter {
 
-    private static Logger log = Logger.getLogger(UserIdGetter.class.getName());
-    private static RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    private SettingsProvider settingsProperties;
+    @Autowired
+    private RestTemplate restTemplate;
 
-    public static long getUserId(String user) throws IOException, InterruptedException {
+    public long getUserId(String user) {
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Client-ID", "eanof9ptu3k9448ukqe85cctiic8gm");
+        httpHeaders.add("Client-ID", settingsProperties.getClientID());
+        httpHeaders.add("Authorization", "Bearer" + settingsProperties.getClientSecret());
         HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
         ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/helix/users?login=" + user,
                 HttpMethod.GET, requestEntity, String.class);
-        log.fine(responseEntity.toString());
+        log.trace(responseEntity.toString());
         JSONObject jsonObj =
                 new JSONObject(responseEntity.getBody());
         long userId;

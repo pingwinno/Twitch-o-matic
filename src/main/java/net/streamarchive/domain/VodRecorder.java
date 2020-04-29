@@ -11,7 +11,6 @@ import net.streamarchive.infrastructure.handlers.db.ArchiveDBHandler;
 import net.streamarchive.infrastructure.models.Stream;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.StreamerNotFoundException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +41,7 @@ public class VodRecorder implements RecordThread {
     private final
     RecordThreadSupervisor recordThreadSupervisor;
     private final
-    SettingsProperties settingsProperties;
+    SettingsProvider settingsProperties;
     private final
     VodMetadataHelper vodMetadataHelper;
     private final
@@ -51,13 +50,9 @@ public class VodRecorder implements RecordThread {
     TimelinePreviewGenerator timelinePreviewGenerator;
     private final
     CommandLineExecutor commandLineExecutor;
-    private final
-    DashProcessing dashProcessing;
+
     private final
     ArchiveDBHandler archiveDBHandler;
-
-    @Value("${net.streamarchive.dashprocessing.enabled}")
-    private boolean enabled;
 
     private org.slf4j.Logger log;
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
@@ -72,7 +67,7 @@ public class VodRecorder implements RecordThread {
     private StreamThread streamThread = new StreamThread();
 
 
-    public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, SettingsProperties settingsProperties, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator, CommandLineExecutor commandLineExecutor, DashProcessing dashProcessing, ArchiveDBHandler archiveDBHandler) {
+    public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, SettingsProvider settingsProperties, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator, CommandLineExecutor commandLineExecutor, ArchiveDBHandler archiveDBHandler) {
         this.recordStatusList = recordStatusList;
         this.masterPlaylistDownloader = masterPlaylistDownloader;
         this.recordThreadSupervisor = recordThreadSupervisor;
@@ -81,7 +76,6 @@ public class VodRecorder implements RecordThread {
         this.animatedPreviewGenerator = animatedPreviewGenerator;
         this.timelinePreviewGenerator = timelinePreviewGenerator;
         this.commandLineExecutor = commandLineExecutor;
-        this.dashProcessing = dashProcessing;
         this.archiveDBHandler = archiveDBHandler;
     }
 
@@ -122,14 +116,14 @@ public class VodRecorder implements RecordThread {
         try {
             recordStatusList.changeState(uuid, State.RUNNING);
             String quality;
-            if (settingsProperties.isUserExist(streamDataModel.getStreamerName())) {
+            if (settingsProperties.isStreamerExist(streamDataModel.getStreamerName())) {
                 quality = settingsProperties.getUser(streamDataModel.getStreamerName()).getQuality();
             } else {
                 quality = "chunked";
             }
             try {
 
-                Path streamPath = Paths.get(streamFolderPath);
+                Path streamPath = Paths.get(streamFolderPath + '/' + quality);
                 if (!Files.exists(streamPath)) {
                     Files.createDirectories(streamPath);
                 } else {

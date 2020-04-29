@@ -1,7 +1,7 @@
 package net.streamarchive.infrastructure.configuration;
 
 
-import net.streamarchive.infrastructure.SettingsProperties;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.handlers.db.ArchiveDBHandler;
 import net.streamarchive.infrastructure.handlers.db.EnabledDBHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,10 +9,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,11 +24,12 @@ import org.springframework.web.client.RestTemplate;
 @EnableScheduling
 @RestController
 @Configuration
-@PropertySource("file:${user.home}/application.properties")
+@EnableWebSecurity
+@Profile("production")
 public class WebConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    SettingsProperties settingsProperties;
+    private SettingsProvider settingsProperties;
 
     @Value("${net.streamarchive.auth.user}")
     private String user;
@@ -43,7 +45,8 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/login**", "/handler/**", "/callback/", "/webjars/**", "/error**", "/status**")
                 .permitAll()
                 .anyRequest()
-                .authenticated().and().logout().logoutSuccessUrl("/").clearAuthentication(true).and().csrf().disable().httpBasic();
+                .authenticated().and().formLogin().and()
+                .logout().logoutSuccessUrl("/").clearAuthentication(true).and().csrf().disable().httpBasic();
         ;
     }
 
@@ -54,9 +57,12 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        if (settingsProperties.isInitialized()) {
+            user = settingsProperties.getUser();
+            password = settingsProperties.getPassword();
+        }
         auth.inMemoryAuthentication()
                 .withUser(user).password(passwordEncoder().encode(password)).authorities("ROLE_USER");
-        ;
     }
 
     @Bean
@@ -66,7 +72,11 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean
     RestTemplate restTemplateWithCredentials(RestTemplateBuilder restTemplateBuilder) {
-        return restTemplateBuilder.basicAuthentication(settingsProperties.getDbUsername(), settingsProperties.getDbPassword()).build();
+        if (settingsProperties.isInitialized()) {
+            return restTemplateBuilder.basicAuthentication(settingsProperties.getDbUsername(), settingsProperties.getDbPassword()).build();
+        } else {
+            return restTemplateBuilder.build();
+        }
     }
 
     @Bean
@@ -78,5 +88,4 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
     ArchiveDBHandler archiveDBHandler() {
         return new EnabledDBHandler();
     }
-
 }
