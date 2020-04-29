@@ -2,6 +2,7 @@ package net.streamarchive.presentation.twitch.api;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import net.streamarchive.application.StorageHelper;
 import net.streamarchive.application.twitch.handler.UserIdGetter;
 import net.streamarchive.application.twitch.handler.VodMetadataHelper;
@@ -29,6 +30,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/handler")
 public class TwitchApiHandler implements ApplicationContextAware {
@@ -45,7 +47,10 @@ public class TwitchApiHandler implements ApplicationContextAware {
     private final
     StorageHelper storageHelper;
     private ApplicationContext applicationContext;
-    private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
+
+    @Autowired
+    private UserIdGetter userIdGetter;
+
 
     @Autowired
     public TwitchApiHandler(StatusRepository statusRepository, RecordStatusList recordStatusList, VodMetadataHelper vodMetadataHelper, HashHandler hashHandler, SettingsProperties settingsProperties, StorageHelper storageHelper) {
@@ -89,7 +94,7 @@ public class TwitchApiHandler implements ApplicationContextAware {
     public void handleStreamNotification(@RequestBody String stringDataModel
             , @RequestHeader("content-length") long length, @RequestHeader("X-Hub-Signature") String signature, @PathVariable("user") String user) throws InterruptedException, StreamNotFoundException, IOException {
 
-        long userId = UserIdGetter.getUserId(user);
+        long userId = userIdGetter.getUserId(user);
         log.debug("Incoming stream up/down notification");
 
         log.debug("data length {} body length {} ", stringDataModel.length(), length);

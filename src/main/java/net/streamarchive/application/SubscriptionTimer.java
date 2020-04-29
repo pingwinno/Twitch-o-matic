@@ -1,5 +1,6 @@
 package net.streamarchive.application;
 
+import lombok.extern.slf4j.Slf4j;
 import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.handlers.misc.HashHandler;
 import net.streamarchive.infrastructure.models.Streamer;
@@ -7,7 +8,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-
+@Slf4j
 @Service
 public class SubscriptionTimer {
     private final
@@ -25,9 +26,13 @@ public class SubscriptionTimer {
 
     @Scheduled(fixedRate = 86400000)
     public void doSubscriptions() throws IOException {
-        hashHandler.generateKey();
-        for (Streamer streamer : settingsProperties.getUsers()) {
-            subscriptionRequest.sendSubscriptionRequest(streamer.getName());
+        if (settingsProperties.isInitialized()) {
+            log.info("Start subscribing to webhooks...");
+            hashHandler.generateKey();
+            for (Streamer streamer : settingsProperties.getUsers()) {
+                subscriptionRequest.sendSubscriptionRequest(streamer.getName());
+            }
         }
+        log.warn("Settings aren't loaded. Can't subscribe to webhooks");
     }
 }

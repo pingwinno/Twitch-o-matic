@@ -51,13 +51,9 @@ public class VodRecorder implements RecordThread {
     TimelinePreviewGenerator timelinePreviewGenerator;
     private final
     CommandLineExecutor commandLineExecutor;
-    private final
-    DashProcessing dashProcessing;
+
     private final
     ArchiveDBHandler archiveDBHandler;
-
-    @Value("${net.streamarchive.dashprocessing.enabled}")
-    private boolean enabled;
 
     private org.slf4j.Logger log;
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
@@ -72,7 +68,7 @@ public class VodRecorder implements RecordThread {
     private StreamThread streamThread = new StreamThread();
 
 
-    public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, SettingsProperties settingsProperties, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator, CommandLineExecutor commandLineExecutor, DashProcessing dashProcessing, ArchiveDBHandler archiveDBHandler) {
+    public VodRecorder(RecordStatusList recordStatusList, MasterPlaylistDownloader masterPlaylistDownloader, RecordThreadSupervisor recordThreadSupervisor, SettingsProperties settingsProperties, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator, CommandLineExecutor commandLineExecutor, ArchiveDBHandler archiveDBHandler) {
         this.recordStatusList = recordStatusList;
         this.masterPlaylistDownloader = masterPlaylistDownloader;
         this.recordThreadSupervisor = recordThreadSupervisor;
@@ -81,7 +77,6 @@ public class VodRecorder implements RecordThread {
         this.animatedPreviewGenerator = animatedPreviewGenerator;
         this.timelinePreviewGenerator = timelinePreviewGenerator;
         this.commandLineExecutor = commandLineExecutor;
-        this.dashProcessing = dashProcessing;
         this.archiveDBHandler = archiveDBHandler;
     }
 

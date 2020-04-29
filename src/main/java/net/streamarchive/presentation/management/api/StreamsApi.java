@@ -48,6 +48,8 @@ public class StreamsApi {
     SettingsProperties settingsProperties;
     @Autowired
     ArchiveDBHandler archiveDBHandler;
+    @Autowired
+    private UserIdGetter userIdGetter;
 
     private org.slf4j.Logger log = LoggerFactory.getLogger(getClass().getName());
 
@@ -76,7 +78,7 @@ public class StreamsApi {
             log.trace("type: {}", requestModel.getType());
             log.trace("value: {}", requestModel.getValue());
             if (requestModel.getType().equals("user")) {
-                streamMetadata = vodMetadataHelper.getLastVod(UserIdGetter.getUserId(requestModel.getValue()));
+                streamMetadata = vodMetadataHelper.getLastVod(userIdGetter.getUserId(requestModel.getValue()));
             } else if (requestModel.getType().equals("vod")) {
                 streamMetadata = vodMetadataHelper.getVodMetadata(Integer.parseInt(requestModel.getValue()));
             }

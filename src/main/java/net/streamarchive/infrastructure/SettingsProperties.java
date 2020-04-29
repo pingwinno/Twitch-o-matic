@@ -1,66 +1,80 @@
 package net.streamarchive.infrastructure;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+import net.streamarchive.infrastructure.models.Settings;
 import net.streamarchive.infrastructure.models.Streamer;
 import net.streamarchive.repository.UserSubscriptionsRepository;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
-@Component
+@Slf4j
+@Service
+@Order(1)
 public class SettingsProperties {
 
-    private org.slf4j.Logger log = LoggerFactory.getLogger(SettingsProperties.class.getName());
     @Autowired
     private UserSubscriptionsRepository subscriptionsRepository;
-    @Value("${net.streamarchive.security.callbackAddress}")
-    private String callbackAddress;
-    @Value("${net.streamarchive.security.recordStreamPath}")
-    private String recordStreamPath;
-    @Value("${server.port}")
-    private int serverPort;
-    @Value("${net.streamarchive.remoteDB.address}")
-    private String remoteDBAddress;
-    @Value("${net.streamarchive.remoteDB.username}")
-    private String dbUsername;
-    @Value("${net.streamarchive.remoteDB.password}")
-    private String dbPassword;
+
+    private boolean settingsIsLoaded;
+    private ObjectMapper mapper = new ObjectMapper();
+    private Settings settings;
+    private File settingsFile = new File("settings.json");
+
+    @PostConstruct
+    private boolean init() {
+        try {
+            settings = mapper.readValue(settingsFile, Settings.class);
+            settingsIsLoaded = true;
+        } catch (IOException e) {
+            log.warn("Can't load settings");
+            settingsIsLoaded = false;
+        }
+        return settingsIsLoaded;
+    }
+
+    public boolean isInitialized(){
+        return settingsIsLoaded;
+    }
 
     public String getRemoteDBAddress() {
-        return remoteDBAddress;
+        return settings.getRemoteDBAddress();
     }
 
     public void setRemoteDBAddress(String remoteDBAddress) {
-        this.remoteDBAddress = remoteDBAddress;
+        settings.setRemoteDBAddress(remoteDBAddress);
     }
 
     public String getDbUsername() {
-        return dbUsername;
+        return settings.getDbUsername();
     }
 
     public void setDbUsername(String dbUsername) {
-        this.dbUsername = dbUsername;
+        settings.setDbUsername(dbUsername);
     }
 
     public String getDbPassword() {
-        return dbPassword;
+        return settings.getDbPassword();
     }
 
     public void setDbPassword(String dbPassword) {
-        this.dbPassword = dbPassword;
-    }
-
-    public int getTwitchServerPort() {
-        return serverPort;
+        settings.setDbPassword(dbPassword);
     }
 
     public String getCallbackAddress() {
-        return callbackAddress;
+        return settings.getCallbackAddress();
     }
 
+    public void setCallbackAddress(String callbackAddress) {
+        settings.setCallbackAddress(callbackAddress);
+    }
 
     public boolean isUserExist(String user) {
         return subscriptionsRepository.existsById(user);
@@ -85,9 +99,40 @@ public class SettingsProperties {
     }
 
     public String getRecordedStreamPath() {
-        return recordStreamPath;
+        return settings.getRecordStreamPath();
     }
 
+    public void setRecordedStreamPath(String recordedStreamPath) {
+        settings.setRecordStreamPath(recordedStreamPath);
+    }
+
+    public String getClientID() {
+        return settings.getClientID();
+    }
+
+    public void setClientID(String clientID) {
+        settings.setClientID(clientID);
+    }
+
+    public void saveSettings() throws IOException {
+        mapper.writeValue(settingsFile, settings);
+    }
+
+    public String getUser() {
+        return settings.getUser();
+    }
+
+    public void setUser(String user) {
+        settings.setUser(user);
+    }
+
+    public String getPassword() {
+        return settings.getUserPass();
+    }
+
+    public void setPassword(String password) {
+        settings.setUserPass(password);
+    }
 }
 
 

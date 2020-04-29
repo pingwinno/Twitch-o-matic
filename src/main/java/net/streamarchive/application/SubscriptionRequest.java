@@ -7,6 +7,7 @@ import net.streamarchive.infrastructure.SettingsProperties;
 import net.streamarchive.infrastructure.handlers.misc.HashHandler;
 import net.streamarchive.infrastructure.models.SubscriptionQueryModel;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -27,6 +28,8 @@ public class SubscriptionRequest {
     private final
     SettingsProperties settingsProperties;
     private int hubLease = 86400;
+    @Autowired
+    private UserIdGetter userIdGetter;
 
     public SubscriptionRequest(HashHandler hashHandler, SettingsProperties settingsProperties, RestTemplate restTemplate) {
         this.hashHandler = hashHandler;
@@ -39,7 +42,7 @@ public class SubscriptionRequest {
         try {
             SubscriptionQueryModel subscriptionModel = new SubscriptionQueryModel("subscribe",
                     "https://api.twitch.tv/helix/streams?user_id=" +
-                            UserIdGetter.getUserId(user),
+                            userIdGetter.getUserId(user),
                     settingsProperties.getCallbackAddress() +
                             "/handler/" + user, hubLease, hashHandler.getKey());
             log.trace("SubscriptionQueryModel: {}", subscriptionModel.toString());
@@ -59,7 +62,7 @@ public class SubscriptionRequest {
 
             return responseEntity.getStatusCode().value();
 
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             log.error("Subscription timer request failed. {}", e.toString());
             throw new IOException("Subscription failed");
         }
