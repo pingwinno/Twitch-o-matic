@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
 @Slf4j
@@ -22,6 +24,8 @@ import java.util.List;
 public class SettingsProvider {
 
     private static final String STREAMS_PATH = System.getProperty("user.home") + "/streams/";
+    private static final String DOCKER_SETTINGS = "/etc/streamarchive/settings.json";
+    private static final String STANDALONE_SETTINGS = "settings.json";
     @Autowired
     private UserSubscriptionsRepository subscriptionsRepository;
     @Autowired
@@ -31,10 +35,18 @@ public class SettingsProvider {
     private boolean settingsIsLoaded;
     private ObjectMapper mapper = new ObjectMapper();
     private Settings settings;
-    private File settingsFile = new File("settings.json");
+
+    private File settingsFile;
 
     @PostConstruct
     private boolean init() {
+        if (Files.notExists(Paths.get(DOCKER_SETTINGS))) {
+            log.warn("Settings volume doesn't exist. Loading settings from working directory...");
+            settingsFile = new File(STANDALONE_SETTINGS);
+        } else {
+            log.info("Loading settings...");
+            settingsFile = new File(DOCKER_SETTINGS);
+        }
         try {
             settings = mapper.readValue(settingsFile, Settings.class);
             settingsIsLoaded = true;
