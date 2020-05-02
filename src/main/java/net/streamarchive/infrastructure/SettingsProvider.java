@@ -65,6 +65,10 @@ public class SettingsProvider {
         return settings.getCallbackAddress();
     }
 
+    public String getOauthRedirectAddress() {
+        return settings.getOauthRedirectAddress();
+    }
+
     public boolean isStreamerExist(String streamer) {
         return subscriptionsRepository.existsById(streamer);
     }

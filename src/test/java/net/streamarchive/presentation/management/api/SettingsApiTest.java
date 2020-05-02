@@ -76,6 +76,8 @@ class SettingsApiTest {
                                 .value(constraintDescriptions.descriptionsForProperty("userPass"))),
                         fieldWithPath("callbackAddress").description("Callback address for twitch webhook api (needed for stream events")
                                 .attributes(key(CONSTRAINTS).value(constraintDescriptions.descriptionsForProperty("callbackAddress"))),
+                        fieldWithPath("oauthRedirectAddress").description("Address for twitch oAuth api (needed request api access token)")
+                                .attributes(key(CONSTRAINTS).value(constraintDescriptions.descriptionsForProperty("oauthRedirectAddress"))),
                         fieldWithPath("remoteDBAddress").description("Streamarchive db server address. Needed for publishing streams to streamarchive portal").attributes(key(CONSTRAINTS)
                                 .value(constraintDescriptions.descriptionsForProperty("remoteDBAddress"))),
                         fieldWithPath("dbUsername").description("Streamarchive db server username").attributes(key(CONSTRAINTS)
@@ -111,6 +113,8 @@ class SettingsApiTest {
                                         .value(constraintDescriptions.descriptionsForProperty("userPass"))),
                                 fieldWithPath("callbackAddress").description("Callback address for twitch webhook api (needed for stream events")
                                         .attributes(key(CONSTRAINTS).value(constraintDescriptions.descriptionsForProperty("callbackAddress"))),
+                                fieldWithPath("oauthRedirectAddress").description("Address for twitch oAuth api (needed request api access token)")
+                                        .attributes(key(CONSTRAINTS).value(constraintDescriptions.descriptionsForProperty("oauthRedirectAddress"))),
                                 fieldWithPath("remoteDBAddress").description("Streamarchive db server address. Needed for publishing streams to streamarchive portal").attributes(key(CONSTRAINTS)
                                         .value(constraintDescriptions.descriptionsForProperty("remoteDBAddress"))),
                                 fieldWithPath("dbUsername").description("Streamarchive db server username").attributes(key(CONSTRAINTS)

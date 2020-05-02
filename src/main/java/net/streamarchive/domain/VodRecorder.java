@@ -277,7 +277,7 @@ public class VodRecorder implements RecordThread {
                 } else {
                     log.warn("UnknownHostException again. Why? I don't give a fuck.");
                 }
-            } catch (IOException | URISyntaxException | StreamNotFoundException e) {
+            } catch (IOException | StreamNotFoundException e) {
                 log.error("Vod downloader refresh failed. ", e);
                 recordStatusList.changeState(uuid, State.ERROR);
                 stop();

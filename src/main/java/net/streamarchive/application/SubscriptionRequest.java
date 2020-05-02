@@ -2,6 +2,7 @@ package net.streamarchive.application;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.streamarchive.application.twitch.handler.TwitchOAuthHandler;
 import net.streamarchive.application.twitch.handler.UserIdGetter;
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.handlers.misc.HashHandler;
@@ -30,6 +31,8 @@ public class SubscriptionRequest {
     private int hubLease = 86400;
     @Autowired
     private UserIdGetter userIdGetter;
+    @Autowired
+    private TwitchOAuthHandler twitchOAuthHandler;
 
     public SubscriptionRequest(HashHandler hashHandler, SettingsProvider settingsProperties, RestTemplate restTemplate) {
         this.hashHandler = hashHandler;
@@ -50,7 +53,7 @@ public class SubscriptionRequest {
             log.debug("Sending subscription query");
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.add("Client-ID", settingsProperties.getClientID());
-            httpHeaders.add("Authorization", "Bearer" + settingsProperties.getClientSecret());
+            httpHeaders.add("Authorization", "Bearer " + twitchOAuthHandler.getAccessToken());
             httpHeaders.add("Content-Type", "application/json");
             HttpEntity<String> requestEntity = new HttpEntity<>(new ObjectMapper().writeValueAsString(subscriptionModel),
                     httpHeaders);

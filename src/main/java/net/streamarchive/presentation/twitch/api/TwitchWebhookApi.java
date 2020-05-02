@@ -32,7 +32,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/handler")
-public class TwitchApiHandler implements ApplicationContextAware {
+public class TwitchWebhookApi implements ApplicationContextAware {
     private final
     StatusRepository statusRepository;
     private final
@@ -52,7 +52,7 @@ public class TwitchApiHandler implements ApplicationContextAware {
 
 
     @Autowired
-    public TwitchApiHandler(StatusRepository statusRepository, RecordStatusList recordStatusList, VodMetadataHelper vodMetadataHelper, HashHandler hashHandler, SettingsProvider settingsProperties, StorageHelper storageHelper) {
+    public TwitchWebhookApi(StatusRepository statusRepository, RecordStatusList recordStatusList, VodMetadataHelper vodMetadataHelper, HashHandler hashHandler, SettingsProvider settingsProperties, StorageHelper storageHelper) {
         this.statusRepository = statusRepository;
         this.recordStatusList = recordStatusList;
         this.hashHandler = hashHandler;

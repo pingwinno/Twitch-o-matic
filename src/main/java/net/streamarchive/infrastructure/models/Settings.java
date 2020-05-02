@@ -35,5 +35,7 @@ public class Settings {
     @NonNull
     @NotBlank(message = "Should be not blank")
     private String clientSecret;
-
+    @NonNull
+    @URL(message = "Should be host address that you use to reach web interface")
+    private String oauthRedirectAddress;
 }

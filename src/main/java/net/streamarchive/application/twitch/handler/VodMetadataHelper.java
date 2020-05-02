@@ -26,12 +26,14 @@ public class VodMetadataHelper {
     @Autowired
     private SettingsProvider settingsProperties;
 
+    @Autowired
+    private TwitchOAuthHandler twitchOAuthHandler;
 
     public StreamDataModel getLastVod(long userId) throws StreamNotFoundException {
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Client-ID", settingsProperties.getClientID());
-        httpHeaders.add("Authorization", "Bearer" + settingsProperties.getClientSecret());
+        httpHeaders.add("Authorization", "Bearer " + twitchOAuthHandler.getAccessToken());
         HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
         ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/helix/videos?user_id=" + userId,
                 HttpMethod.GET, requestEntity, String.class);
@@ -48,7 +50,7 @@ public class VodMetadataHelper {
     public StreamDataModel getVodMetadata(int vodId) throws StreamNotFoundException {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Client-ID", settingsProperties.getClientID());
-        httpHeaders.add("Authorization", "Bearer" + settingsProperties.getClientSecret());
+        httpHeaders.add("Authorization", "Bearer " + twitchOAuthHandler.getAccessToken());
         httpHeaders.add("Accept", "application/vnd.twitchtv.v5+json");
         HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
         ResponseEntity<String> responseEntity;

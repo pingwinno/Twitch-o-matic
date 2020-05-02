@@ -22,11 +22,13 @@ public class UserIdGetter {
     private SettingsProvider settingsProperties;
     @Autowired
     private RestTemplate restTemplate;
+    @Autowired
+    private TwitchOAuthHandler twitchOAuthHandler;
 
     public long getUserId(String user) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Client-ID", settingsProperties.getClientID());
-        httpHeaders.add("Authorization", "Bearer" + settingsProperties.getClientSecret());
+        httpHeaders.add("Authorization", "Bearer " + twitchOAuthHandler.getAccessToken());
         HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
         ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/helix/users?login=" + user,
                 HttpMethod.GET, requestEntity, String.class);
