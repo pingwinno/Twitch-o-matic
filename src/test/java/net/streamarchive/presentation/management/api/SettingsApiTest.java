@@ -1,7 +1,6 @@
 package net.streamarchive.presentation.management.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.exceptions.WrongParamsException;
 import net.streamarchive.infrastructure.models.Settings;
@@ -34,7 +33,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(RestDocumentationExtension.class)
 @WebMvcTest(SettingsApi.class)
 @AutoConfigureMockMvc(addFilters = false)
-@Slf4j
 @AutoConfigureRestDocs
 class SettingsApiTest {
 
@@ -58,6 +56,7 @@ class SettingsApiTest {
         settings.setDbPassword("iaoejfvioe");
         settings.setRemoteDBAddress("http://db.com");
         settings.setClientSecret("swejniobnvernv");
+        settings.setOauthRedirectAddress("http://redirect.com");
         jsonSettings = mapper.writeValueAsString(settings);
     }
 
@@ -66,7 +65,6 @@ class SettingsApiTest {
     public void shouldReturnSettingsWhenCallGet() throws Exception {
         when(settingsProvider.isInitialized()).thenReturn(true);
         when(settingsProvider.getSettings()).thenReturn(settings);
-        log.warn(constraintDescriptions.descriptionsForProperty("user").toString());
         this.mockMvc.perform(get("/api/v1/settings")).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().json(jsonSettings)).andDo(document("settings/{methodName}"
                 , responseFields(
