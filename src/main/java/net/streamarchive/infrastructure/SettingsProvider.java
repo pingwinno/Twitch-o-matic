@@ -24,8 +24,9 @@ import java.util.List;
 public class SettingsProvider {
 
     private static final String STREAMS_PATH = System.getProperty("user.home") + "/streams/";
-    private static final String DOCKER_SETTINGS = "/etc/streamarchive/settings.json";
-    private static final String STANDALONE_SETTINGS = "settings.json";
+    private static final String DOCKER_SETTINGS_PATH = "/etc/streamarchive/";
+    private static final String STANDALONE_SETTINGS_PATH = System.getProperty("user.dir") + "/";
+    private static final String SETTINGS_NAME = "settings.json";
     @Autowired
     private UserSubscriptionsRepository subscriptionsRepository;
     @Autowired
@@ -33,17 +34,19 @@ public class SettingsProvider {
     private boolean settingsIsLoaded;
     private ObjectMapper mapper = new ObjectMapper();
     private Settings settings;
-
+    private String settingsPath;
     private File settingsFile;
 
     @PostConstruct
     private boolean init() {
-        if (Files.notExists(Paths.get(DOCKER_SETTINGS))) {
+        if (Files.notExists(Paths.get(DOCKER_SETTINGS_PATH + SETTINGS_NAME))) {
             log.warn("Settings volume doesn't exist. Loading settings from working directory...");
-            settingsFile = new File(STANDALONE_SETTINGS);
+            settingsFile = new File(STANDALONE_SETTINGS_PATH + SETTINGS_NAME);
+            settingsPath = STANDALONE_SETTINGS_PATH;
         } else {
             log.info("Loading settings...");
-            settingsFile = new File(DOCKER_SETTINGS);
+            settingsFile = new File(DOCKER_SETTINGS_PATH);
+            settingsPath = DOCKER_SETTINGS_PATH;
         }
         try {
             settings = mapper.readValue(settingsFile, Settings.class);
@@ -133,6 +136,10 @@ public class SettingsProvider {
 
     public String getPassword() {
         return settings.getUserPass();
+    }
+
+    public String getSettingsPath() {
+        return settingsPath;
     }
 }
 

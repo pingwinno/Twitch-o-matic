@@ -5,12 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.exceptions.TwitchTokenProcessingException;
+import net.streamarchive.infrastructure.handlers.misc.TokenStorage;
 import net.streamarchive.infrastructure.models.TwitchAuthToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import javax.annotation.PostConstruct;
 
 @Slf4j
 @Service
@@ -27,8 +30,13 @@ public class TwitchOAuthHandler {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    @PostConstruct
+    private void initToken() {
+        twitchAuthToken = TokenStorage.loadToken(settingsProvider.getSettingsPath());
+    }
+
     public void requestAccessToken(String authorizationToken) {
-        log.info("Requesting access token...");
+        log.debug("Requesting access token...");
         UriComponentsBuilder componentsBuilder = UriComponentsBuilder.fromHttpUrl(OAUTH_ENDPOINT)
                 .queryParam("client_id", settingsProvider.getClientID())
                 .queryParam("client_secret", settingsProvider.getClientSecret())
@@ -38,14 +46,15 @@ public class TwitchOAuthHandler {
 
         try {
             twitchAuthToken = objectMapper.readValue(performRequest(componentsBuilder), TwitchAuthToken.class);
-            log.info("Request complete");
+            log.debug("Request complete");
+            TokenStorage.saveToken(twitchAuthToken, settingsProvider.getSettingsPath());
         } catch (JsonProcessingException e) {
             throw new TwitchTokenProcessingException("Can't parse twitch response.", e);
         }
     }
 
     public void refreshAccessToken() {
-        log.info("Refresh access token...");
+        log.debug("Refresh access token...");
         UriComponentsBuilder componentsBuilder = UriComponentsBuilder.fromHttpUrl(OAUTH_ENDPOINT)
                 .queryParam("client_id", settingsProvider.getClientID())
                 .queryParam("client_secret", settingsProvider.getClientSecret())
@@ -54,6 +63,8 @@ public class TwitchOAuthHandler {
 
         try {
             twitchAuthToken = objectMapper.readValue(performRequest(componentsBuilder), TwitchAuthToken.class);
+            log.debug("Refresh complete");
+            TokenStorage.saveToken(twitchAuthToken, settingsProvider.getSettingsPath());
         } catch (JsonProcessingException e) {
             throw new TwitchTokenProcessingException("Can't parse twitch response.", e);
         }
