@@ -45,7 +45,7 @@ public class SettingsProvider {
             settingsPath = STANDALONE_SETTINGS_PATH;
         } else {
             log.info("Loading settings...");
-            settingsFile = new File(DOCKER_SETTINGS_PATH);
+            settingsFile = new File(DOCKER_SETTINGS_PATH + SETTINGS_NAME);
             settingsPath = DOCKER_SETTINGS_PATH;
         }
         try {

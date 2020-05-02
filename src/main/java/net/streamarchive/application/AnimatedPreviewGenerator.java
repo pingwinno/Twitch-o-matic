@@ -46,7 +46,7 @@ public class AnimatedPreviewGenerator {
     }
 
     private int writePreviews(LinkedHashMap<String, String> previewList, ArrayList<String> chunks, String pathString, int chunkNum, int offset, int i) {
-        String path = pathString + "/" + chunks.get(chunkNum).replace("-muted", "");
+        String path = pathString + "/chunked/" + chunks.get(chunkNum).replace("-muted", "");
         log.trace(path);
         commandLineExecutor.setPath(pathString);
         commandLineExecutor.execute("ffmpeg", "-i", path, "-s", "640x360", "-vframes", "1", pathString +

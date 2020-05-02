@@ -35,7 +35,7 @@ public class TimelinePreviewGenerator {
         for (Map.Entry<String, Double> chunk : chunksSet.entrySet()) {
             commandLineExecutor.setPath(pathString);
             commandLineExecutor.execute("ffmpeg", "-i",
-                    pathString + "/" + chunk.getKey().replace("-muted", ""),
+                    pathString + "/chunked/" + chunk.getKey().replace("-muted", ""),
                     "-s", "256x144", "-vframes", "1", pathString +
                             "/timeline_preview/preview" + chunkNum + ".jpg", "-y");
             frameTime += chunk.getValue();

@@ -322,12 +322,12 @@ public class VodRecorder implements RecordThread {
 
                 connection = website.openConnection();
 
-                if ((!Files.exists(Paths.get(streamFolderPath + "/" + quality + "/" + fileName))) ||
-                        (connection.getContentLengthLong() > Files.size((Paths.get(streamFolderPath + "/" + quality + "/" + fileName))))) {
+                if ((!Files.exists(Paths.get(streamFolderPath + "/" + "chunked" + "/" + fileName))) ||
+                        (connection.getContentLengthLong() > Files.size((Paths.get(streamFolderPath + "/" + "chunked" + "/" + fileName))))) {
 
                     try (InputStream in = website.openStream()) {
 
-                        Files.copy(in, Paths.get(streamFolderPath + "/" + quality + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
+                        Files.copy(in, Paths.get(streamFolderPath + "/" + "chunked" + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
                         if (Integer.parseInt(fileName.replaceAll(".ts", "")) % 10 == 0) {
                             log.info(fileName + " complete");
                         }
