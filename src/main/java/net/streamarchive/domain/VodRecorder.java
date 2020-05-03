@@ -5,12 +5,14 @@ import net.streamarchive.application.CommandLineExecutor;
 import net.streamarchive.application.TimelinePreviewGenerator;
 import net.streamarchive.application.twitch.handler.*;
 import net.streamarchive.infrastructure.*;
+import net.streamarchive.infrastructure.data.handler.DataHandler;
 import net.streamarchive.infrastructure.enums.State;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import net.streamarchive.infrastructure.handlers.db.ArchiveDBHandler;
 import net.streamarchive.infrastructure.models.Stream;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.StreamerNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +25,6 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -53,6 +54,9 @@ public class VodRecorder implements RecordThread {
 
     private final
     ArchiveDBHandler archiveDBHandler;
+
+    @Autowired
+    private DataHandler dataHandler;
 
     private org.slf4j.Logger log;
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
@@ -146,15 +150,7 @@ public class VodRecorder implements RecordThread {
 
             if (mainPlaylist != null) {
                 log.debug("Download preview");
-                try {
-                    downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getBaseUrl());
 
-                } catch (StreamNotFoundException e) {
-                    int streamLength = mainPlaylist.size() / 2;
-
-                    commandLineExecutor.execute("ffmpeg", "-i", streamFolderPath + "/" + streamLength + ".ts", "-s",
-                            "640x360", "-vframes", "1", streamFolderPath + "/" + streamFolderPath + "/preview.jpg", "-y");
-                }
 
                 animatedPreviewGenerator.generate(streamDataModel, mainPlaylist);
                 timelinePreviewGenerator.generate(streamDataModel, mainPlaylist);
@@ -182,12 +178,7 @@ public class VodRecorder implements RecordThread {
     }
 
 
-    private void downloadPreview(String url) throws IOException {
-        try (InputStream in = new URL(url).openStream()) {
-            Files.copy(in, Paths.get(streamFolderPath + "/" + "preview.jpg"), StandardCopyOption.REPLACE_EXISTING);
-            log.info("preview.jpg" + " complete");
-        }
-    }
+
 
     private class StreamThread {
         private MediaPlaylistWriter mediaPlaylistWriter = new MediaPlaylistWriter();
@@ -304,8 +295,18 @@ public class VodRecorder implements RecordThread {
             refreshDownload();
             log.info("End of list. Downloading last mainPlaylist");
 
-            mediaPlaylistWriter.write(mainPlaylist, streamFolderPath + "/" + quality);
+            dataHandler.write(mediaPlaylistWriter.write(mainPlaylist), streamDataModel, "index-dvr.m3u8");
             log.debug("Download m3u8");
+            try {
+                downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getBaseUrl());
+
+            } catch (StreamNotFoundException e) {
+                int streamLength = mainPlaylist.size() / 2;
+
+                commandLineExecutor.execute("ffmpeg", "-i", streamFolderPath + "/" + streamLength + ".ts", "-s",
+                        "640x360", "-vframes", "1", streamFolderPath + "/" + streamFolderPath + "/preview.jpg", "-y");
+            }
+
         }
 
 
@@ -319,15 +320,10 @@ public class VodRecorder implements RecordThread {
                 if (fileName.contains("muted")) {
                     fileName = fileName.replace("-muted", "");
                 }
-
                 connection = website.openConnection();
-
-                if ((!Files.exists(Paths.get(streamFolderPath + "/" + "chunked" + "/" + fileName))) ||
-                        (connection.getContentLengthLong() > Files.size((Paths.get(streamFolderPath + "/" + "chunked" + "/" + fileName))))) {
-
+                if (connection.getContentLengthLong() > dataHandler.size(streamDataModel, fileName)) {
                     try (InputStream in = website.openStream()) {
-
-                        Files.copy(in, Paths.get(streamFolderPath + "/" + "chunked" + "/" + fileName), StandardCopyOption.REPLACE_EXISTING);
+                        dataHandler.write(in, streamDataModel, fileName);
                         if (Integer.parseInt(fileName.replaceAll(".ts", "")) % 10 == 0) {
                             log.info(fileName + " complete");
                         }
@@ -338,6 +334,13 @@ public class VodRecorder implements RecordThread {
                 }
             } catch (IOException e) {
                 stop();
+            }
+        }
+
+        private void downloadPreview(String url) throws IOException {
+            try (InputStream in = new URL(url).openStream()) {
+                dataHandler.write(in, streamDataModel, "preview.jpg");
+                log.info("preview.jpg" + " complete");
             }
         }
 

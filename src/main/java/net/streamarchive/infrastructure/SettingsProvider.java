@@ -30,7 +30,7 @@ public class SettingsProvider {
     @Autowired
     private UserSubscriptionsRepository subscriptionsRepository;
     @Autowired
-    private DataValidator dataValidator;
+    private JsonRequestValidator dataValidator;
     private boolean settingsIsLoaded;
     private ObjectMapper mapper = new ObjectMapper();
     private Settings settings;
