@@ -10,6 +10,7 @@ import net.streamarchive.infrastructure.models.TwitchAuthToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -103,19 +104,25 @@ public class TwitchOAuthHandler {
         headers.add("Authorization", "OAuth " + twitchAuthToken.getAccessToken());
         HttpEntity<?> entity = new HttpEntity<>(headers);
         log.debug("Access token validation complete");
-        return restTemplate.exchange(
-                url,
-                HttpMethod.GET,
-                entity,
-                String.class);
-
+        try {
+            return restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    String.class);
+        } catch (HttpClientErrorException.Unauthorized e) {
+            log.warn("Access token validation failed");
+        }
+        return null;
     }
 
     public void validateToken() {
-        if (requestValidation().getStatusCodeValue() == 401) {
-            log.warn("Access token validation failed");
+        if (requestValidation() == null) {
             log.info("Try to refresh access token...");
             refreshAccessToken();
+        }
+        if (requestValidation() == null) {
+            throw new TwitchTokenProcessingException("Token refresh failed. Please, Authorize again.");
         }
         if (requestValidation().getStatusCodeValue() != 200) {
             throw new TwitchTokenProcessingException(requestValidation().getStatusCode().toString());

@@ -1,7 +1,7 @@
 version: '3.0'
 services:
   web:
-    image: pingwinno/recorder
+    image: pingwinno/twitch-o-matic
     ports:
       - "8080:8080"
     volumes:
