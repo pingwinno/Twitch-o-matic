@@ -6,7 +6,6 @@ import net.streamarchive.infrastructure.models.Streamer;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,7 +51,6 @@ public class StorageHelper {
         return true;
     }
 
-    @PostConstruct
     public boolean initialStorageCheck() throws IOException {
         boolean pass = true;
         for (Streamer streamer : settingsProperties.getStreamers()) {

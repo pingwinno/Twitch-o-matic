@@ -3,12 +3,12 @@ package net.streamarchive.presentation.twitch.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import net.streamarchive.application.StorageHelper;
 import net.streamarchive.application.twitch.handler.UserIdGetter;
 import net.streamarchive.application.twitch.handler.VodMetadataHelper;
 import net.streamarchive.infrastructure.RecordStatusList;
 import net.streamarchive.infrastructure.RecordThread;
 import net.streamarchive.infrastructure.SettingsProvider;
+import net.streamarchive.infrastructure.data.handler.DataHandler;
 import net.streamarchive.infrastructure.enums.StartedBy;
 import net.streamarchive.infrastructure.enums.State;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
@@ -43,8 +43,8 @@ public class TwitchWebhookApi implements ApplicationContextAware {
     VodMetadataHelper vodMetadataHelper;
     private final
     SettingsProvider settingsProperties;
-    private final
-    StorageHelper storageHelper;
+    @Autowired
+    private DataHandler dataHandler;
     private ApplicationContext applicationContext;
 
     @Autowired
@@ -52,13 +52,12 @@ public class TwitchWebhookApi implements ApplicationContextAware {
 
 
     @Autowired
-    public TwitchWebhookApi(StatusRepository statusRepository, RecordStatusList recordStatusList, VodMetadataHelper vodMetadataHelper, HashHandler hashHandler, SettingsProvider settingsProperties, StorageHelper storageHelper) {
+    public TwitchWebhookApi(StatusRepository statusRepository, RecordStatusList recordStatusList, VodMetadataHelper vodMetadataHelper, HashHandler hashHandler, SettingsProvider settingsProperties) {
         this.statusRepository = statusRepository;
         this.recordStatusList = recordStatusList;
         this.hashHandler = hashHandler;
         this.vodMetadataHelper = vodMetadataHelper;
         this.settingsProperties = settingsProperties;
-        this.storageHelper = storageHelper;
     }
 
     @RequestMapping(value = "/{user}", method = RequestMethod.GET)
@@ -135,7 +134,7 @@ public class TwitchWebhookApi implements ApplicationContextAware {
 
 
                                     if (!statusRepository.existsById(streamMetadata.getVodId())) {
-                                        streamMetadata.setUuid(storageHelper.getUuidName());
+                                        streamMetadata.setUuid(dataHandler.getUUID());
 
                                         recordStatusList.addStatus
                                                 (new StatusDataModel(streamMetadata.getVodId(), streamMetadata.getUuid(),

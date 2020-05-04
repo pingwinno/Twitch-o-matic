@@ -42,7 +42,7 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
         http
                 .antMatcher("/**")
                 .authorizeRequests()
-                .antMatchers("/login**", "/handler/**", "/callback/", "/webjars/**", "/error**", "/status**", "/twitch/oauth")
+                .antMatchers("/login**", "/streams/**", "/img/**", "/handler/**", "/callback/", "/webjars/**", "/error**", "/status**", "/twitch/oauth")
                 .permitAll()
                 .anyRequest()
                 .authenticated().and().formLogin().and()
