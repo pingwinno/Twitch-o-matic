@@ -108,10 +108,10 @@ public class VodRecorder implements RecordThread {
         recordThreadSupervisor.add(uuid, this);
         try {
             if (vodMetadataHelper.isRecording(vodId)) {
-                threadsNumber = 2;
+                threadsNumber = 5;
                 log.info("Wait for creating vod...");
             } else {
-                threadsNumber = 10;
+                threadsNumber = 20;
             }
         } catch (InterruptedException e) {
             log.error("Can't start record. ", e);
@@ -127,7 +127,7 @@ public class VodRecorder implements RecordThread {
             }
             try {
 
-                Path streamPath = Paths.get(streamFolderPath + '/' + quality);
+                Path streamPath = Paths.get(streamFolderPath + '/' + "chunked");
                 if (!Files.exists(streamPath)) {
                     Files.createDirectories(streamPath);
                 } else {
@@ -208,7 +208,7 @@ public class VodRecorder implements RecordThread {
                     executorService.execute(runnable);
                 }
                 executorService.shutdown();
-                executorService.awaitTermination(10, TimeUnit.MINUTES);
+                executorService.awaitTermination(1000, TimeUnit.MINUTES);
             } else {
                 recordStatusList.changeState(uuid, State.ERROR);
                 log.error("vod id with id {} not found. Close downloader thread...", vodId);
@@ -261,7 +261,7 @@ public class VodRecorder implements RecordThread {
 
 
                         executorService.shutdown();
-                        executorService.awaitTermination(10, TimeUnit.MINUTES);
+                        executorService.awaitTermination(1000, TimeUnit.MINUTES);
                         mainPlaylist.clear();
                         mainPlaylist.putAll(refreshedPlaylist);
                     }

@@ -26,6 +26,7 @@ public class TelegramHandler implements DataHandler {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
+    public final static String TGSERVER_ADDRESS = "http://localhost:20000";
     @Override
     public long size(StreamDataModel stream, String fileName) {
         TgChunk tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
@@ -41,7 +42,7 @@ public class TelegramHandler implements DataHandler {
         HttpEntity<byte[]> requestEntity =
                 new HttpEntity<>(inputStream.readAllBytes());
         ResponseEntity<String> response = restTemplate.exchange(
-                "http://localhost:10000",
+                TGSERVER_ADDRESS,
                 HttpMethod.POST,
                 requestEntity,
                 String.class);
@@ -59,7 +60,7 @@ public class TelegramHandler implements DataHandler {
     @Override
     public InputStream read(StreamDataModel stream, String fileName) {
         TgChunk tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
-        return new URL("http://localhost:10000" + "/" + tgChunk.getMessageID()).openStream();
+        return new URL(TGSERVER_ADDRESS + "/" + tgChunk.getMessageID()).openStream();
     }
 
     @Override
