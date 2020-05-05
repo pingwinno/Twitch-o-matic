@@ -16,17 +16,15 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.UUID;
 
-public class TelegramHandler implements DataHandler {
-
-    @Autowired
-    private TgChunkRepository tgChunkRepository;
-
-    @Autowired
-    private RestTemplate restTemplate;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
+public class TelegramStorageService implements StorageService {
 
     public final static String TGSERVER_ADDRESS = "http://localhost:20000";
+    @Autowired
+    private TgChunkRepository tgChunkRepository;
+    @Autowired
+    private RestTemplate restTemplate;
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     public long size(StreamDataModel stream, String fileName) {
         TgChunk tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
@@ -46,7 +44,12 @@ public class TelegramHandler implements DataHandler {
                 HttpMethod.POST,
                 requestEntity,
                 String.class);
-        TgChunk tgChunk = new TgChunk();
+        TgChunk tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
+        if (tgChunk != null) {
+            tgChunkRepository.delete(tgChunk);
+        } else {
+            tgChunk = new TgChunk();
+        }
         JsonNode jsonNode = objectMapper.readTree(response.getBody());
         tgChunk.setChunkName(fileName);
         tgChunk.setSize(jsonNode.get("size").asInt());
@@ -66,6 +69,11 @@ public class TelegramHandler implements DataHandler {
     @Override
     public void initialization() {
 
+    }
+
+    @Override
+    public void deleteStream(UUID uuid, String streamer) {
+        tgChunkRepository.deleteAllByUuidAndStreamer(uuid, streamer);
     }
 
     @Override

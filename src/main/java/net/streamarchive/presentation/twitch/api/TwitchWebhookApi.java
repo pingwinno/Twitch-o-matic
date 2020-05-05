@@ -1,63 +1,35 @@
 package net.streamarchive.presentation.twitch.api;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import net.streamarchive.application.twitch.handler.UserIdGetter;
 import net.streamarchive.application.twitch.handler.VodMetadataHelper;
+import net.streamarchive.domain.service.WebhookRecordService;
 import net.streamarchive.infrastructure.RecordStatusList;
-import net.streamarchive.infrastructure.RecordThread;
 import net.streamarchive.infrastructure.SettingsProvider;
-import net.streamarchive.infrastructure.data.handler.DataHandler;
-import net.streamarchive.infrastructure.enums.StartedBy;
-import net.streamarchive.infrastructure.enums.State;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import net.streamarchive.infrastructure.handlers.misc.HashHandler;
-import net.streamarchive.infrastructure.models.NotificationDataModel;
-import net.streamarchive.infrastructure.models.StatusDataModel;
-import net.streamarchive.infrastructure.models.StreamDataModel;
-import net.streamarchive.infrastructure.models.StreamStatusNotificationModel;
 import net.streamarchive.repository.StatusRepository;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.time.Instant;
-import java.util.Date;
 import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/handler")
-public class TwitchWebhookApi implements ApplicationContextAware {
-    private final
-    StatusRepository statusRepository;
-    private final
-    RecordStatusList recordStatusList;
+public class TwitchWebhookApi {
+
     private final
     HashHandler hashHandler;
-    private final
-    VodMetadataHelper vodMetadataHelper;
-    private final
-    SettingsProvider settingsProperties;
-    @Autowired
-    private DataHandler dataHandler;
-    private ApplicationContext applicationContext;
 
     @Autowired
-    private UserIdGetter userIdGetter;
+    private WebhookRecordService recordCreationService;
 
 
     @Autowired
     public TwitchWebhookApi(StatusRepository statusRepository, RecordStatusList recordStatusList, VodMetadataHelper vodMetadataHelper, HashHandler hashHandler, SettingsProvider settingsProperties) {
-        this.statusRepository = statusRepository;
-        this.recordStatusList = recordStatusList;
         this.hashHandler = hashHandler;
-        this.vodMetadataHelper = vodMetadataHelper;
-        this.settingsProperties = settingsProperties;
     }
 
     @RequestMapping(value = "/{user}", method = RequestMethod.GET)
@@ -89,91 +61,18 @@ public class TwitchWebhookApi implements ApplicationContextAware {
     }
 
     @RequestMapping(value = "/{user}", method = RequestMethod.POST)
-    public void handleStreamNotification(@RequestBody String stringDataModel
+    public void handleStreamNotification(@RequestBody String notification
             , @RequestHeader("content-length") long length, @RequestHeader("X-Hub-Signature") String signature, @PathVariable("user") String user) throws InterruptedException, StreamNotFoundException, IOException {
 
-        long userId = userIdGetter.getUserId(user);
         log.debug("Incoming stream up/down notification");
 
-        log.debug("data length {} body length {} ", stringDataModel.length(), length);
-        log.debug(stringDataModel);
-        if (hashHandler.compare(signature, stringDataModel)) {
+        log.debug("data length {} body length {} ", notification.length(), length);
+        log.debug(notification);
+        if (hashHandler.compare(signature, notification)) {
             log.debug("Hash confirmed");
             //check for active subscription
-            log.trace("User search res: {}", settingsProperties.isStreamerExist(user));
-            if (settingsProperties.isStreamerExist(user)) {
-                log.debug("Subscription is active");
-                StreamStatusNotificationModel dataModel =
-                        new ObjectMapper().readValue(stringDataModel, StreamStatusNotificationModel.class);
-                NotificationDataModel[] notificationArray = dataModel.getData();
-                if (notificationArray.length > 0) {
-                    log.info("Stream is up");
-                    NotificationDataModel notificationModel = notificationArray[0];
+            recordCreationService.handleLiveNotification(user, notification);
 
-
-                    if (notificationModel.getType().equals("live")) {
-
-                        if (vodMetadataHelper.getLastVod(userId).getVodId() != 0) {
-                            new Thread(() -> {
-                                try {
-                                    Thread.sleep(10 * 1000);
-                                    StreamDataModel streamMetadata = vodMetadataHelper.getLastVod(userId);
-                                    int counter = 0;
-                                    log.trace(streamMetadata.toString());
-                                    while (!vodMetadataHelper.isRecording(streamMetadata.getVodId())) {
-                                        log.trace("vodId: {}", streamMetadata.getVodId());
-                                        streamMetadata = vodMetadataHelper.getLastVod(userId);
-                                        log.info("waiting for creating vod...");
-                                        Thread.sleep(20 * 1000);
-                                        log.warn("vod is not created yet... cycle " + counter);
-                                        counter++;
-                                        if (counter > 60) {
-                                            throw new StreamNotFoundException("new vod not found");
-                                        }
-                                    }
-
-
-                                    if (!statusRepository.existsById(streamMetadata.getVodId())) {
-                                        streamMetadata.setUuid(dataHandler.getUUID());
-
-                                        recordStatusList.addStatus
-                                                (new StatusDataModel(streamMetadata.getVodId(), streamMetadata.getUuid(),
-                                                        StartedBy.WEBHOOK, Date.from(Instant.now()),
-                                                        State.INITIALIZE, streamMetadata.getStreamerName()));
-
-                                        log.info("Try to start record");
-
-                                        //check for notification duplicate
-                                        log.info("check for duplicate notification");
-                                        RecordThread recordThread = applicationContext.getBean(RecordThread.class);
-                                        recordThread.start(streamMetadata);
-                                    } else {
-                                        log.warn("Stream duplicate. Skip...");
-                                    }
-                                } catch (InterruptedException e) {
-                                    log.error("DB error ", e);
-                                } catch (StreamNotFoundException streamNotFoundException) {
-                                    streamNotFoundException.printStackTrace();
-                                }
-
-
-                            }).start();
-
-                            String startedAt = notificationModel.getStarted_at();
-                            log.info("Record started at: {}", startedAt);
-                        } else {
-                            log.error("vodId is null. Stream not found");
-                        }
-                    } else {
-                        log.info("stream duplicate");
-                    }
-                } else {
-                    log.info("Stream down notification");
-                }
-
-            } else {
-                log.warn("Subscription for {} canceled", user);
-            }
         } else {
             log.error("Notification not accepted. Wrong hash.");
         }
@@ -181,10 +80,6 @@ public class TwitchWebhookApi implements ApplicationContextAware {
     }
 
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
 }
 
 

@@ -4,10 +4,12 @@ import lombok.SneakyThrows;
 import net.streamarchive.application.StorageHelper;
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.models.StreamDataModel;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,7 +18,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.UUID;
 
 @Service
-public class FileHandler implements DataHandler {
+public class FileStorageService implements StorageService {
     @Autowired
     private SettingsProvider settingsProperties;
 
@@ -56,6 +58,12 @@ public class FileHandler implements DataHandler {
     @Override
     public void initialization() {
         storageHelper.initialStorageCheck();
+    }
+
+    @SneakyThrows
+    @Override
+    public void deleteStream(UUID uuid, String streamer) {
+        FileUtils.deleteDirectory(new File(settingsProperties.getRecordedStreamPath() + "" + streamer + "/" + uuid));
     }
 
     @Override

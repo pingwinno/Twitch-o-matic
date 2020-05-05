@@ -45,11 +45,11 @@ public class SubscriptionsApi {
      * @return list of current active subscriptions.
      */
     @RequestMapping(method = RequestMethod.GET)
-    public Map<String, String> getTimers() {
+    public Map<String, List<String>> getTimers() {
 
-        Map<String, String> users = new HashMap<>();
+        Map<String, List<String>> users = new HashMap<>();
         for (Streamer streamer : settingsProperties.getStreamers()) {
-            users.put(streamer.getName(), streamer.getQuality());
+            users.put(streamer.getName(), List.of(streamer.getQuality()));
         }
         return users;
     }
@@ -57,7 +57,7 @@ public class SubscriptionsApi {
     /**
      * Method adds new chanel subscription.
      *
-     * @param user name of chanel
+     * @param user    name of chanel
      * @param quality list of streams quality
      */
     @RequestMapping(value = "/{user}", method = RequestMethod.PUT)

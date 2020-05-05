@@ -5,7 +5,7 @@ import net.streamarchive.application.CommandLineExecutor;
 import net.streamarchive.application.TimelinePreviewGenerator;
 import net.streamarchive.application.twitch.handler.*;
 import net.streamarchive.infrastructure.*;
-import net.streamarchive.infrastructure.data.handler.DataHandler;
+import net.streamarchive.infrastructure.data.handler.StorageService;
 import net.streamarchive.infrastructure.enums.State;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import net.streamarchive.infrastructure.handlers.db.ArchiveDBHandler;
@@ -56,7 +56,7 @@ public class VodRecorder implements RecordThread {
     ArchiveDBHandler archiveDBHandler;
 
     @Autowired
-    private DataHandler dataHandler;
+    private StorageService dataHandler;
 
     private org.slf4j.Logger log;
     private MediaPlaylistDownloader mediaPlaylistDownloader = new MediaPlaylistDownloader();
