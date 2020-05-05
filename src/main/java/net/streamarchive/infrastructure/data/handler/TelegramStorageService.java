@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import net.streamarchive.infrastructure.models.StreamDataModel;
-import net.streamarchive.infrastructure.models.TgChunk;
+import net.streamarchive.infrastructure.models.TelegramFile;
 import net.streamarchive.repository.TgChunkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -16,20 +16,18 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.UUID;
 
-public class TelegramHandler implements DataHandler {
-
-    @Autowired
-    private TgChunkRepository tgChunkRepository;
-
-    @Autowired
-    private RestTemplate restTemplate;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
+public class TelegramStorageService implements StorageService {
 
     public final static String TGSERVER_ADDRESS = "http://localhost:20000";
+    @Autowired
+    private TgChunkRepository tgChunkRepository;
+    @Autowired
+    private RestTemplate restTemplate;
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     public long size(StreamDataModel stream, String fileName) {
-        TgChunk tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
+        TelegramFile tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
         if (tgChunk == null) {
             return -1;
         }
@@ -46,7 +44,12 @@ public class TelegramHandler implements DataHandler {
                 HttpMethod.POST,
                 requestEntity,
                 String.class);
-        TgChunk tgChunk = new TgChunk();
+        TelegramFile tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
+        if (tgChunk != null) {
+            tgChunkRepository.delete(tgChunk);
+        } else {
+            tgChunk = new TelegramFile();
+        }
         JsonNode jsonNode = objectMapper.readTree(response.getBody());
         tgChunk.setChunkName(fileName);
         tgChunk.setSize(jsonNode.get("size").asInt());
@@ -59,13 +62,18 @@ public class TelegramHandler implements DataHandler {
     @SneakyThrows
     @Override
     public InputStream read(StreamDataModel stream, String fileName) {
-        TgChunk tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
+        TelegramFile tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
         return new URL(TGSERVER_ADDRESS + "/" + tgChunk.getMessageID()).openStream();
     }
 
     @Override
     public void initialization() {
 
+    }
+
+    @Override
+    public void deleteStream(UUID uuid, String streamer) {
+        tgChunkRepository.deleteAllByUuidAndStreamer(uuid, streamer);
     }
 
     @Override

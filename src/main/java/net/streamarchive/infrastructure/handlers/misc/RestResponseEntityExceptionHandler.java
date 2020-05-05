@@ -1,9 +1,7 @@
 package net.streamarchive.infrastructure.handlers.misc;
 
 
-import net.streamarchive.infrastructure.exceptions.NotFoundException;
-import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
-import net.streamarchive.infrastructure.exceptions.WrongParamsException;
+import net.streamarchive.infrastructure.exceptions.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +36,22 @@ public class RestResponseEntityExceptionHandler
             Exception ex, WebRequest request) {
         return handleExceptionInternal(ex, ex.getMessage(),
                 new HttpHeaders(), HttpStatus.NOT_FOUND, request);
+    }
+
+    @ExceptionHandler(value
+            = {NotAcceptableException.class})
+    protected ResponseEntity<Object> handleNotAcceptable(
+            Exception ex, WebRequest request) {
+        return handleExceptionInternal(ex, ex.getMessage(),
+                new HttpHeaders(), HttpStatus.NOT_ACCEPTABLE, request);
+    }
+
+    @ExceptionHandler(value
+            = {NotModifiedException.class})
+    protected ResponseEntity<Object> handleNotModified(
+            Exception ex, WebRequest request) {
+        return handleExceptionInternal(ex, ex.getMessage(),
+                new HttpHeaders(), HttpStatus.NOT_MODIFIED, request);
     }
 }
 

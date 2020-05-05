@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.UUID;
 
-public interface DataHandler {
+public interface StorageService {
     long size(StreamDataModel stream, String fileName) throws IOException;
 
     void write(InputStream inputStream, StreamDataModel stream, String fileName) throws IOException;
@@ -15,6 +15,8 @@ public interface DataHandler {
     InputStream read(StreamDataModel stream, String fileName) throws MalformedURLException;
 
     void initialization();
+
+    void deleteStream(UUID uuid, String streamer);
 
     UUID getUUID();
 }
