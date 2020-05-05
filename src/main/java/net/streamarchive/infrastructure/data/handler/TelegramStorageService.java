@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import net.streamarchive.infrastructure.models.StreamDataModel;
-import net.streamarchive.infrastructure.models.TgChunk;
+import net.streamarchive.infrastructure.models.TelegramFile;
 import net.streamarchive.repository.TgChunkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -27,7 +27,7 @@ public class TelegramStorageService implements StorageService {
 
     @Override
     public long size(StreamDataModel stream, String fileName) {
-        TgChunk tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
+        TelegramFile tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
         if (tgChunk == null) {
             return -1;
         }
@@ -44,11 +44,11 @@ public class TelegramStorageService implements StorageService {
                 HttpMethod.POST,
                 requestEntity,
                 String.class);
-        TgChunk tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
+        TelegramFile tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
         if (tgChunk != null) {
             tgChunkRepository.delete(tgChunk);
         } else {
-            tgChunk = new TgChunk();
+            tgChunk = new TelegramFile();
         }
         JsonNode jsonNode = objectMapper.readTree(response.getBody());
         tgChunk.setChunkName(fileName);
@@ -62,7 +62,7 @@ public class TelegramStorageService implements StorageService {
     @SneakyThrows
     @Override
     public InputStream read(StreamDataModel stream, String fileName) {
-        TgChunk tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
+        TelegramFile tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
         return new URL(TGSERVER_ADDRESS + "/" + tgChunk.getMessageID()).openStream();
     }
 

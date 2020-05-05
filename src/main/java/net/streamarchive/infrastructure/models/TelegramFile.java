@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Entity
 @Data
-public class TgChunk {
+public class TelegramFile {
     @Id
     private long messageID;
     private UUID uuid;

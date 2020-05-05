@@ -2,13 +2,9 @@ package net.streamarchive.presentation.twitch.api;
 
 
 import lombok.extern.slf4j.Slf4j;
-import net.streamarchive.application.twitch.handler.VodMetadataHelper;
 import net.streamarchive.domain.service.WebhookRecordService;
-import net.streamarchive.infrastructure.RecordStatusList;
-import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import net.streamarchive.infrastructure.handlers.misc.HashHandler;
-import net.streamarchive.repository.StatusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,17 +16,12 @@ import java.util.Map;
 @RequestMapping("/handler")
 public class TwitchWebhookApi {
 
-    private final
+    @Autowired
     HashHandler hashHandler;
 
     @Autowired
     private WebhookRecordService recordCreationService;
 
-
-    @Autowired
-    public TwitchWebhookApi(StatusRepository statusRepository, RecordStatusList recordStatusList, VodMetadataHelper vodMetadataHelper, HashHandler hashHandler, SettingsProvider settingsProperties) {
-        this.hashHandler = hashHandler;
-    }
 
     @RequestMapping(value = "/{user}", method = RequestMethod.GET)
     public String getSubscriptionQuery(@RequestParam Map<String, String> allParams, @PathVariable("user") String user) {

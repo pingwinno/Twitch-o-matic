@@ -3,6 +3,7 @@ package net.streamarchive.application.twitch.handler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import net.streamarchive.infrastructure.OauthRefreshTokenTask;
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.exceptions.TwitchTokenProcessingException;
 import net.streamarchive.infrastructure.handlers.misc.TokenStorage;
@@ -29,6 +30,9 @@ public class TwitchOAuthHandler {
     @Autowired
     private SettingsProvider settingsProvider;
 
+    @Autowired
+    private OauthRefreshTokenTask oauthRefreshTokenTask;
+
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @PostConstruct
@@ -49,6 +53,7 @@ public class TwitchOAuthHandler {
             twitchAuthToken = objectMapper.readValue(performRequest(componentsBuilder), TwitchAuthToken.class);
             log.debug("Request complete");
             TokenStorage.saveToken(twitchAuthToken, settingsProvider.getSettingsPath());
+            oauthRefreshTokenTask.scheduleRefresh(twitchAuthToken.getExpiresIn());
         } catch (JsonProcessingException e) {
             throw new TwitchTokenProcessingException("Can't parse twitch response.", e);
         }
@@ -66,6 +71,7 @@ public class TwitchOAuthHandler {
             twitchAuthToken = objectMapper.readValue(performRequest(componentsBuilder), TwitchAuthToken.class);
             log.debug("Refresh complete");
             TokenStorage.saveToken(twitchAuthToken, settingsProvider.getSettingsPath());
+            oauthRefreshTokenTask.scheduleRefresh(twitchAuthToken.getExpiresIn());
         } catch (JsonProcessingException e) {
             throw new TwitchTokenProcessingException("Can't parse twitch response.", e);
         }
