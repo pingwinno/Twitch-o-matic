@@ -95,14 +95,18 @@ public class VodMetadataHelper {
         httpHeaders.add("Client-ID", settingsProperties.getClientID());
         httpHeaders.add("Accept", "application/vnd.twitchtv.v5+json");
         HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
-        ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/kraken/videos/" + vodId,
-                HttpMethod.GET, requestEntity, String.class);
+        try {
+            ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/kraken/videos/" + vodId,
+                    HttpMethod.GET, requestEntity, String.class);
 
-        JSONObject jsonObj =
-                new JSONObject(responseEntity.getBody());
-        log.trace("{}", jsonObj);
+            JSONObject jsonObj =
+                    new JSONObject(responseEntity.getBody());
+            log.trace("{}", jsonObj);
 
-        return jsonObj.get("status").toString().equals("recording");
+            return jsonObj.get("status").toString().equals("recording");
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new StreamNotFoundException("Stream " + vodId + " not found");
+        }
     }
 
 }

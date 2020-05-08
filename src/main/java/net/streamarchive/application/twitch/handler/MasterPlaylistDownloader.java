@@ -13,6 +13,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
@@ -34,21 +35,22 @@ public class MasterPlaylistDownloader {
         httpHeaders.add("Client-ID", settingsProperties.getClientID());
         httpHeaders.add("Accept", "application/vnd.twitchtv.v5+json");
         HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
-        ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/kraken/videos/" + vodId,
-                HttpMethod.GET, requestEntity, String.class);
+        try {
+            ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/kraken/videos/" + vodId,
+                    HttpMethod.GET, requestEntity, String.class);
 
-        JsonNode jsonNode = objectMapper.readTree(Objects.requireNonNull(responseEntity.getBody()));
+            JsonNode jsonNode = objectMapper.readTree(Objects.requireNonNull(responseEntity.getBody()));
 
-        String previewUrl = jsonNode.get("animated_preview_url").asText();
-        if (previewUrl != null) {
-            Map<String, String> availableQualities = objectMapper.convertValue(jsonNode.get("resolutions"), new TypeReference<>() {
-            });
-            quality = QualityValidator.validate(quality, availableQualities);
-            String streamLink = previewUrl.substring(0, previewUrl.lastIndexOf("storyboards")) + quality + "/index-dvr.m3u8";
-            log.trace("Stream link is: {}", streamLink);
-            return streamLink;
-        }
-        if (responseEntity.getStatusCode().value() == 404) {
+            String previewUrl = jsonNode.get("animated_preview_url").asText();
+            if (previewUrl != null) {
+                Map<String, String> availableQualities = objectMapper.convertValue(jsonNode.get("resolutions"), new TypeReference<>() {
+                });
+                quality = QualityValidator.validate(quality, availableQualities);
+                String streamLink = previewUrl.substring(0, previewUrl.lastIndexOf("storyboards")) + quality + "/index-dvr.m3u8";
+                log.trace("Stream link is: {}", streamLink);
+                return streamLink;
+            }
+        } catch (HttpClientErrorException.NotFound e) {
             throw new StreamNotFoundException("Stream " + vodId + " not found");
         }
         throw new IOException("Can't get substream link");
