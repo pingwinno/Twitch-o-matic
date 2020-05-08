@@ -3,9 +3,11 @@ package net.streamarchive.application;
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.models.StorageState;
 import net.streamarchive.infrastructure.models.Streamer;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,6 +40,7 @@ public class StorageHelper {
             storageState.setUser(streamer.getName());
             storageState.setTotalStorage((int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getName())).getTotalSpace() / 1073741824));
             storageState.setFreeStorage((int) (Files.getFileStore(Paths.get(settingsProperties.getRecordedStreamPath() + streamer.getName())).getUsableSpace() / 1073741824));
+            storageState.setUsedStorage((FileUtils.sizeOfDirectory(new File(settingsProperties.getRecordedStreamPath() + streamer.getName())) / 1073741824.));
             storageStates.add(storageState);
         }
         return storageStates;
