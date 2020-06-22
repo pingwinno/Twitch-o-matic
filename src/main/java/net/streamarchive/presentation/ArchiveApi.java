@@ -1,5 +1,6 @@
 package net.streamarchive.presentation;
 
+import net.streamarchive.domain.TelegramServerPool;
 import net.streamarchive.infrastructure.data.handler.TelegramStorageService;
 import net.streamarchive.infrastructure.models.TelegramFile;
 import net.streamarchive.repository.TgChunkRepository;
@@ -19,11 +20,14 @@ public class ArchiveApi {
     @Autowired
     private TgChunkRepository tgChunkRepository;
 
+    @Autowired
+    private TelegramServerPool telegramServerPool;
+
     @GetMapping(path = "{streamer}/{uuid}/chunked/{file}")
     public @ResponseBody
     ResponseEntity<byte[]> getFile(@PathVariable("streamer") String streamer, @PathVariable("uuid") UUID uuid, @PathVariable("file") String file) throws IOException {
         TelegramFile tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(uuid, streamer, file);
-        URL website = new URL(TelegramStorageService.TGSERVER_ADDRESS + "/" + tgChunk.getMessageID());
+        URL website = new URL(telegramServerPool.getAddress() + "/" + tgChunk.getMessageID());
 
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + file)
                 .contentLength(tgChunk.getSize())
@@ -35,7 +39,7 @@ public class ArchiveApi {
     public @ResponseBody
     ResponseEntity<byte[]> getPreview(@PathVariable("streamer") String streamer, @PathVariable("uuid") UUID uuid) throws IOException {
         TelegramFile tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(uuid, streamer, "preview.jpg");
-        URL website = new URL(TelegramStorageService.TGSERVER_ADDRESS + "/" + tgChunk.getMessageID());
+        URL website = new URL(telegramServerPool.getAddress() + "/" + tgChunk.getMessageID());
 
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + "preview.jpg")
                 .contentLength(tgChunk.getSize())

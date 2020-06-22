@@ -39,7 +39,7 @@ public class SettingsProvider {
 
     @PostConstruct
     private boolean init() {
-        if (Files.notExists(Paths.get(DOCKER_SETTINGS_PATH + SETTINGS_NAME))) {
+        if (Files.notExists(Paths.get(DOCKER_SETTINGS_PATH))) {
             log.warn("Settings volume doesn't exist. Loading settings from working directory...");
             settingsFile = new File(STANDALONE_SETTINGS_PATH + SETTINGS_NAME);
             settingsPath = STANDALONE_SETTINGS_PATH;

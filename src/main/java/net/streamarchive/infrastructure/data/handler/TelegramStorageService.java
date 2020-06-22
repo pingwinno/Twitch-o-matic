@@ -3,26 +3,25 @@ package net.streamarchive.infrastructure.data.handler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
+import net.streamarchive.domain.TelegramServerPool;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.TelegramFile;
 import net.streamarchive.repository.TgChunkRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.UUID;
 
+@Service
 public class TelegramStorageService implements StorageService {
 
     public final static String TGSERVER_ADDRESS = "http://localhost:20000";
     @Autowired
-    private TgChunkRepository tgChunkRepository;
+    TelegramServerPool serverPool;
     @Autowired
-    private RestTemplate restTemplate;
+    private TgChunkRepository tgChunkRepository;
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -34,23 +33,17 @@ public class TelegramStorageService implements StorageService {
         return tgChunk.getSize();
     }
 
-    @SneakyThrows
+
     @Override
-    public void write(InputStream inputStream, StreamDataModel stream, String fileName) {
-        HttpEntity<byte[]> requestEntity =
-                new HttpEntity<>(inputStream.readAllBytes());
-        ResponseEntity<String> response = restTemplate.exchange(
-                TGSERVER_ADDRESS,
-                HttpMethod.POST,
-                requestEntity,
-                String.class);
+    public void write(InputStream inputStream, StreamDataModel stream, String fileName) throws IOException {
+
         TelegramFile tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
         if (tgChunk != null) {
             tgChunkRepository.delete(tgChunk);
         } else {
             tgChunk = new TelegramFile();
         }
-        JsonNode jsonNode = objectMapper.readTree(response.getBody());
+        JsonNode jsonNode = objectMapper.readTree(serverPool.write(inputStream.readAllBytes()));
         tgChunk.setChunkName(fileName);
         tgChunk.setSize(jsonNode.get("size").asInt());
         tgChunk.setMessageID(jsonNode.get("id").asInt());
@@ -59,11 +52,11 @@ public class TelegramStorageService implements StorageService {
         tgChunkRepository.save(tgChunk);
     }
 
-    @SneakyThrows
+
     @Override
-    public InputStream read(StreamDataModel stream, String fileName) {
+    public InputStream read(StreamDataModel stream, String fileName) throws IOException {
         TelegramFile tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(stream.getUuid(), stream.getStreamerName(), fileName);
-        return new URL(TGSERVER_ADDRESS + "/" + tgChunk.getMessageID()).openStream();
+        return serverPool.read(tgChunk.getMessageID());
     }
 
     @Override

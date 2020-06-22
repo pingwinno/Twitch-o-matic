@@ -6,6 +6,6 @@ services:
       - "8080:8080"
     volumes:
       - settings:/etc/streamarchive
-      - /Users/mromanc/streams:/root/streams
+      - path on storage:/root/streams
 volumes:
   settings:

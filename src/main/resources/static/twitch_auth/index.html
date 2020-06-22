@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script>
+        var obj;
+        var request = new XMLHttpRequest();
+        request.open("GET", "/api/v1/settings", true);
+        request.onload = function () {
+            obj = JSON.parse(request.responseText)
+        }
+        request.send(null);
+    </script>
+</head>
+<body>
+<button type="button"
+        onclick="window.location.replace('https://id.twitch.tv/oauth2/authorize?response_type=code&client_id='
+        +obj.clientID+'&redirect_uri='+obj.oauthRedirectAddress+'/twitch/oauth&scope=viewing_activity_read')">Get token
+</button>
+</body>
+</html>

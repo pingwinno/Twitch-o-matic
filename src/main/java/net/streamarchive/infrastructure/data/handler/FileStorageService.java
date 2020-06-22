@@ -39,10 +39,16 @@ public class FileStorageService implements StorageService {
     @SneakyThrows
     @Override
     public void write(InputStream inputStream, StreamDataModel stream, String fileName) {
-        Path filePath = Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamerName()
-                + "/" + stream.getUuid().toString() + "/" + "chunked" + "/" + fileName);
+        Path filePath;
+        if ("preview.jpg".equals(fileName)) {
+            filePath = Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamerName()
+                    + "/" + stream.getUuid().toString() + "/" + fileName);
+            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+        } else {
+            filePath = Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamerName()
+                    + "/" + stream.getUuid().toString() + "/" + "chunked" + "/" + fileName);
+        }
         Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-
     }
 
     @SneakyThrows

@@ -17,10 +17,7 @@ import net.streamarchive.infrastructure.models.NotificationDataModel;
 import net.streamarchive.infrastructure.models.StatusDataModel;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.repository.StatusRepository;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -28,7 +25,7 @@ import java.util.Date;
 
 @Slf4j
 @Service
-public class WebhookRecordService implements ApplicationContextAware {
+public class WebhookRecordService {
     @Autowired
     StatusRepository statusRepository;
     @Autowired
@@ -41,8 +38,9 @@ public class WebhookRecordService implements ApplicationContextAware {
     UserIdGetter userIdGetter;
     @Autowired
     StorageService dataHandler;
+    @Autowired
+    RecordThread recordThread;
     ObjectMapper objectMapper = new ObjectMapper();
-    private ApplicationContext applicationContext;
 
 
     public void handleLiveNotification(String user, String notification) throws JsonProcessingException, StreamNotFoundException {
@@ -110,7 +108,6 @@ public class WebhookRecordService implements ApplicationContextAware {
 
                 //check for notification duplicate
                 log.info("check for duplicate notification");
-                RecordThread recordThread = applicationContext.getBean(RecordThread.class);
                 recordThread.start(streamMetadata);
 
             } catch (InterruptedException e) {
@@ -127,11 +124,4 @@ public class WebhookRecordService implements ApplicationContextAware {
 
 
     }
-
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
-
 }

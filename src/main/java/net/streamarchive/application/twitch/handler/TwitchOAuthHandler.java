@@ -3,7 +3,7 @@ package net.streamarchive.application.twitch.handler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import net.streamarchive.infrastructure.OauthRefreshTokenTask;
+import net.streamarchive.infrastructure.OauthRefreshTokenService;
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.exceptions.TwitchTokenProcessingException;
 import net.streamarchive.infrastructure.handlers.misc.TokenStorage;
@@ -31,7 +31,7 @@ public class TwitchOAuthHandler {
     private SettingsProvider settingsProvider;
 
     @Autowired
-    private OauthRefreshTokenTask oauthRefreshTokenTask;
+    private OauthRefreshTokenService oauthRefreshTokenTask;
 
     private ObjectMapper objectMapper = new ObjectMapper();
 

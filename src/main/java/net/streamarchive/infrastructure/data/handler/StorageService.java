@@ -12,7 +12,7 @@ public interface StorageService {
 
     void write(InputStream inputStream, StreamDataModel stream, String fileName) throws IOException;
 
-    InputStream read(StreamDataModel stream, String fileName) throws MalformedURLException;
+    InputStream read(StreamDataModel stream, String fileName) throws IOException;
 
     void initialization();
 

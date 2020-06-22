@@ -14,14 +14,12 @@ import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.StreamerNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,7 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@Scope("prototype")
+@Scope(scopeName = "prototype", proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class VodRecorder implements RecordThread {
 
     private final MasterPlaylistDownloader masterPlaylistDownloader;
@@ -108,10 +106,10 @@ public class VodRecorder implements RecordThread {
         recordThreadSupervisor.add(uuid, this);
         try {
             if (vodMetadataHelper.isRecording(vodId)) {
-                threadsNumber = 5;
+                threadsNumber = 2;
                 log.info("Wait for creating vod...");
             } else {
-                threadsNumber = 20;
+                threadsNumber = 5;
             }
         } catch (InterruptedException e) {
             log.error("Can't start record. ", e);
@@ -178,8 +176,6 @@ public class VodRecorder implements RecordThread {
     }
 
 
-
-
     private class StreamThread {
         private MediaPlaylistWriter mediaPlaylistWriter = new MediaPlaylistWriter();
         private ExecutorService executorService;
@@ -202,7 +198,13 @@ public class VodRecorder implements RecordThread {
                     String chunkName = chunk.getKey();
                     Runnable runnable = () -> {
                         if (!isRecordTerminated) {
-                            downloadChunk(streamPath, chunkName);
+                            try {
+                                downloadChunk(streamPath, chunkName);
+                            } catch (IOException e) {
+                                log.error("Chunk download failed. ", e);
+                                recordStatusList.changeState(uuid, State.ERROR);
+                                stop();
+                            }
                         }
                     };
                     executorService.execute(runnable);
@@ -251,7 +253,13 @@ public class VodRecorder implements RecordThread {
                                 log.trace("chunk: {}", chunkName);
                                 Runnable runnable = () -> {
                                     if (!isRecordTerminated) {
-                                        downloadChunk(streamPath, chunkName);
+                                        try {
+                                            downloadChunk(streamPath, chunkName);
+                                        } catch (IOException e) {
+                                            log.error("Chunk download failed. ", e);
+                                            recordStatusList.changeState(uuid, State.ERROR);
+                                            stop();
+                                        }
                                     }
 
                                 };
@@ -310,11 +318,11 @@ public class VodRecorder implements RecordThread {
         }
 
 
-        private void downloadChunk(String streamPath, String fileName) {
+        private void downloadChunk(String streamPath, String fileName) throws IOException {
             URL website;
             URLConnection connection;
 
-            try {
+
                 website = new URL(streamPath + "/" + fileName);
 
                 if (fileName.contains("muted")) {
@@ -332,9 +340,6 @@ public class VodRecorder implements RecordThread {
                 } else {
                     log.trace("Chunk {} exist. Skipping...", fileName);
                 }
-            } catch (IOException e) {
-                stop();
-            }
         }
 
         private void downloadPreview(String url) throws IOException {
