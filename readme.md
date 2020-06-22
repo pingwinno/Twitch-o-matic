@@ -10,17 +10,13 @@ ToM has page for management on address '''SERVERIP:MANAGEMENT_PORT'''. For now i
 
 Requirements:
 * Static IP or DDNS(not checked)
-* Linux
 * ~3 GB storage per hour stream on 1080p
-* JDK 12 (Oracle or Open)
+* Docker
 Even Twitch-o-Matic is able to recover after an unexpected host reboot, strongly recommended to use several independent hosts at mission-critical use cases,
 
 Installation:
-2. Install Oracle JRE 12.
-3. Run ```sudo curl -s https://raw.githubusercontent.com/pingwinno/Twitch-o-matic/master/easy_install.sh | sudo bash /dev/stdin ```
-4. Configure ToM via ```/home/tom-daemon/application.properties```
-4.1. (optional) if you behind NAT forvard TwitchServer port needed.
-5. ```systemctl start twitch-o-matic```
+2. Get docker-compose.yml from this repo.
+3. Run it.
 6. ?????
 7. Profit!
 
