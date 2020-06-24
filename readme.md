@@ -15,10 +15,11 @@ Requirements:
 Even Twitch-o-Matic is able to recover after an unexpected host reboot, strongly recommended to use several independent hosts at mission-critical use cases,
 
 Installation:
-2. Get docker-compose.yml from this repo.
+1. Get docker-compose.yml from this repo.
+2. Substitute your paths to it
 3. Run it.
-6. ?????
-7. Profit!
+4. ?????
+5. Profit!
 
 Q: Can I setup auto-upload to cloud?
 А: No, but you can execute script/command with cron.
