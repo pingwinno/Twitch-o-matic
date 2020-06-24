@@ -147,8 +147,7 @@ public class VodRecorder implements RecordThread {
             LinkedHashMap<String, Double> mainPlaylist = streamThread.start(quality);
 
             if (mainPlaylist != null) {
-                log.debug("Download preview");
-
+                log.debug("Generating animated and timeline preview");
 
                 animatedPreviewGenerator.generate(streamDataModel, mainPlaylist);
                 timelinePreviewGenerator.generate(streamDataModel, mainPlaylist);
@@ -157,7 +156,7 @@ public class VodRecorder implements RecordThread {
 
                 archiveDBHandler.updateStream(stream);
                 recordStatusList.changeState(uuid, State.COMPLETE);
-                log.info("Complete");
+                log.info("Record complete");
             }
         } catch (IOException | StreamerNotFoundException | StreamNotFoundException e) {
             log.error("Vod downloader initialization failed. ", e);
@@ -213,7 +212,7 @@ public class VodRecorder implements RecordThread {
                 executorService.awaitTermination(1000, TimeUnit.MINUTES);
             } else {
                 recordStatusList.changeState(uuid, State.ERROR);
-                log.error("vod id with id {} not found. Close downloader thread...", vodId);
+                log.error("VOD with id {} not found. Close downloader thread...", vodId);
                 stop();
             }
             this.recordCycle();
@@ -345,7 +344,7 @@ public class VodRecorder implements RecordThread {
         private void downloadPreview(String url) throws IOException {
             try (InputStream in = new URL(url).openStream()) {
                 dataHandler.write(in, streamDataModel, "preview.jpg");
-                log.info("preview.jpg" + " complete");
+                log.info("Download main preview complete");
             }
         }
 
@@ -355,8 +354,7 @@ public class VodRecorder implements RecordThread {
             if (!executorService.isShutdown()) {
                 executorService.shutdownNow();
             }
-            log.debug(
-                    "Downloader pool stopped: {}", executorService.isShutdown());
+            log.debug("Downloader pool stopped: {}", executorService.isShutdown());
             isRecordTerminated = true;
             thisTread.interrupt();
 
