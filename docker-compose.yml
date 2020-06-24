@@ -2,10 +2,12 @@ version: '3.0'
 services:
   web:
     image: pingwinno/twitch-o-matic
+    restart: always
     ports:
       - "8080:8080"
     volumes:
       - settings:/etc/streamarchive
-      - path on storage:/root/streams
+      - path to storage:/root/streams
+      - path to logs:/var/log/tom/
 volumes:
   settings:
