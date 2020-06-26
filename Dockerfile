@@ -1,10 +1,10 @@
 FROM openjdk:11
+RUN apt update && apt upgrade -y && apt install ffmpeg -y
 COPY . /tmp
 WORKDIR /tmp
-RUN ls
+RUN sed 's!~/status!/etc/streamarchive/status!' src/main/resources/application.properties  > src/main/resources/application.properties.copy && mv src/main/resources/application.properties.copy src/main/resources/application.properties
 RUN ./mvnw package && rm -rf ~/.m2 && mv target/twitch-o-matic-0.0.1-SNAPSHOT.jar /usr/sbin/streamarchive.jar && cd / && rm -rf /tmp/*
 WORKDIR /usr/sbin/
 RUN mkdir /etc/streamarchive/
-RUN apt update && apt upgrade && apt install ffmpeg -y
-CMD java -jar streamarchive.jar
+CMD ["java", "-jar", "streamarchive.jar"]
 EXPOSE 8080
