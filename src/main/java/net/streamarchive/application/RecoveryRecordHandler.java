@@ -51,6 +51,7 @@ public class RecoveryRecordHandler implements ApplicationContextAware {
                         StreamDataModel streamDataModel;
                         streamDataModel = vodMetadataHelper.getVodMetadata(dataModel.getVodId());
                         streamDataModel.setUuid(dataModel.getUuid());
+                        streamDataModel.setStreamerName(dataModel.getUser());
                         RecordThread recordThread = applicationContext.getBean(RecordThread.class);
                         new Thread(() -> {
                             recordThread.start(streamDataModel);

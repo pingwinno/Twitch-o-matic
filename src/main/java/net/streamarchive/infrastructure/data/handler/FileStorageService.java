@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,9 +26,9 @@ public class FileStorageService implements StorageService {
     @Autowired
     private StorageHelper storageHelper;
 
-    @SneakyThrows
+
     @Override
-    public long size(StreamDataModel stream, String fileName) {
+    public long size(StreamDataModel stream, String fileName) throws IOException {
         Path filePath = Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamerName()
                 + "/" + stream.getUuid().toString() + "/" + "chunked" + "/" + fileName);
         if (Files.notExists(filePath)) {
@@ -36,14 +37,13 @@ public class FileStorageService implements StorageService {
         return Files.size(filePath);
     }
 
-    @SneakyThrows
+
     @Override
-    public void write(InputStream inputStream, StreamDataModel stream, String fileName) {
+    public void write(InputStream inputStream, StreamDataModel stream, String fileName) throws IOException {
         Path filePath;
         if ("preview.jpg".equals(fileName)) {
             filePath = Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamerName()
                     + "/" + stream.getUuid().toString() + "/" + fileName);
-            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
         } else {
             filePath = Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamerName()
                     + "/" + stream.getUuid().toString() + "/" + "chunked" + "/" + fileName);
@@ -51,9 +51,9 @@ public class FileStorageService implements StorageService {
         Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
     }
 
-    @SneakyThrows
+
     @Override
-    public InputStream read(StreamDataModel stream, String fileName) {
+    public InputStream read(StreamDataModel stream, String fileName) throws IOException {
         Path filePath = Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamerName()
                 + "/" + stream.getUuid().toString() + "/" + "chunked" + "/" + fileName);
         return Files.newInputStream(filePath);
