@@ -4,6 +4,7 @@ import net.streamarchive.application.twitch.handler.VodMetadataHelper;
 import net.streamarchive.infrastructure.RecordThread;
 import net.streamarchive.infrastructure.enums.State;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
+import net.streamarchive.infrastructure.handlers.misc.AfterApplicationStartupRunnable;
 import net.streamarchive.infrastructure.models.StatusDataModel;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.repository.StatusRepository;
@@ -18,17 +19,18 @@ import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Service
-public class RecoveryRecordHandler implements ApplicationContextAware {
+public class RecoveryRecordHandler implements AfterApplicationStartupRunnable
+{
     private static org.slf4j.Logger log = LoggerFactory.getLogger(RecoveryRecordHandler.class.getName());
 
     private final
     VodMetadataHelper vodMetadataHelper;
 
     private StatusRepository statusRepository;
-    private ApplicationContext applicationContext;
 
+    @Autowired
+    RecordThread recordThread;
     public RecoveryRecordHandler(VodMetadataHelper vodMetadataHelper) {
-
         this.vodMetadataHelper = vodMetadataHelper;
     }
 
@@ -37,7 +39,7 @@ public class RecoveryRecordHandler implements ApplicationContextAware {
         this.statusRepository = statusRepository;
     }
 
-    @PostConstruct
+
     public void recoverUncompletedRecordTask() {
 
         log.debug("Recovering uncompleted task...");
@@ -52,7 +54,6 @@ public class RecoveryRecordHandler implements ApplicationContextAware {
                         streamDataModel = vodMetadataHelper.getVodMetadata(dataModel.getVodId());
                         streamDataModel.setUuid(dataModel.getUuid());
                         streamDataModel.setStreamerName(dataModel.getUser());
-                        RecordThread recordThread = applicationContext.getBean(RecordThread.class);
                         new Thread(() -> {
                             recordThread.start(streamDataModel);
                         }).start();
@@ -66,8 +67,9 @@ public class RecoveryRecordHandler implements ApplicationContextAware {
 
     }
 
+
     @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
+    public void run() {
+        recoverUncompletedRecordTask();
     }
 }

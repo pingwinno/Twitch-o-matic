@@ -97,6 +97,7 @@ public class VodRecorder implements RecordThread {
             e.printStackTrace();
         }
         log = new InternalLogger(getClass(), streamFolderPath);
+        log.trace("Object: {}", this.hashCode());
 
         log.debug("Starting {} {} {}", streamDataModel.getStreamerName(), streamDataModel.getVodId(), streamDataModel.getUuid());
 
@@ -351,13 +352,13 @@ public class VodRecorder implements RecordThread {
         private void stop() {
             log.info("Stop record");
             log.info("Closing vod downloader...");
+            recordStatusList.changeState(uuid, State.STOPPED);
             if (!executorService.isShutdown()) {
                 executorService.shutdownNow();
             }
             log.debug("Downloader pool stopped: {}", executorService.isShutdown());
             isRecordTerminated = true;
             thisTread.interrupt();
-
         }
     }
 

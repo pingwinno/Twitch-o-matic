@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.streamarchive.infrastructure.OauthRefreshTokenService;
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.exceptions.TwitchTokenProcessingException;
+import net.streamarchive.infrastructure.handlers.misc.AfterApplicationStartupRunnable;
 import net.streamarchive.infrastructure.handlers.misc.TokenStorage;
 import net.streamarchive.infrastructure.models.TwitchAuthToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +20,7 @@ import javax.annotation.PostConstruct;
 
 @Slf4j
 @Service
-public class TwitchOAuthHandler {
+public class TwitchOAuthHandler  implements AfterApplicationStartupRunnable {
     private static final String OAUTH_ENDPOINT = "https://id.twitch.tv/oauth2/token";
 
     private TwitchAuthToken twitchAuthToken;
@@ -35,7 +36,6 @@ public class TwitchOAuthHandler {
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    @PostConstruct
     private void initToken() {
         twitchAuthToken = TokenStorage.loadToken(settingsProvider.getSettingsPath());
     }
@@ -133,5 +133,10 @@ public class TwitchOAuthHandler {
         if (requestValidation().getStatusCodeValue() != 200) {
             throw new TwitchTokenProcessingException(requestValidation().getStatusCode().toString());
         }
+    }
+
+    @Override
+    public void run() {
+        initToken();
     }
 }
