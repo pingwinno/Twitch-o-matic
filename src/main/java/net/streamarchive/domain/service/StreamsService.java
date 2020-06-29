@@ -57,7 +57,7 @@ public class StreamsService {
         try {
             log.trace("type: {}", requestModel.getType());
             log.trace("value: {}", requestModel.getValue());
-            if (requestModel.getType().equals("user")) {
+            if (requestModel.getType().equals("streamer")) {
                 streamMetadata = vodMetadataHelper.getLastVod(userIdGetter.getUserId(requestModel.getValue()));
             } else if (requestModel.getType().equals("vod")) {
                 streamMetadata = vodMetadataHelper.getVodMetadata(Integer.parseInt(requestModel.getValue()));
