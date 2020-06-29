@@ -16,6 +16,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+
 @Component
 public class VodMetadataHelper {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(VodMetadataHelper.class.getName());
@@ -93,20 +97,59 @@ public class VodMetadataHelper {
     public boolean isRecording(int vodId) throws InterruptedException {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Client-ID", settingsProperties.getClientID());
-        httpHeaders.add("Accept", "application/vnd.twitchtv.v5+json");
+        httpHeaders.add("Authorization", "Bearer " + twitchOAuthHandler.getAccessToken());
         HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
+        OffsetDateTime streamCreateTime;
         try {
-            ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/kraken/videos/" + vodId,
+            ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/helix/videos?id=" + vodId,
                     HttpMethod.GET, requestEntity, String.class);
 
             JSONObject jsonObj =
                     new JSONObject(responseEntity.getBody());
             log.trace("{}", jsonObj);
 
-            return jsonObj.get("status").toString().equals("recording");
+            if (jsonObj.getJSONArray("data") != null) {
+                DateTimeFormatter timeFormatter = DateTimeFormatter.ISO_DATE_TIME;
+
+                streamCreateTime = OffsetDateTime.parse(
+                        jsonObj.getJSONArray("data")
+                                .getJSONObject(0).get("created_at").toString(), timeFormatter);
+
+                String streamDuration = jsonObj.getJSONArray("data")
+                        .getJSONObject(0).get("duration").toString();
+                if (streamDuration.contains("h")) {
+                    int hours = Integer.parseInt(streamDuration.substring(0, streamDuration.lastIndexOf('h')));
+                    streamCreateTime = streamCreateTime.plusHours(hours);
+                }
+
+                if (streamDuration.contains("h") && streamDuration.contains("m")) {
+                    int min = Integer.parseInt(streamDuration.substring(streamDuration.lastIndexOf('h') + 1,
+                            streamDuration.lastIndexOf('m')));
+                    streamCreateTime = streamCreateTime.plusMinutes(min + 5);
+                } else if (streamDuration.contains("m")) {
+                    int min = Integer.parseInt(streamDuration.substring(0,
+                            streamDuration.lastIndexOf('m')));
+                    streamCreateTime = streamCreateTime.plusMinutes(min + 2);
+                    int sec = Integer.parseInt(streamDuration.substring(streamDuration.lastIndexOf('m') + 1,
+                            streamDuration.length() - 1));
+                    streamCreateTime = streamCreateTime.plusSeconds(sec);
+                } else {
+                    int sec = Integer.parseInt(streamDuration.substring(0,
+                            streamDuration.length() - 1));
+                    streamCreateTime = streamCreateTime.plusSeconds(sec);
+                }
+
+            } else {
+                throw new StreamNotFoundException("Stream " + vodId + " not found");
+            }
+            log.trace(streamCreateTime.toString());
+            log.trace(OffsetDateTime.now(ZoneOffset.UTC).toString());
+            log.trace(String.valueOf(OffsetDateTime.now(ZoneOffset.UTC).isBefore(streamCreateTime)));
+            return OffsetDateTime.now(ZoneOffset.UTC).isBefore(streamCreateTime);
         } catch (HttpClientErrorException.NotFound e) {
             throw new StreamNotFoundException("Stream " + vodId + " not found");
         }
     }
+
 
 }
