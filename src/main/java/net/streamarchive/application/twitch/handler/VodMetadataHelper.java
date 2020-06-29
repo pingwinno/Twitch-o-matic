@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -32,6 +33,9 @@ public class VodMetadataHelper {
 
     @Autowired
     private TwitchOAuthHandler twitchOAuthHandler;
+
+    @Value("${net.streamarchive.vodhelper.timeoffset}")
+    private int timeOffset;
 
     public StreamDataModel getLastVod(long userId) throws StreamNotFoundException {
 
@@ -125,18 +129,17 @@ public class VodMetadataHelper {
                 if (streamDuration.contains("h") && streamDuration.contains("m")) {
                     int min = Integer.parseInt(streamDuration.substring(streamDuration.lastIndexOf('h') + 1,
                             streamDuration.lastIndexOf('m')));
-                    streamCreateTime = streamCreateTime.plusMinutes(min + 5);
+                    streamCreateTime = streamCreateTime.plusMinutes(min + timeOffset);
                 } else if (streamDuration.contains("m")) {
                     int min = Integer.parseInt(streamDuration.substring(0,
                             streamDuration.lastIndexOf('m')));
-                    streamCreateTime = streamCreateTime.plusMinutes(min + 2);
                     int sec = Integer.parseInt(streamDuration.substring(streamDuration.lastIndexOf('m') + 1,
                             streamDuration.length() - 1));
-                    streamCreateTime = streamCreateTime.plusSeconds(sec);
+                    streamCreateTime = streamCreateTime.plusMinutes(min + timeOffset).plusSeconds(sec);
                 } else {
                     int sec = Integer.parseInt(streamDuration.substring(0,
                             streamDuration.length() - 1));
-                    streamCreateTime = streamCreateTime.plusSeconds(sec);
+                    streamCreateTime = streamCreateTime.plusMinutes(timeOffset).plusSeconds(sec);
                 }
 
             } else {
