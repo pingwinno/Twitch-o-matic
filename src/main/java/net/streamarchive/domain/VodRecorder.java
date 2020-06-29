@@ -34,7 +34,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@Scope(scopeName = "prototype", proxyMode = ScopedProxyMode.TARGET_CLASS)
+@Scope(scopeName = "prototype", proxyMode = ScopedProxyMode.INTERFACES)
 public class VodRecorder implements RecordThread {
 
     private final MasterPlaylistDownloader masterPlaylistDownloader;
