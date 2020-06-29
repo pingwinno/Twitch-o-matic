@@ -19,7 +19,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.*;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -276,7 +279,7 @@ public class VodRecorder implements RecordThread {
                 } else {
                     log.warn("UnknownHostException again. Why? I don't give a fuck.");
                 }
-            } catch (IOException | StreamNotFoundException e) {
+            } catch (IOException e) {
                 log.error("Vod downloader refresh failed. ", e);
                 recordStatusList.changeState(uuid, State.ERROR);
                 stop();
@@ -284,37 +287,52 @@ public class VodRecorder implements RecordThread {
             return status;
         }
 
-        private void recordCycle() throws IOException, InterruptedException {
+        private void recordCycle() throws InterruptedException {
 
-            while (vodMetadataHelper.isRecording(vodId)) {
-                log.debug("Refresh download {} {} {}", streamDataModel.getStreamerName(), streamDataModel.getVodId(), streamDataModel.getUuid());
+            try {
+                while (vodMetadataHelper.isRecording(vodId)) {
+                    log.debug("Refresh download {} {} {}", streamDataModel.getStreamerName(), streamDataModel.getVodId(), streamDataModel.getUuid());
+                    refreshDownload();
+                    Thread.sleep(20 * 1000);
+                }
+
+                log.info("Finalize record...");
+                int counter = 0;
+                while ((!this.refreshDownload()) && (counter <= 10)) {
+                    log.info("Wait for renewing playlist for {} {} {}", streamDataModel.getStreamerName(), streamDataModel.getVodId(), streamDataModel.getUuid());
+                    Thread.sleep(10 * 1000);
+                    counter++;
+                }
+                Thread.sleep(100 * 1000);
                 refreshDownload();
-                Thread.sleep(20 * 1000);
+            } catch (StreamNotFoundException e) {
+                log.error("Stream is not found or was deleted. Successful finalization is not guaranteed. ", e);
+                recordStatusList.changeState(uuid, State.ERROR);
+            } finally {
+                finalizeRecord();
             }
+        }
 
-            log.info("Finalize record...");
-            int counter = 0;
-            while ((!this.refreshDownload()) && (counter <= 10)) {
-                log.info("Wait for renewing playlist for {} {} {}", streamDataModel.getStreamerName(), streamDataModel.getVodId(), streamDataModel.getUuid());
-                Thread.sleep(10 * 1000);
-                counter++;
-            }
-            Thread.sleep(100 * 1000);
-            refreshDownload();
+        private void finalizeRecord() {
+
             log.info("End of list. Downloading last mainPlaylist");
 
-            dataHandler.write(mediaPlaylistWriter.write(mainPlaylist), streamDataModel, "index-dvr.m3u8");
+            try {
+                dataHandler.write(mediaPlaylistWriter.write(mainPlaylist), streamDataModel, "index-dvr.m3u8");
+            } catch (IOException e) {
+                log.error("Can't write playlist ", e);
+                recordStatusList.changeState(uuid, State.ERROR);
+                stop();
+            }
             log.debug("Download m3u8");
             try {
                 downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getBaseUrl());
 
-            } catch (StreamNotFoundException e) {
+            } catch (StreamNotFoundException | IOException e) {
                 int streamLength = mainPlaylist.size() / 2;
-
                 commandLineExecutor.execute("ffmpeg", "-i", streamFolderPath + "/" + streamLength + ".ts", "-s",
                         "640x360", "-vframes", "1", streamFolderPath + "/" + streamFolderPath + "/preview.jpg", "-y");
             }
-
         }
 
 
