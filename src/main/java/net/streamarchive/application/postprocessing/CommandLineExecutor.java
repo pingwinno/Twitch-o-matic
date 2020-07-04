@@ -1,4 +1,4 @@
-package net.streamarchive.application;
+package net.streamarchive.application.postprocessing;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;

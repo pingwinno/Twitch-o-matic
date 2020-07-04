@@ -1,4 +1,4 @@
-package net.streamarchive.infrastructure.handlers.misc;
+package net.streamarchive.application.twitch.oauth;
 
 import lombok.extern.slf4j.Slf4j;
 import net.streamarchive.infrastructure.exceptions.TwitchTokenProcessingException;

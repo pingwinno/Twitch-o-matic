@@ -2,6 +2,7 @@ package net.streamarchive.application.twitch.handler;
 
 
 import lombok.extern.slf4j.Slf4j;
+import net.streamarchive.application.twitch.oauth.TwitchOAuthHandler;
 import net.streamarchive.infrastructure.SettingsProvider;
 import org.json.JSONArray;
 import org.json.JSONException;

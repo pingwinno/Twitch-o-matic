@@ -1,4 +1,4 @@
-package net.streamarchive.application;
+package net.streamarchive.application.twitch.subscriptions;
 
 import lombok.extern.slf4j.Slf4j;
 import net.streamarchive.infrastructure.SettingsProvider;
@@ -13,27 +13,22 @@ import java.util.Timer;
 
 @Slf4j
 @Service
-public class SubscriptionTask implements AfterApplicationStartupRunnable {
+public class SubscriptionHandler {
     private final
     SubscriptionRequest subscriptionRequest;
     private final
     HashHandler hashHandler;
     private final
     SettingsProvider settingsProperties;
-    private Timer timer = new Timer();
 
-    @Value("${net.streamarchive.subsctiption.delay}")
-    private int delay;
 
-    public SubscriptionTask(SubscriptionRequest subscriptionRequest, HashHandler hashHandler, SettingsProvider settingsProperties) {
+
+    public SubscriptionHandler(SubscriptionRequest subscriptionRequest, HashHandler hashHandler, SettingsProvider settingsProperties) {
         this.subscriptionRequest = subscriptionRequest;
         this.hashHandler = hashHandler;
         this.settingsProperties = settingsProperties;
     }
 
-    private void schedule() {
-        timer.schedule(new SubscriptionTimer(this), 2000 , delay * 1000);
-    }
 
 
     public void doSubscriptions() throws IOException {
@@ -48,8 +43,4 @@ public class SubscriptionTask implements AfterApplicationStartupRunnable {
         }
     }
 
-    @Override
-    public void run() {
-        schedule();
-    }
 }

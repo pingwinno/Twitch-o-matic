@@ -1,25 +1,21 @@
-package net.streamarchive.infrastructure;
+package net.streamarchive.application.twitch.oauth;
 
-import net.streamarchive.application.twitch.handler.TwitchOAuthHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Timer;
 
 @Service
+@Slf4j
 public class OauthRefreshTokenService {
-    private boolean isActivated;
     @Autowired
     private TwitchOAuthHandler twitchOAuthHandler;
 
-    private Timer timer = new Timer();
-
     public void scheduleRefresh(int delay) {
-        if (isActivated) {
-            timer.cancel();
-            isActivated = false;
-        }
+        log.trace("Schedule timer with {} sec delay.", delay);
+        Timer timer = new Timer();
         timer.schedule(new OauthRefreshTask(twitchOAuthHandler), delay * 1000);
-        isActivated = true;
+        log.trace("Scheduled timer with {} sec delay.", delay);
     }
 }

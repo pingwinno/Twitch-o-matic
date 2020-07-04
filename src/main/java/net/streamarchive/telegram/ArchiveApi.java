@@ -1,7 +1,6 @@
-package net.streamarchive.presentation;
+package net.streamarchive.telegram;
 
-import net.streamarchive.domain.TelegramServerPool;
-import net.streamarchive.infrastructure.data.handler.TelegramStorageService;
+import net.streamarchive.telegram.TelegramServerPool;
 import net.streamarchive.infrastructure.models.TelegramFile;
 import net.streamarchive.repository.TgChunkRepository;
 import org.springframework.beans.factory.annotation.Autowired;

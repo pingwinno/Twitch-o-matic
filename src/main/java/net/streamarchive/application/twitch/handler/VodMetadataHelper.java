@@ -1,6 +1,7 @@
 package net.streamarchive.application.twitch.handler;
 
 import net.streamarchive.application.DateConverter;
+import net.streamarchive.application.twitch.oauth.TwitchOAuthHandler;
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import net.streamarchive.infrastructure.models.StreamDataModel;

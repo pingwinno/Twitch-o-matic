@@ -1,6 +1,6 @@
-package net.streamarchive.domain;
+package net.streamarchive.application.postprocessing;
 
-import net.streamarchive.application.CommandLineExecutor;
+import net.streamarchive.application.postprocessing.CommandLineExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

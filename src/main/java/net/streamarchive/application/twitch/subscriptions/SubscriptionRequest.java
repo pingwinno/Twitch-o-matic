@@ -1,8 +1,8 @@
-package net.streamarchive.application;
+package net.streamarchive.application.twitch.subscriptions;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.streamarchive.application.twitch.handler.TwitchOAuthHandler;
+import net.streamarchive.application.twitch.oauth.TwitchOAuthHandler;
 import net.streamarchive.application.twitch.handler.UserIdGetter;
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.handlers.misc.HashHandler;

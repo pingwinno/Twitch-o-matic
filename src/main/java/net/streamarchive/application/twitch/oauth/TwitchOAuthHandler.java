@@ -1,13 +1,11 @@
-package net.streamarchive.application.twitch.handler;
+package net.streamarchive.application.twitch.oauth;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import net.streamarchive.infrastructure.OauthRefreshTokenService;
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.exceptions.TwitchTokenProcessingException;
 import net.streamarchive.infrastructure.handlers.misc.AfterApplicationStartupRunnable;
-import net.streamarchive.infrastructure.handlers.misc.TokenStorage;
 import net.streamarchive.infrastructure.models.TwitchAuthToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -15,8 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import javax.annotation.PostConstruct;
 
 @Slf4j
 @Service
@@ -138,5 +134,6 @@ public class TwitchOAuthHandler  implements AfterApplicationStartupRunnable {
     @Override
     public void run() {
         initToken();
+        refreshAccessToken();
     }
 }

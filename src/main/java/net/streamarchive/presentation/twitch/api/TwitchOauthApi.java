@@ -1,6 +1,6 @@
 package net.streamarchive.presentation.twitch.api;
 
-import net.streamarchive.application.twitch.handler.TwitchOAuthHandler;
+import net.streamarchive.application.twitch.oauth.TwitchOAuthHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
