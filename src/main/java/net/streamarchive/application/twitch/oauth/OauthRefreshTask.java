@@ -1,12 +1,10 @@
-package net.streamarchive.infrastructure;
-
-import net.streamarchive.application.twitch.handler.TwitchOAuthHandler;
+package net.streamarchive.application.twitch.oauth;
 
 import java.util.TimerTask;
 
 public class OauthRefreshTask extends TimerTask {
 
-    private TwitchOAuthHandler twitchOAuthHandler;
+    private final TwitchOAuthHandler twitchOAuthHandler;
 
     public OauthRefreshTask(TwitchOAuthHandler twitchOAuthHandler) {
         this.twitchOAuthHandler = twitchOAuthHandler;

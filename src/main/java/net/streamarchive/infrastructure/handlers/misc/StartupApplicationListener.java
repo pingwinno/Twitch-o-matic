@@ -2,8 +2,9 @@ package net.streamarchive.infrastructure.handlers.misc;
 
 import lombok.extern.slf4j.Slf4j;
 import net.streamarchive.application.RecoveryRecordHandler;
-import net.streamarchive.application.SubscriptionTask;
-import net.streamarchive.application.twitch.handler.TwitchOAuthHandler;
+import net.streamarchive.application.twitch.subscriptions.SubscriptionHandler;
+import net.streamarchive.application.twitch.oauth.TwitchOAuthHandler;
+import net.streamarchive.application.twitch.subscriptions.SubscriptionService;
 import net.streamarchive.infrastructure.exceptions.TwitchTokenProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -19,7 +20,7 @@ public class StartupApplicationListener implements
     @Autowired
     TwitchOAuthHandler twitchOAuthHandler;
     @Autowired
-    SubscriptionTask subscriptionTask;
+    SubscriptionService subscriptionService;
 
 
     @Override
@@ -27,7 +28,7 @@ public class StartupApplicationListener implements
         try {
             twitchOAuthHandler.run();
             recoveryRecordHandler.run();
-            subscriptionTask.run();
+            subscriptionService.run();
         } catch (TwitchTokenProcessingException e) {
             log.error("Can't start automatic recovery", e);
         }

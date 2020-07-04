@@ -1,8 +1,8 @@
 package net.streamarchive.domain;
 
-import net.streamarchive.application.AnimatedPreviewGenerator;
-import net.streamarchive.application.CommandLineExecutor;
-import net.streamarchive.application.TimelinePreviewGenerator;
+import net.streamarchive.application.postprocessing.AnimatedPreviewGenerator;
+import net.streamarchive.application.postprocessing.CommandLineExecutor;
+import net.streamarchive.application.postprocessing.TimelinePreviewGenerator;
 import net.streamarchive.application.twitch.handler.*;
 import net.streamarchive.infrastructure.*;
 import net.streamarchive.infrastructure.data.handler.StorageService;

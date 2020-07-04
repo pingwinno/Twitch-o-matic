@@ -1,4 +1,4 @@
-package net.streamarchive.application;
+package net.streamarchive.application.postprocessing;
 
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.models.Preview;
