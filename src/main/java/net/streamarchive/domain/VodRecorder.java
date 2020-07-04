@@ -295,15 +295,6 @@ public class VodRecorder implements RecordThread {
                     refreshDownload();
                     Thread.sleep(20 * 1000);
                 }
-
-                log.info("Finalize record...");
-                int counter = 0;
-                while ((!this.refreshDownload()) && (counter <= 10)) {
-                    log.info("Wait for renewing playlist for {} {} {}", streamDataModel.getStreamerName(), streamDataModel.getVodId(), streamDataModel.getUuid());
-                    Thread.sleep(10 * 1000);
-                    counter++;
-                }
-                Thread.sleep(100 * 1000);
                 refreshDownload();
             } catch (StreamNotFoundException e) {
                 log.error("Stream is not found or was deleted. Successful finalization is not guaranteed. ", e);
