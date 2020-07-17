@@ -1,11 +1,16 @@
 package net.streamarchive.presentation.management.api;
 
+import net.streamarchive.domain.service.LogDownloadService;
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.repository.StatusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.UUID;
 
@@ -18,9 +23,7 @@ import java.util.UUID;
 public class LogApi {
 
     @Autowired
-    SettingsProvider settingsProperties;
-    @Autowired
-    StatusRepository statusRepository;
+    private LogDownloadService service;
 
     /**
      * This method returns record log
@@ -28,13 +31,9 @@ public class LogApi {
      * @param uuid is a record id
      * @return log file of stream
      */
-    @RequestMapping(value = "{uuid}", method = RequestMethod.GET)
+    @RequestMapping(value = "{uuid}", method = RequestMethod.GET, produces ="text/plain")
     @ResponseBody
-    public FileSystemResource getFile(@PathVariable("uuid") String uuid) {
-        String filePath = settingsProperties.getRecordedStreamPath() + statusRepository.findByUuid(UUID.fromString(uuid)).get(0).getUser()
-                + "/" + uuid + "/log.log";
-        return new FileSystemResource(Paths.get(filePath));
+    public Resource getFile(@PathVariable("uuid") UUID uuid) {
+        return service.getLogFile(uuid);
     }
-
-
 }
