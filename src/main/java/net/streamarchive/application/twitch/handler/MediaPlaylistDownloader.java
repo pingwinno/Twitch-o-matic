@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 @Scope("prototype")
 public class MediaPlaylistDownloader {
 
-    public BufferedReader getMediaPlaylist(String m3u8Link) throws InterruptedException, IOException {
+    public static BufferedReader getMediaPlaylist(String m3u8Link) throws InterruptedException, IOException {
         try {
         URL url = new URL(m3u8Link);
 

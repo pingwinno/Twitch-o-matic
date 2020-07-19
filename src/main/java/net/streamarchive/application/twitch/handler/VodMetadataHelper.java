@@ -1,25 +1,35 @@
 package net.streamarchive.application.twitch.handler;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import net.streamarchive.application.DateConverter;
 import net.streamarchive.application.twitch.oauth.TwitchOAuthHandler;
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
+import net.streamarchive.infrastructure.models.QualityMetadata;
 import net.streamarchive.infrastructure.models.StreamDataModel;
+import net.streamarchive.infrastructure.models.video.TwitchVideoModel;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+@Slf4j
 @Component
 public class VodMetadataHelper {
-    private static org.slf4j.Logger log = LoggerFactory.getLogger(VodMetadataHelper.class.getName());
 
     @Autowired
     private RestTemplate restTemplate;
@@ -29,6 +39,8 @@ public class VodMetadataHelper {
 
     @Autowired
     private TwitchOAuthHandler twitchOAuthHandler;
+
+    ObjectMapper objectMapper = new ObjectMapper();
 
     public StreamDataModel getLastVod(long userId) throws StreamNotFoundException {
 
@@ -51,43 +63,79 @@ public class VodMetadataHelper {
     public StreamDataModel getVodMetadata(int vodId) throws StreamNotFoundException {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add("Client-ID", settingsProperties.getClientID());
-        httpHeaders.add("Authorization", "Bearer " + twitchOAuthHandler.getAccessToken());
         httpHeaders.add("Accept", "application/vnd.twitchtv.v5+json");
         HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
-        ResponseEntity<String> responseEntity;
+        TwitchVideoModel videoModel;
         try {
-            responseEntity = restTemplate.exchange("https://api.twitch.tv/kraken/videos/" + vodId,
+            ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/kraken/videos/" + vodId,
                     HttpMethod.GET, requestEntity, String.class);
-        } catch (HttpClientErrorException.NotFound e) {
+
+            videoModel = objectMapper.readValue(responseEntity.getBody(), TwitchVideoModel.class);
+        } catch (HttpClientErrorException.NotFound | JsonProcessingException e) {
             log.debug(e.toString());
             throw new StreamNotFoundException("Stream " + vodId + " not found");
         }
-        JSONObject dataObj =
-                new JSONObject(responseEntity.getBody());
-
 
         StreamDataModel streamMetadata = new StreamDataModel();
-        log.trace("{}", dataObj);
-        if (!dataObj.toString().equals("")) {
-            try {
-                streamMetadata.setVodId(vodId);
-                streamMetadata.setTitle(dataObj.get("title").toString());
-                streamMetadata.setStreamerName(dataObj.getJSONObject("channel").get("name").toString());
-                streamMetadata.setDate(DateConverter.convert(dataObj.get("recorded_at").toString()));
+        log.trace("{}", videoModel);
 
-                streamMetadata.setBaseUrl((dataObj.getJSONObject("preview").get("large")).toString());
-                if (!dataObj.get("game").toString().equals("")) {
-                    streamMetadata.setGame(dataObj.get("game").toString());
-                } else {
-                    streamMetadata.setGame("");
-                }
-            } catch (IllegalStateException | JSONException e) {
-                log.error("{}", e);
-                throw new StreamNotFoundException("Stream " + vodId + "not found");
-            }
-        } else {
+        try {
+            streamMetadata.setVodId(vodId);
+            streamMetadata.setTitle(videoModel.getTitle());
+            streamMetadata.setDate(DateConverter.convert(videoModel.getRecordedAt()));
+            var previewUrl = videoModel.getAnimatedPreviewUrl();
+            streamMetadata.setStreamerName(videoModel.getChannel().getName());
+            streamMetadata.setBaseUrl(previewUrl.substring(0, previewUrl.lastIndexOf("storyboards")));
+            streamMetadata.setGame(videoModel.getGame());
+            streamMetadata.setDuration(videoModel.getLength());
+            streamMetadata.setQualities(mapQualities(settingsProperties.getUser(
+                    streamMetadata.getStreamerName()).getQualities(), videoModel));
+
+
+        } catch (IllegalStateException | JSONException e) {
+            log.error("{}", e);
             throw new StreamNotFoundException("Stream " + vodId + "not found");
         }
+
+        return streamMetadata;
+    }
+
+    public StreamDataModel getVodMetadata(StreamDataModel streamMetadata) throws StreamNotFoundException {
+        int vodId = streamMetadata.getVodId();
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Client-ID", settingsProperties.getClientID());
+        httpHeaders.add("Accept", "application/vnd.twitchtv.v5+json");
+        HttpEntity<String> requestEntity = new HttpEntity<>("", httpHeaders);
+        TwitchVideoModel videoModel;
+        try {
+            ResponseEntity<String> responseEntity = restTemplate.exchange("https://api.twitch.tv/kraken/videos/" + vodId,
+                    HttpMethod.GET, requestEntity, String.class);
+
+            videoModel = objectMapper.readValue(responseEntity.getBody(), TwitchVideoModel.class);
+        } catch (HttpClientErrorException.NotFound | JsonProcessingException e) {
+            log.debug(e.toString());
+            throw new StreamNotFoundException("Stream " + vodId + " not found");
+        }
+
+        log.trace("{}", videoModel);
+
+        try {
+            streamMetadata.setVodId(vodId);
+            streamMetadata.setTitle(videoModel.getTitle());
+            streamMetadata.setDate(DateConverter.convert(videoModel.getRecordedAt()));
+            var previewUrl = videoModel.getAnimatedPreviewUrl();
+            streamMetadata.setBaseUrl(previewUrl.substring(0, previewUrl.lastIndexOf("storyboards")));
+            streamMetadata.setGame(videoModel.getGame());
+            streamMetadata.setDuration(videoModel.getLength());
+            streamMetadata.setQualities(mapQualities(settingsProperties.getUser(
+                    streamMetadata.getStreamerName()).getQualities(), videoModel));
+
+
+        } catch (IllegalStateException | JSONException e) {
+            log.error("{}", e);
+            throw new StreamNotFoundException("Stream " + vodId + "not found");
+        }
+
         return streamMetadata;
     }
 
@@ -108,6 +156,23 @@ public class VodMetadataHelper {
         } catch (HttpClientErrorException.NotFound e) {
             throw new StreamNotFoundException("Stream " + vodId + " not found");
         }
+    }
+
+    private Map<String, QualityMetadata> mapQualities(List<String> settingsQualities, TwitchVideoModel videoModel) {
+        var resolutions = videoModel.getResolutions();
+        var fpsList = videoModel.getFps();
+        Map<String, QualityMetadata> availableQualities = new HashMap<>();
+        for (String quality : settingsQualities) {
+            String availableQuality = QualityValidator.validate(quality, resolutions.keySet());
+            if (Objects.nonNull(availableQuality)) {
+                availableQualities.put(availableQuality, new QualityMetadata(resolutions.get(availableQuality),
+                        String.valueOf(fpsList.get(availableQuality))));
+            }
+        }
+        if (CollectionUtils.isEmpty(availableQualities)) {
+            availableQualities.put("chunked", new QualityMetadata("1920x1080", "30"));
+        }
+        return availableQualities;
     }
 
 }

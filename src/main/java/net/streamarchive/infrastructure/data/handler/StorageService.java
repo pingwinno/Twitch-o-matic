@@ -8,11 +8,11 @@ import java.net.MalformedURLException;
 import java.util.UUID;
 
 public interface StorageService {
-    long size(StreamDataModel stream, String fileName) throws IOException;
+    long size(String streamPath, String fileName) throws IOException;
 
-    void write(InputStream inputStream, StreamDataModel stream, String fileName) throws IOException;
+    void write(InputStream inputStream, String streamPath, String fileName) throws IOException;
 
-    InputStream read(StreamDataModel stream, String fileName) throws IOException;
+    InputStream read(String streamPath, String fileName) throws IOException;
 
     void initialization();
 

@@ -49,7 +49,7 @@ public class SubscriptionsApi {
 
         Map<String, List<String>> users = new HashMap<>();
         for (Streamer streamer : settingsProperties.getStreamers()) {
-            users.put(streamer.getName(), List.of(streamer.getQuality()));
+            users.put(streamer.getName(), streamer.getQualities());
         }
         return users;
     }
@@ -67,7 +67,7 @@ public class SubscriptionsApi {
             Streamer streamerEntity = new Streamer();
             streamerEntity.setName(user.toLowerCase());
             quality.sort(Comparator.comparing(String::length));
-            streamerEntity.setQuality(quality.get(0));
+            streamerEntity.setQualities(quality);
             settingsProperties.addStreamer(streamerEntity);
             storageHelper.creatingRecordedPath(user);
         } catch (IOException e) {

@@ -3,7 +3,6 @@ package net.streamarchive.infrastructure.data.handler;
 import lombok.SneakyThrows;
 import net.streamarchive.application.StorageHelper;
 import net.streamarchive.infrastructure.SettingsProvider;
-import net.streamarchive.infrastructure.models.StreamDataModel;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,9 +27,8 @@ public class FileStorageService implements StorageService {
 
 
     @Override
-    public long size(StreamDataModel stream, String fileName) throws IOException {
-        Path filePath = Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamerName()
-                + "/" + stream.getUuid().toString() + "/" + "chunked" + "/" + fileName);
+    public long size(String streamPath, String fileName) throws IOException {
+        Path filePath = Paths.get(settingsProperties.getRecordedStreamPath() + streamPath + fileName);
         if (Files.notExists(filePath)) {
             return -1;
         }
@@ -39,23 +37,16 @@ public class FileStorageService implements StorageService {
 
 
     @Override
-    public void write(InputStream inputStream, StreamDataModel stream, String fileName) throws IOException {
-        Path filePath;
-        if ("preview.jpg".equals(fileName)) {
-            filePath = Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamerName()
-                    + "/" + stream.getUuid().toString() + "/" + fileName);
-        } else {
-            filePath = Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamerName()
-                    + "/" + stream.getUuid().toString() + "/" + "chunked" + "/" + fileName);
-        }
+    public void write(InputStream inputStream, String streamPath, String fileName) throws IOException {
+        Path filePath = Paths.get(settingsProperties.getRecordedStreamPath() + streamPath + fileName);
+
         Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
     }
 
 
     @Override
-    public InputStream read(StreamDataModel stream, String fileName) throws IOException {
-        Path filePath = Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamerName()
-                + "/" + stream.getUuid().toString() + "/" + "chunked" + "/" + fileName);
+    public InputStream read(String streamPath, String fileName) throws IOException {
+        Path filePath = Paths.get(settingsProperties.getRecordedStreamPath() + streamPath + fileName);
         return Files.newInputStream(filePath);
     }
 
