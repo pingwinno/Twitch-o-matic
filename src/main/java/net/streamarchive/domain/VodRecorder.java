@@ -217,6 +217,8 @@ public class VodRecorder implements RecordThread {
             if (vodMetadataHelper.isRecording(streamDataModel.getVodId())) {
                 log.debug("Stream is online. Run record cycle...");
                 this.recordCycle();
+            } else {
+                finalizeRecord();
             }
         }
 
@@ -299,17 +301,21 @@ public class VodRecorder implements RecordThread {
         private void finalizeRecord() {
 
             log.info("End of list. Downloading last mainPlaylist");
-
+            var streamBasePath = String.join("/",streamDataModel.getStreamerName(),streamDataModel.getUuid().toString());
             playlists.forEach((key, value) -> {
                 try {
-                    dataHandler.write(PlaylistWriter.writeMedia(value), streamFolderPath, "index-dvr.m3u8");
+                    log.debug("Write {} playlist...",key);
+                    dataHandler.write(PlaylistWriter.writeMedia(value), streamBasePath, "/"+key +"/index-dvr.m3u8");
+                    log.debug("Write {} playlist complete",key);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             });
-            PlaylistWriter.writeMaster(streamDataModel);
+
             log.debug("Download m3u8");
             try {
+                log.debug("Write master playlist...");
+                dataHandler.write(PlaylistWriter.writeMaster(streamDataModel),streamBasePath,"/master.m3u8");
                 downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getBaseUrl());
 
             } catch (StreamNotFoundException | IOException e) {

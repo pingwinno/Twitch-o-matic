@@ -45,10 +45,10 @@ public class PlaylistWriter {
     public static InputStream writeMaster(StreamDataModel streamDataModel) {
         StringBuilder stringBuilder = new StringBuilder();
         log.debug("Writing playlist...");
-        stringBuilder.append("#EXTM3U");
+        stringBuilder.append("#EXTM3U\n");
         for (String quality : streamDataModel.getQualities().keySet()) {
             stringBuilder.append(MasterPlaylistStrings.getStreamHeader(quality));
-            stringBuilder.append('/').append(String.join("/",
+            stringBuilder.append('/').append(String.join("/","streams",
                     streamDataModel.getStreamerName(),
                     streamDataModel.getUuid().toString(),
                     quality,
