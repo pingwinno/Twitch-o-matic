@@ -1,23 +1,17 @@
 package net.streamarchive.application.postprocessing;
 
+import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
-
-@Component
+@Builder
+@Slf4j
 public class CommandLineExecutor {
 
-    private static org.slf4j.Logger log = LoggerFactory.getLogger(CommandLineExecutor.class.getName());
-    private String path;
-    String line;
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
+    private final String path;
+    private String line;
 
     public void execute(String... command) {
 

@@ -1,8 +1,6 @@
 package net.streamarchive.domain;
 
-import net.streamarchive.application.postprocessing.AnimatedPreviewGenerator;
 import net.streamarchive.application.postprocessing.CommandLineExecutor;
-import net.streamarchive.application.postprocessing.TimelinePreviewGenerator;
 import net.streamarchive.application.twitch.handler.MasterPlaylistDownloader;
 import net.streamarchive.application.twitch.handler.PlaylistWriter;
 import net.streamarchive.application.twitch.handler.VodMetadataHelper;
@@ -48,11 +46,8 @@ public class VodRecorder implements RecordThread {
     SettingsProvider settingsProperties;
     private final
     VodMetadataHelper vodMetadataHelper;
-    private final
-    AnimatedPreviewGenerator animatedPreviewGenerator;
-    private final
-    TimelinePreviewGenerator timelinePreviewGenerator;
-    private final
+
+    private
     CommandLineExecutor commandLineExecutor;
 
     private final
@@ -74,14 +69,11 @@ public class VodRecorder implements RecordThread {
     private StreamThread streamThread = new StreamThread();
 
 
-    public VodRecorder(RecordStatusList recordStatusList, RecordThreadSupervisor recordThreadSupervisor, SettingsProvider settingsProperties, VodMetadataHelper vodMetadataHelper, AnimatedPreviewGenerator animatedPreviewGenerator, TimelinePreviewGenerator timelinePreviewGenerator, CommandLineExecutor commandLineExecutor, ArchiveDBHandler archiveDBHandler) {
+    public VodRecorder(RecordStatusList recordStatusList, RecordThreadSupervisor recordThreadSupervisor, SettingsProvider settingsProperties, VodMetadataHelper vodMetadataHelper, ArchiveDBHandler archiveDBHandler) {
         this.recordStatusList = recordStatusList;
         this.recordThreadSupervisor = recordThreadSupervisor;
         this.settingsProperties = settingsProperties;
         this.vodMetadataHelper = vodMetadataHelper;
-        this.animatedPreviewGenerator = animatedPreviewGenerator;
-        this.timelinePreviewGenerator = timelinePreviewGenerator;
-        this.commandLineExecutor = commandLineExecutor;
         this.archiveDBHandler = archiveDBHandler;
     }
 
@@ -89,10 +81,11 @@ public class VodRecorder implements RecordThread {
     public void start(StreamDataModel streamDataModel) {
         this.streamDataModel = streamDataModel;
         stream.setUuid(streamDataModel.getUuid());
-
         stream.setStreamer(streamDataModel.getStreamerName());
         streamDataModel = vodMetadataHelper.getVodMetadata(streamDataModel);
         streamFolderPath = settingsProperties.getRecordedStreamPath() + streamDataModel.getStreamerName() + "/" + stream.getUuid().toString();
+        commandLineExecutor = CommandLineExecutor.builder().path(streamFolderPath).build();
+        commandLineExecutor = CommandLineExecutor.builder().path(streamFolderPath).build();
         try {
             Files.createDirectories(Paths.get(streamFolderPath));
         } catch (IOException e) {
@@ -158,7 +151,12 @@ public class VodRecorder implements RecordThread {
             archiveDBHandler.updateStream(stream);
             recordStatusList.changeState(uuid, State.COMPLETE);
             log.info("Record complete");
-
+            log.info("Run postprocessing...");
+            var postprocessingParameter = streamDataModel.getStreamerName() + "/" + stream.getUuid().toString() + "/"
+                    + streamDataModel.getQualities().keySet().stream().findFirst().get();
+            log.trace("Postprocessing parameter: {}",postprocessingParameter);
+            commandLineExecutor.execute(settingsProperties.getSettingsPath()+"postprocessing.sh",postprocessingParameter);
+            log.info("Postprocessing complete");
         } catch (IOException | StreamerNotFoundException | StreamNotFoundException e) {
             log.error("Vod downloader initialization failed. ", e);
             recordStatusList.changeState(uuid, State.ERROR);
@@ -296,6 +294,8 @@ public class VodRecorder implements RecordThread {
             } finally {
                 finalizeRecord();
             }
+
+
         }
 
         private void finalizeRecord() {
@@ -326,6 +326,7 @@ public class VodRecorder implements RecordThread {
                     break;
                 }
             }
+
         }
 
 
