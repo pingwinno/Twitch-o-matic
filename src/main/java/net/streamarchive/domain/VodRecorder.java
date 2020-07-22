@@ -26,7 +26,10 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -107,8 +110,8 @@ public class VodRecorder implements RecordThread {
             } else {
                 threadsNumber = 5;
             }
-            if ("file".equals(storageType)){
-                threadsNumber *=threadsNumber;
+            if ("file".equals(storageType)) {
+                threadsNumber *= threadsNumber;
             }
         } catch (InterruptedException e) {
             log.error("Can't start record. ", e);
@@ -118,7 +121,7 @@ public class VodRecorder implements RecordThread {
             recordStatusList.changeState(uuid, State.RUNNING);
 
             try {
-                for (String quality :streamDataModel.getQualities().keySet()) {
+                for (String quality : streamDataModel.getQualities().keySet()) {
                     Path streamPath = Paths.get(streamFolderPath + '/' + quality);
                     if (!Files.exists(streamPath)) {
                         Files.createDirectories(streamPath);
@@ -143,19 +146,15 @@ public class VodRecorder implements RecordThread {
             streamThread.start();
 
 
-            //  animatedPreviewGenerator.generate(streamDataModel, mainPlaylist);
-            //  timelinePreviewGenerator.generate(streamDataModel, mainPlaylist);
-
             stream.setDuration(streamDataModel.getDuration());
 
             archiveDBHandler.updateStream(stream);
             recordStatusList.changeState(uuid, State.COMPLETE);
             log.info("Record complete");
             log.info("Run postprocessing...");
-            var postprocessingParameter = streamDataModel.getStreamerName() + "/" + stream.getUuid().toString() + "/"
-                    + streamDataModel.getQualities().keySet().stream().findFirst().get();
-            log.trace("Postprocessing parameter: {}",postprocessingParameter);
-            commandLineExecutor.execute(settingsProperties.getSettingsPath()+"postprocessing.sh",postprocessingParameter);
+            var postprocessingParameter = getFirstQuality();
+            log.trace("Postprocessing parameter: {}", postprocessingParameter);
+            commandLineExecutor.execute(settingsProperties.getSettingsPath() + "postprocessing.sh", postprocessingParameter);
             log.info("Postprocessing complete");
         } catch (IOException | StreamerNotFoundException | StreamNotFoundException e) {
             log.error("Vod downloader initialization failed. ", e);
@@ -173,10 +172,14 @@ public class VodRecorder implements RecordThread {
         streamThread.stop();
     }
 
+    private String getFirstQuality() {
+        return streamDataModel.getStreamerName() + "/" + stream.getUuid().toString() + "/"
+                + streamDataModel.getQualities().keySet().stream().findFirst().get();
+    }
+
 
     private class StreamThread {
 
-        private PlaylistWriter playlistWriter = new PlaylistWriter();
         private ExecutorService executorService;
         private int previousDuration;
 
@@ -228,39 +231,7 @@ public class VodRecorder implements RecordThread {
                 isPlaylistRefreshed = previousDuration < streamDataModel.getDuration();
                 log.trace("Renew playlist status: {}", isPlaylistRefreshed);
                 if (isPlaylistRefreshed) {
-                    var newPlaylists = MasterPlaylistDownloader.getPlaylist(streamDataModel);
-                    Set<StreamFileModel> newFilesSet = newPlaylists
-                            .values()
-                            .parallelStream()
-                            .flatMap(Collection::stream)
-                            .collect(Collectors.toSet());
-
-                    executorService = Executors.newFixedThreadPool(threadsNumber);
-
-                    newFilesSet.forEach((file) -> {
-                        if (!previousFilesSet.contains(file)) {
-                            log.trace("chunk: {}", file);
-                            Runnable runnable = () -> {
-                                if (!isRecordTerminated) {
-                                    try {
-                                        downloadChunk(file);
-                                    } catch (IOException e) {
-                                        log.error("Chunk download failed. ", e);
-                                        recordStatusList.changeState(uuid, State.ERROR);
-                                        stop();
-                                    }
-                                }
-
-                            };
-                            executorService.execute(runnable);
-                        }
-                    });
-
-                    executorService.shutdown();
-                    executorService.awaitTermination(1000, TimeUnit.MINUTES);
-                    previousFilesSet = newFilesSet;
-                    playlists = newPlaylists;
-
+                    runDownloadThreads();
                 }
             } catch (IOException e) {
                 log.error("Vod downloader refresh failed. ", e);
@@ -268,6 +239,41 @@ public class VodRecorder implements RecordThread {
                 stop();
             }
             return isPlaylistRefreshed;
+        }
+
+        private void runDownloadThreads() throws IOException, InterruptedException {
+            var newPlaylists = MasterPlaylistDownloader.getPlaylist(streamDataModel);
+            Set<StreamFileModel> newFilesSet = newPlaylists
+                    .values()
+                    .parallelStream()
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toSet());
+
+            executorService = Executors.newFixedThreadPool(threadsNumber);
+
+            newFilesSet.forEach((file) -> {
+                if (!previousFilesSet.contains(file)) {
+                    log.trace("chunk: {}", file);
+                    Runnable runnable = () -> {
+                        if (!isRecordTerminated) {
+                            try {
+                                downloadChunk(file);
+                            } catch (IOException e) {
+                                log.error("Chunk download failed. ", e);
+                                recordStatusList.changeState(uuid, State.ERROR);
+                                stop();
+                            }
+                        }
+
+                    };
+                    executorService.execute(runnable);
+                }
+            });
+
+            executorService.shutdown();
+            executorService.awaitTermination(1000, TimeUnit.MINUTES);
+            previousFilesSet = newFilesSet;
+            playlists = newPlaylists;
         }
 
         private void recordCycle() throws InterruptedException {
@@ -286,11 +292,15 @@ public class VodRecorder implements RecordThread {
                     Thread.sleep(10 * 1000);
                     counter++;
                 }
-                Thread.sleep(100 * 1000);
-                refreshDownload();
             } catch (StreamNotFoundException e) {
-                log.error("Stream is not found or was deleted. Successful finalization is not guaranteed. ", e);
-                recordStatusList.changeState(uuid, State.ERROR);
+                log.error("Stream has been deleted. Successful finalization is not guaranteed. ", e);
+                Thread.sleep(120 * 1000);
+                try {
+                    runDownloadThreads();
+                } catch (IOException ioException) {
+                    recordStatusList.changeState(uuid, State.ERROR);
+                }
+
             } finally {
                 finalizeRecord();
             }
@@ -301,12 +311,12 @@ public class VodRecorder implements RecordThread {
         private void finalizeRecord() {
 
             log.info("End of list. Downloading last mainPlaylist");
-            var streamBasePath = String.join("/",streamDataModel.getStreamerName(),streamDataModel.getUuid().toString());
+            var streamBasePath = String.join("/", streamDataModel.getStreamerName(), streamDataModel.getUuid().toString());
             playlists.forEach((key, value) -> {
                 try {
-                    log.debug("Write {} playlist...",key);
-                    dataHandler.write(PlaylistWriter.writeMedia(value), streamBasePath, "/"+key +"/index-dvr.m3u8");
-                    log.debug("Write {} playlist complete",key);
+                    log.debug("Write {} playlist...", key);
+                    dataHandler.write(PlaylistWriter.writeMedia(value), streamBasePath, "/" + key + "/index-dvr.m3u8");
+                    log.debug("Write {} playlist complete", key);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -315,13 +325,13 @@ public class VodRecorder implements RecordThread {
             log.debug("Download m3u8");
             try {
                 log.debug("Write master playlist...");
-                dataHandler.write(PlaylistWriter.writeMaster(streamDataModel),streamBasePath,"/master.m3u8");
+                dataHandler.write(PlaylistWriter.writeMaster(streamDataModel), streamBasePath, "/master.m3u8");
                 downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getBaseUrl());
 
             } catch (StreamNotFoundException | IOException e) {
                 for (String quality : streamDataModel.getQualities().keySet()) {
                     int streamLength = playlists.get(quality).size() / 2;
-                    commandLineExecutor.execute("ffmpeg", "-i", streamFolderPath + "/" + streamLength + ".ts", "-s",
+                    commandLineExecutor.execute("ffmpeg", "-i", streamFolderPath + "/" + getFirstQuality() + "/" + streamLength + ".ts", "-s",
                             "640x360", "-vframes", "1", streamFolderPath + "/" + streamFolderPath + "/preview.jpg", "-y");
                     break;
                 }
@@ -361,6 +371,7 @@ public class VodRecorder implements RecordThread {
                 log.info("Download main preview complete");
             }
         }
+
 
         private void stop() {
             log.info("Stop record");
