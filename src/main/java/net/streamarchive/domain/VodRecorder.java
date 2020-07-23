@@ -85,6 +85,9 @@ public class VodRecorder implements RecordThread {
         this.streamDataModel = streamDataModel;
         stream.setUuid(streamDataModel.getUuid());
         stream.setStreamer(streamDataModel.getStreamerName());
+        stream.setDate(streamDataModel.getDate());
+        stream.setGame(streamDataModel.getGame());
+        stream.setTitle(streamDataModel.getTitle());
         streamDataModel = vodMetadataHelper.getVodMetadata(streamDataModel);
         streamFolderPath = settingsProperties.getRecordedStreamPath() + streamDataModel.getStreamerName() + "/" + stream.getUuid().toString();
         commandLineExecutor = CommandLineExecutor.builder().path(streamFolderPath).build();
@@ -147,7 +150,7 @@ public class VodRecorder implements RecordThread {
 
 
             stream.setDuration(streamDataModel.getDuration());
-
+            log.trace("Stream data: {}",stream);
             archiveDBHandler.updateStream(stream);
             recordStatusList.changeState(uuid, State.COMPLETE);
             log.info("Record complete");
@@ -326,7 +329,7 @@ public class VodRecorder implements RecordThread {
             try {
                 log.debug("Write master playlist...");
                 dataHandler.write(PlaylistWriter.writeMaster(streamDataModel), streamBasePath, "/master.m3u8");
-                downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getBaseUrl());
+                downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), streamBasePath);
 
             } catch (StreamNotFoundException | IOException e) {
                 for (String quality : streamDataModel.getQualities().keySet()) {
@@ -365,9 +368,9 @@ public class VodRecorder implements RecordThread {
             }
         }
 
-        private void downloadPreview(String url) throws IOException {
+        private void downloadPreview(String url, String basePath) throws IOException {
             try (InputStream in = new URL(url).openStream()) {
-                dataHandler.write(in, streamFolderPath, "preview.jpg");
+                dataHandler.write(in, basePath, "/preview.jpg");
                 log.info("Download main preview complete");
             }
         }

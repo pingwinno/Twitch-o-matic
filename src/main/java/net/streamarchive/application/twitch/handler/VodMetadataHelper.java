@@ -73,7 +73,7 @@ public class VodMetadataHelper {
             videoModel = objectMapper.readValue(responseEntity.getBody(), TwitchVideoModel.class);
         } catch (HttpClientErrorException.NotFound | JsonProcessingException e) {
             log.debug(e.toString());
-            throw new StreamNotFoundException("Stream " + vodId + " not found");
+            throw new StreamNotFoundException("Stream " + vodId + " not found", e);
         }
 
         StreamDataModel streamMetadata = new StreamDataModel();
@@ -86,6 +86,7 @@ public class VodMetadataHelper {
             var previewUrl = videoModel.getAnimatedPreviewUrl();
             streamMetadata.setStreamerName(videoModel.getChannel().getName());
             streamMetadata.setBaseUrl(previewUrl.substring(0, previewUrl.lastIndexOf("storyboards")));
+            streamMetadata.setPreviewUrl(videoModel.getThumbnails().getLarge().stream().findFirst().get().getUrl());
             streamMetadata.setGame(videoModel.getGame());
             streamMetadata.setDuration(videoModel.getLength());
             streamMetadata.setQualities(mapQualities(settingsProperties.getUser(

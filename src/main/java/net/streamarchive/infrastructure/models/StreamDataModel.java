@@ -14,6 +14,7 @@ public class StreamDataModel {
     private String baseUrl;
     private boolean skipMuted;
     private int duration;
+    private String previewUrl;
     private Map<String, QualityMetadata> qualities;
     @JsonProperty
     private UUID uuid;

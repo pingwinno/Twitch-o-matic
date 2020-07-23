@@ -9,5 +9,8 @@ public class StreamNotFoundException extends RuntimeException {
         super(message);
     }
 
+    public StreamNotFoundException(String s, Exception e) {
+        super(s,e);
+    }
 }
 

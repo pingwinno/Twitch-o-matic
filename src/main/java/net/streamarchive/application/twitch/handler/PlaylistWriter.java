@@ -48,9 +48,7 @@ public class PlaylistWriter {
         stringBuilder.append("#EXTM3U\n");
         for (String quality : streamDataModel.getQualities().keySet()) {
             stringBuilder.append(MasterPlaylistStrings.getStreamHeader(quality));
-            stringBuilder.append('/').append(String.join("/","streams",
-                    streamDataModel.getStreamerName(),
-                    streamDataModel.getUuid().toString(),
+            stringBuilder.append(String.join("/",
                     quality,
                     "index-dvr.m3u8")).append("\n");
         }

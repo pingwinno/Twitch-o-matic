@@ -47,7 +47,7 @@ public class TwitchVideoModel {
     @JsonProperty("animated_preview_url")
     private String animatedPreviewUrl;
     @JsonProperty("broadcast_id")
-    private Integer broadcastId;
+    private Long broadcastId;
     @JsonProperty("broadcast_type")
     private String broadcastType;
     @JsonProperty("channel")
@@ -124,12 +124,12 @@ public class TwitchVideoModel {
     }
 
     @JsonProperty("broadcast_id")
-    public Integer getBroadcastId() {
+    public Long getBroadcastId() {
         return broadcastId;
     }
 
     @JsonProperty("broadcast_id")
-    public void setBroadcastId(Integer broadcastId) {
+    public void setBroadcastId(Long broadcastId) {
         this.broadcastId = broadcastId;
     }
 

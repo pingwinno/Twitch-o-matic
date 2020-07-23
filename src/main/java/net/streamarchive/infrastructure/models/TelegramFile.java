@@ -11,8 +11,6 @@ import java.util.UUID;
 public class TelegramFile {
     @Id
     private long messageID;
-    private UUID uuid;
-    private String streamer;
-    private String chunkName;
+    private String path;
     private long size;
 }

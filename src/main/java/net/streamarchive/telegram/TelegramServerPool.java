@@ -35,30 +35,29 @@ public class TelegramServerPool {
             if (checkConnection(address)) {
                 pool.add(address);
             } else {
-                log.warn("Server {} is not accessible. Skip...", address);
+                log.trace("Server {} is not accessible. Skip...", address);
             }
         }
     }
 
     public String write(byte[] data) {
+        var tgServer = getAddress(true);
         HttpEntity<byte[]> requestEntity =
                 new HttpEntity<>(data);
-        ResponseEntity<String> response = restTemplate.exchange(getAddress()
-                ,
-                HttpMethod.POST,
+        ResponseEntity<String> response = restTemplate.exchange(tgServer, HttpMethod.POST,
                 requestEntity,
                 String.class);
         return response.getBody();
     }
 
     public InputStream read(long id) throws IOException {
-        return new URL(getAddress() + "/" + id).openStream();
+        return new URL(getAddress(false) + "/" + id).openStream();
     }
 
-    public synchronized String getAddress() {
+    public synchronized String getAddress(boolean isUpload) {
         log.warn("pool index {}", index);
 
-        if (index >= pool.size()) {
+        if (index >= pool.size() || isUpload) {
             index = 0;
         }
         log.warn("pool index {}", index);
@@ -68,7 +67,7 @@ public class TelegramServerPool {
             return address;
         } else {
             pool.remove(index);
-            return getAddress();
+            return getAddress(false);
         }
     }
 

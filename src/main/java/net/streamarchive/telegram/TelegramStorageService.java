@@ -2,6 +2,7 @@ package net.streamarchive.telegram;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import net.streamarchive.infrastructure.data.handler.StorageService;
 import net.streamarchive.infrastructure.models.TelegramFile;
 import net.streamarchive.repository.TgChunkRepository;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class TelegramStorageService implements StorageService {
 
@@ -24,11 +26,10 @@ public class TelegramStorageService implements StorageService {
 
     @Override
     public long size(String streamPath, String fileName) {
-        String[] path = streamPath.split("/");
-        var streamerName = path[0];
-        var uuid = UUID.fromString(path[1]);
-        fileName = String.join("/", path[2], fileName);
-        TelegramFile tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(uuid, streamerName, fileName);
+        log.trace("Stream path: {}/{}", streamPath,fileName);
+        String path = streamPath+fileName;
+        log.trace("File path: {}", path);
+        TelegramFile tgChunk = tgChunkRepository.findByPath(path);
         if (tgChunk == null) {
             return -1;
         }
@@ -38,33 +39,30 @@ public class TelegramStorageService implements StorageService {
 
     @Override
     public void write(InputStream inputStream, String streamPath, String fileName) throws IOException {
-        String[] path = streamPath.split("/");
-        var streamerName = path[0];
-        var uuid = UUID.fromString(path[1]);
-        fileName = String.join("/", path[2], fileName);
-        TelegramFile tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(uuid, streamerName, fileName);
+        log.trace("Stream path: {}/{}", streamPath,fileName);
+        String path = streamPath+fileName;
+
+        log.trace("File path: {}", path);
+        TelegramFile tgChunk = tgChunkRepository.findByPath(path);
         if (tgChunk != null) {
             tgChunkRepository.delete(tgChunk);
         } else {
             tgChunk = new TelegramFile();
         }
         JsonNode jsonNode = objectMapper.readTree(serverPool.write(inputStream.readAllBytes()));
-        tgChunk.setChunkName(fileName);
+        tgChunk.setPath(path);
         tgChunk.setSize(jsonNode.get("size").asInt());
         tgChunk.setMessageID(jsonNode.get("id").asInt());
-        tgChunk.setStreamer(streamerName);
-        tgChunk.setUuid(uuid);
-        tgChunkRepository.save(tgChunk);
+        var returnedRecord = tgChunkRepository.save(tgChunk);
+        log.trace("TgChunck {}", returnedRecord);
     }
 
 
     @Override
     public InputStream read(String streamPath, String fileName) throws IOException {
-        String[] path = streamPath.split("/");
-        var streamerName = path[0];
-        var uuid = UUID.fromString(path[1]);
-        fileName = String.join("/", path[2], fileName);
-        TelegramFile tgChunk = tgChunkRepository.findByUuidAndStreamerAndChunkName(uuid, streamerName, fileName);
+        String path = streamPath+fileName;
+        log.trace("File path: {}", path);
+        TelegramFile tgChunk = tgChunkRepository.findByPath(path);
         return serverPool.read(tgChunk.getMessageID());
     }
 
@@ -75,16 +73,11 @@ public class TelegramStorageService implements StorageService {
 
     @Override
     public void deleteStream(UUID uuid, String streamer) {
-        tgChunkRepository.deleteAllByUuidAndStreamer(uuid, streamer);
+
     }
 
     @Override
     public UUID getUUID() {
-        UUID uuid = UUID.randomUUID();
-        if (tgChunkRepository.existsByUuid(uuid)) {
-            //generate uuid again
-            uuid = getUUID();
-        }
-        return uuid;
+        return UUID.randomUUID();
     }
 }
