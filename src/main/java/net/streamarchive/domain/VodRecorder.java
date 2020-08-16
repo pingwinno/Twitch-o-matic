@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
@@ -35,26 +34,27 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static net.streamarchive.util.UrlFormatter.format;
+
 @Service
 @Scope(scopeName = "prototype", proxyMode = ScopedProxyMode.INTERFACES)
 public class VodRecorder implements RecordThread {
 
     @Value("${net.streamarchive.storage}")
     private String storageType;
-    private final
-    RecordStatusList recordStatusList;
-    private final
-    RecordThreadSupervisor recordThreadSupervisor;
-    private final
-    SettingsProvider settingsProperties;
-    private final
-    VodMetadataHelper vodMetadataHelper;
+    @Autowired
+    private RecordStatusList recordStatusList;
+    @Autowired
+    private RecordThreadSupervisor recordThreadSupervisor;
 
-    private
-    CommandLineExecutor commandLineExecutor;
+    @Autowired
+    private SettingsProvider settingsProperties;
+    @Autowired
+    private VodMetadataHelper vodMetadataHelper;
 
-    private final
-    ArchiveDBHandler archiveDBHandler;
+    private CommandLineExecutor commandLineExecutor;
+    @Autowired
+    private ArchiveDBHandler archiveDBHandler;
 
     @Autowired
     private StorageService dataHandler;
@@ -72,14 +72,6 @@ public class VodRecorder implements RecordThread {
     private StreamThread streamThread = new StreamThread();
 
 
-    public VodRecorder(RecordStatusList recordStatusList, RecordThreadSupervisor recordThreadSupervisor, SettingsProvider settingsProperties, VodMetadataHelper vodMetadataHelper, ArchiveDBHandler archiveDBHandler) {
-        this.recordStatusList = recordStatusList;
-        this.recordThreadSupervisor = recordThreadSupervisor;
-        this.settingsProperties = settingsProperties;
-        this.vodMetadataHelper = vodMetadataHelper;
-        this.archiveDBHandler = archiveDBHandler;
-    }
-
     @Override
     public void start(StreamDataModel streamDataModel) {
         this.streamDataModel = streamDataModel;
@@ -89,7 +81,7 @@ public class VodRecorder implements RecordThread {
         stream.setGame(streamDataModel.getGame());
         stream.setTitle(streamDataModel.getTitle());
         streamDataModel = vodMetadataHelper.getVodMetadata(streamDataModel);
-        streamFolderPath = settingsProperties.getRecordedStreamPath() + streamDataModel.getStreamerName() + "/" + stream.getUuid().toString();
+        streamFolderPath = format(settingsProperties.getRecordedStreamPath(), streamDataModel.getStreamerName(), stream.getUuid().toString());
         commandLineExecutor = CommandLineExecutor.builder().path(streamFolderPath).build();
         commandLineExecutor = CommandLineExecutor.builder().path(streamFolderPath).build();
         try {
@@ -124,17 +116,7 @@ public class VodRecorder implements RecordThread {
             recordStatusList.changeState(uuid, State.RUNNING);
 
             try {
-                for (String quality : streamDataModel.getQualities().keySet()) {
-                    Path streamPath = Paths.get(streamFolderPath + '/' + quality);
-                    if (!Files.exists(streamPath)) {
-                        Files.createDirectories(streamPath);
-                    } else {
-                        log.warn("Stream folder exists. Maybe it's unfinished task. " +
-                                "If task can't be complete, it will be remove from task list.");
-                        log.info("Trying finish download...");
-                    }
-                    Files.createDirectories(streamPath);
-                }
+                dataHandler.initStreamStorage(streamDataModel.getQualities().keySet(), streamFolderPath);
             } catch (IOException e) {
                 recordStatusList.changeState(uuid, State.ERROR);
                 log.error("Can't create file or folder for VoD downloader. ", e);
@@ -150,7 +132,7 @@ public class VodRecorder implements RecordThread {
 
 
             stream.setDuration(streamDataModel.getDuration());
-            log.trace("Stream data: {}",stream);
+            log.trace("Stream data: {}", stream);
             archiveDBHandler.updateStream(stream);
             recordStatusList.changeState(uuid, State.COMPLETE);
             log.info("Record complete");
@@ -176,8 +158,9 @@ public class VodRecorder implements RecordThread {
     }
 
     private String getFirstQuality() {
-        return streamDataModel.getStreamerName() + "/" + stream.getUuid().toString() + "/"
-                + streamDataModel.getQualities().keySet().stream().findFirst().get();
+        return format(streamDataModel.getStreamerName(),
+                stream.getUuid().toString(),
+                streamDataModel.getQualities().keySet().stream().findFirst().get());
     }
 
 
@@ -314,11 +297,11 @@ public class VodRecorder implements RecordThread {
         private void finalizeRecord() {
 
             log.info("End of list. Downloading last mainPlaylist");
-            var streamBasePath = String.join("/", streamDataModel.getStreamerName(), streamDataModel.getUuid().toString());
+            var streamBasePath = format(streamDataModel.getStreamerName(), streamDataModel.getUuid().toString());
             playlists.forEach((key, value) -> {
                 try {
                     log.debug("Write {} playlist...", key);
-                    dataHandler.write(PlaylistWriter.writeMedia(value), streamBasePath, "/" + key + "/index-dvr.m3u8");
+                    dataHandler.write(PlaylistWriter.writeMedia(value), streamBasePath, format(key, "index-dvr.m3u8"));
                     log.debug("Write {} playlist complete", key);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -328,7 +311,7 @@ public class VodRecorder implements RecordThread {
             log.debug("Download m3u8");
             try {
                 log.debug("Write master playlist...");
-                dataHandler.write(PlaylistWriter.writeMaster(streamDataModel), streamBasePath, "/master.m3u8");
+                dataHandler.write(PlaylistWriter.writeMaster(streamDataModel), streamBasePath, "master.m3u8");
                 downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), streamBasePath);
 
             } catch (StreamNotFoundException | IOException e) {
@@ -347,7 +330,7 @@ public class VodRecorder implements RecordThread {
             URL website;
             URLConnection connection;
 
-            website = new URL(streamFileModel.getBaseUrl() + "/" + streamFileModel.getFileName());
+            website = new URL(format(streamFileModel.getBaseUrl(), streamFileModel.getFileName()));
             String fileName;
             if (streamFileModel.getFileName().contains("muted")) {
                 fileName = streamFileModel.getFileName().replace("-muted", "");

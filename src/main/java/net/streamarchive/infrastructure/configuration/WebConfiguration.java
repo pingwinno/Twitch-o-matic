@@ -39,6 +39,13 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
     @Value("${net.streamarchive.auth.password}")
     private String password;
 
+
+    @Value("${net.streamarchive.storage.user}")
+    private String webStorageUser;
+
+    @Value("${net.streamarchive.storage.password}")
+    private String webStoragePassword;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
@@ -79,6 +86,11 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
         } else {
             return restTemplateBuilder.build();
         }
+    }
+
+    @Bean
+    RestTemplate restTemplateForWebStorage(RestTemplateBuilder restTemplateBuilder) {
+            return restTemplateBuilder.basicAuthentication(webStorageUser, webStoragePassword).build();
     }
 
     @Bean

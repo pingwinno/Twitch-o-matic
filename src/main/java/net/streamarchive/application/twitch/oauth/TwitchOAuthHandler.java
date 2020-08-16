@@ -14,6 +14,8 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Objects;
+
 @Slf4j
 @Service
 public class TwitchOAuthHandler  implements AfterApplicationStartupRunnable {
@@ -34,6 +36,9 @@ public class TwitchOAuthHandler  implements AfterApplicationStartupRunnable {
 
     private void initToken() {
         twitchAuthToken = TokenStorage.loadToken(settingsProvider.getSettingsPath());
+        if(Objects.isNull(twitchAuthToken)){
+            throw new TwitchTokenProcessingException("Can't load token");
+        }
     }
 
     public void requestAccessToken(String authorizationToken) {

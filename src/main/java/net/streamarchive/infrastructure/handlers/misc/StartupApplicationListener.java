@@ -2,9 +2,9 @@ package net.streamarchive.infrastructure.handlers.misc;
 
 import lombok.extern.slf4j.Slf4j;
 import net.streamarchive.application.RecoveryRecordHandler;
-import net.streamarchive.application.twitch.subscriptions.SubscriptionHandler;
 import net.streamarchive.application.twitch.oauth.TwitchOAuthHandler;
 import net.streamarchive.application.twitch.subscriptions.SubscriptionService;
+import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.exceptions.TwitchTokenProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -21,11 +21,14 @@ public class StartupApplicationListener implements
     TwitchOAuthHandler twitchOAuthHandler;
     @Autowired
     SubscriptionService subscriptionService;
+    @Autowired
+    SettingsProvider settingsProvider;
 
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         try {
+            settingsProvider.run();
             twitchOAuthHandler.run();
             recoveryRecordHandler.run();
             subscriptionService.run();

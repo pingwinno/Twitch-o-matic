@@ -19,7 +19,7 @@ public class MasterPlaylistDownloader {
         var baseUrl = streamDataModel.getBaseUrl();
         for (String quality : streamDataModel.getQualities().keySet()) {
             String streamLink = baseUrl + quality + "/index-dvr.m3u8";
-            String basePath = String.join("/", streamDataModel.getStreamerName(), streamDataModel.getUuid().toString(), quality) + "/";
+            String basePath = String.join("/", streamDataModel.getStreamerName(), streamDataModel.getUuid().toString(), quality) ;
             playlists.put(quality,MediaPlaylistParser.getChunks(MediaPlaylistDownloader.getMediaPlaylist(streamLink), baseUrl + quality, basePath, streamDataModel.isSkipMuted()));
             log.trace("Stream link is: {}", streamLink);
         }

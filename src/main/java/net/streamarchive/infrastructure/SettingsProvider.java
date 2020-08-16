@@ -3,29 +3,29 @@ package net.streamarchive.infrastructure;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import net.streamarchive.infrastructure.handlers.misc.AfterApplicationStartupRunnable;
 import net.streamarchive.infrastructure.models.Settings;
 import net.streamarchive.infrastructure.models.Streamer;
 import net.streamarchive.repository.UserSubscriptionsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.devtools.restart.Restarter;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static net.streamarchive.util.UrlFormatter.format;
+
 @Slf4j
 @Service
-@Order(1)
-public class SettingsProvider {
+public class SettingsProvider implements AfterApplicationStartupRunnable {
 
-    private static final String STREAMS_PATH = System.getProperty("user.home") + "/streams/";
-    private static final String DOCKER_SETTINGS_PATH = "/etc/streamarchive/";
-    private static final String STANDALONE_SETTINGS_PATH = System.getProperty("user.dir") + "/";
+    private static final String STREAMS_PATH = System.getProperty("user.home") + "/streams";
+    private static final String DOCKER_SETTINGS_PATH = "/etc/streamarchive";
+    private static final String STANDALONE_SETTINGS_PATH = System.getProperty("user.dir");
     private static final String SETTINGS_NAME = "settings.json";
     @Autowired
     private UserSubscriptionsRepository subscriptionsRepository;
@@ -37,15 +37,15 @@ public class SettingsProvider {
     private String settingsPath;
     private File settingsFile;
 
-    @PostConstruct
+
     private boolean init() {
         if (Files.notExists(Paths.get(DOCKER_SETTINGS_PATH))) {
             log.warn("Settings volume doesn't exist. Loading settings from working directory...");
-            settingsFile = new File(STANDALONE_SETTINGS_PATH + SETTINGS_NAME);
+            settingsFile = new File(format(STANDALONE_SETTINGS_PATH, SETTINGS_NAME));
             settingsPath = STANDALONE_SETTINGS_PATH;
         } else {
             log.info("Loading settings...");
-            settingsFile = new File(DOCKER_SETTINGS_PATH + SETTINGS_NAME);
+            settingsFile = new File(format(DOCKER_SETTINGS_PATH, SETTINGS_NAME));
             settingsPath = DOCKER_SETTINGS_PATH;
         }
         try {
@@ -140,6 +140,11 @@ public class SettingsProvider {
 
     public String getSettingsPath() {
         return settingsPath;
+    }
+
+    @Override
+    public void run() {
+        init();
     }
 }
 

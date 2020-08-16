@@ -9,18 +9,13 @@ import net.streamarchive.infrastructure.models.StatusDataModel;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.repository.StatusRepository;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 
 @Service
-public class RecoveryRecordHandler implements AfterApplicationStartupRunnable
-{
+public class RecoveryRecordHandler implements AfterApplicationStartupRunnable {
     private static org.slf4j.Logger log = LoggerFactory.getLogger(RecoveryRecordHandler.class.getName());
 
     private final
@@ -30,6 +25,7 @@ public class RecoveryRecordHandler implements AfterApplicationStartupRunnable
 
     @Autowired
     RecordThread recordThread;
+
     public RecoveryRecordHandler(VodMetadataHelper vodMetadataHelper) {
         this.vodMetadataHelper = vodMetadataHelper;
     }

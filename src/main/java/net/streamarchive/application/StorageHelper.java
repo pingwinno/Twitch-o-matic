@@ -1,10 +1,11 @@
 package net.streamarchive.application;
 
+import lombok.extern.slf4j.Slf4j;
 import net.streamarchive.infrastructure.SettingsProvider;
 import net.streamarchive.infrastructure.models.StorageState;
 import net.streamarchive.infrastructure.models.Streamer;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -14,16 +15,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+@Slf4j
 @Service
 public class StorageHelper {
-    private final
-    SettingsProvider settingsProperties;
 
-    private org.slf4j.Logger log = LoggerFactory.getLogger(StorageHelper.class.getName());
-
-    public StorageHelper(SettingsProvider settingsProperties) {
-        this.settingsProperties = settingsProperties;
-    }
+    @Autowired
+    private SettingsProvider settingsProperties;
 
     public Map<String, Integer> getFreeSpace() throws IOException {
         Map<String, Integer> freeSpace = new HashMap<>();
