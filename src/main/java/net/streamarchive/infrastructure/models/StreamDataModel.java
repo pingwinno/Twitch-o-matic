@@ -2,9 +2,9 @@ package net.streamarchive.infrastructure.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+import net.streamarchive.infrastructure.models.video.VodType;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -15,6 +15,7 @@ public class StreamDataModel {
     private boolean skipMuted;
     private int duration;
     private String previewUrl;
+    private VodType vodType;
     private Map<String, QualityMetadata> qualities;
     @JsonProperty
     private UUID uuid;

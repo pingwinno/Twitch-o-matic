@@ -10,6 +10,7 @@ import net.streamarchive.infrastructure.exceptions.StreamNotFoundException;
 import net.streamarchive.infrastructure.models.QualityMetadata;
 import net.streamarchive.infrastructure.models.StreamDataModel;
 import net.streamarchive.infrastructure.models.video.TwitchVideoModel;
+import net.streamarchive.infrastructure.models.video.VodType;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -88,6 +89,7 @@ public class VodMetadataHelper {
             streamMetadata.setBaseUrl(previewUrl.substring(0, previewUrl.lastIndexOf("storyboards")));
             streamMetadata.setPreviewUrl(videoModel.getThumbnails().getLarge().stream().findFirst().get().getUrl());
             streamMetadata.setGame(videoModel.getGame());
+            streamMetadata.setVodType(VodType.valueOf(videoModel.getBroadcastType().toUpperCase()));
             streamMetadata.setDuration(videoModel.getLength());
             streamMetadata.setQualities(mapQualities(settingsProperties.getUser(
                     streamMetadata.getStreamerName()).getQualities(), videoModel));
@@ -128,6 +130,7 @@ public class VodMetadataHelper {
             streamMetadata.setBaseUrl(previewUrl.substring(0, previewUrl.lastIndexOf("storyboards")));
             streamMetadata.setGame(videoModel.getGame());
             streamMetadata.setDuration(videoModel.getLength());
+            streamMetadata.setVodType(VodType.valueOf(videoModel.getBroadcastType().toUpperCase()));
             streamMetadata.setQualities(mapQualities(settingsProperties.getUser(
                     streamMetadata.getStreamerName()).getQualities(), videoModel));
 

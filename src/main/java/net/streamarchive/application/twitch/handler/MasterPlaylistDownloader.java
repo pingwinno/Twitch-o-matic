@@ -18,11 +18,23 @@ public class MasterPlaylistDownloader {
         Map<String, Set<StreamFileModel>> playlists = new HashMap<>();
         var baseUrl = streamDataModel.getBaseUrl();
         for (String quality : streamDataModel.getQualities().keySet()) {
-            String streamLink = baseUrl + quality + "/index-dvr.m3u8";
-            String basePath = String.join("/", streamDataModel.getStreamerName(), streamDataModel.getUuid().toString(), quality) ;
-            playlists.put(quality,MediaPlaylistParser.getChunks(MediaPlaylistDownloader.getMediaPlaylist(streamLink), baseUrl + quality, basePath, streamDataModel.isSkipMuted()));
+            String streamLink = getPlaylistName(streamDataModel, quality);
+            String basePath = String.join("/", streamDataModel.getStreamerName(), streamDataModel.getUuid().toString(), quality);
+            playlists.put(quality, MediaPlaylistParser.getChunks(MediaPlaylistDownloader.getMediaPlaylist(streamLink), baseUrl + quality, basePath, streamDataModel.isSkipMuted()));
             log.trace("Stream link is: {}", streamLink);
         }
         return playlists;
+    }
+
+    private static String getPlaylistName(StreamDataModel streamDataModel, String quality) {
+        switch (streamDataModel.getVodType()) {
+            case UPLOAD:
+            case ARCHIVE:
+                return streamDataModel.getBaseUrl() + quality + "/index-dvr.m3u8";
+
+            case HIGHLIGHT:
+                return streamDataModel.getBaseUrl() + quality + "/highlight-" + streamDataModel.getVodId() + ".m3u8";
+        }
+        throw new IllegalArgumentException("Unrecognizable stream type");
     }
 }
