@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static net.streamarchive.util.UrlFormatter.format;
+
 @Repository
 public class LocalDBHandler implements ArchiveDBHandler {
 
@@ -55,7 +57,7 @@ public class LocalDBHandler implements ArchiveDBHandler {
     public Stream getStream(String streamer, UUID uuid) throws StreamNotFoundException {
         try {
             return new ObjectMapper().readValue(
-                    new File(settingsProperties.getRecordedStreamPath() + streamer + "/" + uuid.toString() + "/metadata.json"), Stream.class);
+                    new File(format(settingsProperties.getRecordedStreamPath(), streamer, uuid.toString(), "metadata.json")), Stream.class);
         } catch (IOException e) {
             log.error("Streams of " + streamer + " loading failed", e);
             throw new StreamNotFoundException(uuid + " metadata loading failed");
@@ -65,27 +67,29 @@ public class LocalDBHandler implements ArchiveDBHandler {
     @Override
     public void addStream(Stream stream) throws IOException {
 
-            if (!Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamer() + "/" + stream.getUuid()
-                    + "/metadata.json"))) {
-                File file = new File(settingsProperties.getRecordedStreamPath() + stream.getStreamer() + "/" + stream.getUuid()
-                        + "/metadata.json");
-                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
+        if (!Files.exists(Paths.get(format(settingsProperties.getRecordedStreamPath(), stream.getStreamer(),
+                stream.getUuid().toString()
+                , "metadata.json")))) {
+            File file = new File(format(settingsProperties.getRecordedStreamPath(), stream.getStreamer(),
+                    stream.getUuid().toString()
+                    , "metadata.json"));
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
 
-                writer.writeValue(file, stream);
-            } else log.info("Stream " + stream.getUuid() + " exist");
+            writer.writeValue(file, stream);
+        } else log.info("Stream " + stream.getUuid() + " exist");
     }
 
     @Override
     public void updateStream(Stream stream) throws StreamNotFoundException, StreamerNotFoundException {
-        if (Files.exists(Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamer() + "/" + stream.getUuid()
-                + "/metadata.json"))) {
+        if (Files.exists(Paths.get(format(settingsProperties.getRecordedStreamPath(), stream.getStreamer(), stream.getUuid().toString()
+                , "metadata.json")))) {
 
             com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
             ObjectWriter writer = mapper.writer(new DefaultPrettyPrinter());
-            try (FileOutputStream output = new FileOutputStream(new File(settingsProperties.getRecordedStreamPath()
-                    + stream.getStreamer() + "/" + stream.getUuid()
-                    + "/metadata.json"), false);) {
+            try (FileOutputStream output = new FileOutputStream(new File(format(settingsProperties.getRecordedStreamPath(),
+                    stream.getStreamer(), stream.getUuid().toString()
+                    , "metadata.json")), false);) {
                 writer.writeValue(output, stream);
             } catch (FileNotFoundException e) {
                 log.error("Folder of streamer " + stream.getStreamer() + " not found");
@@ -99,8 +103,8 @@ public class LocalDBHandler implements ArchiveDBHandler {
     @Override
     public void deleteStream(Stream stream) throws StreamNotFoundException {
         try {
-            Files.delete(Paths.get(settingsProperties.getRecordedStreamPath() + stream.getStreamer() + "/" + stream.getUuid().toString()
-                    + "/metadata.json"));
+            Files.delete(Paths.get(format(settingsProperties.getRecordedStreamPath(), stream.getStreamer(), stream.getUuid().toString()
+                    , "metadata.json")));
         } catch (IOException e) {
             log.error("Stream " + stream.getUuid().toString() + " deleting failed.", e);
             throw new StreamNotFoundException("Stream " + stream.getUuid().toString() + " deleting failed.");

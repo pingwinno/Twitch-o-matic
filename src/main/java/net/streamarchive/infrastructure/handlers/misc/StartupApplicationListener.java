@@ -28,7 +28,7 @@ public class StartupApplicationListener implements
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
         try {
-            settingsProvider.run();
+          //  settingsProvider.run();
             twitchOAuthHandler.run();
             recoveryRecordHandler.run();
             subscriptionService.run();

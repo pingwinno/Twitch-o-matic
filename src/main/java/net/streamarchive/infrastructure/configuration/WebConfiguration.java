@@ -21,8 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PostConstruct;
-
 @EnableScheduling
 @RestController
 @Configuration
@@ -51,7 +49,7 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
         http
                 .antMatcher("/**")
                 .authorizeRequests()
-                .antMatchers("/login**", "/streams/**", "/img/**", "/handler/**", "/callback/", "/webjars/**", "/error**", "/status**", "/twitch/oauth")
+                .antMatchers("/login**", "/streams/**", "/img/**", "/handler/**", "/callback/", "/webjars/**", "/error**", "/twitch/oauth")
                 .permitAll()
                 .anyRequest()
                 .authenticated().and().formLogin().and()
@@ -90,7 +88,7 @@ public class WebConfiguration extends WebSecurityConfigurerAdapter {
 
     @Bean
     RestTemplate restTemplateForWebStorage(RestTemplateBuilder restTemplateBuilder) {
-            return restTemplateBuilder.basicAuthentication(webStorageUser, webStoragePassword).build();
+        return restTemplateBuilder.basicAuthentication(webStorageUser, webStoragePassword).build();
     }
 
     @Bean

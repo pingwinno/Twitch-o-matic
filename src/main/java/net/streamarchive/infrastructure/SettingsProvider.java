@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.devtools.restart.Restarter;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -37,7 +38,7 @@ public class SettingsProvider implements AfterApplicationStartupRunnable {
     private String settingsPath;
     private File settingsFile;
 
-
+@PostConstruct
     private boolean init() {
         if (Files.notExists(Paths.get(DOCKER_SETTINGS_PATH))) {
             log.warn("Settings volume doesn't exist. Loading settings from working directory...");
@@ -48,6 +49,7 @@ public class SettingsProvider implements AfterApplicationStartupRunnable {
             settingsFile = new File(format(DOCKER_SETTINGS_PATH, SETTINGS_NAME));
             settingsPath = DOCKER_SETTINGS_PATH;
         }
+        log.trace("Settings file: {}", settingsFile);
         try {
             settings = mapper.readValue(settingsFile, Settings.class);
             settingsIsLoaded = true;
