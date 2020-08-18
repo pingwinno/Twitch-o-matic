@@ -341,9 +341,6 @@ public class VodRecorder implements RecordThread {
             if (connection.getContentLengthLong() > dataHandler.size(streamFileModel.getBasePath(), fileName)) {
                 try (InputStream in = website.openStream()) {
                     dataHandler.write(in, streamFileModel.getBasePath(), fileName);
-                    if (Integer.parseInt(fileName.replaceAll(".ts", "")) % 10 == 0) {
-                        log.info(fileName + " complete");
-                    }
                     log.trace(fileName + " complete");
                 }
             } else {
