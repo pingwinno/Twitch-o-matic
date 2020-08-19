@@ -34,6 +34,10 @@ public class PlaylistWriter {
                 stringBuilder.append(fileName);
                 stringBuilder.append("\n");
             }
+            if (fileName.contains("v")){
+                stringBuilder.append("#EXT-X-DISCONTINUITY");
+                stringBuilder.append("\n");
+            }
         });
 
         stringBuilder.append("#EXT-X-ENDLIST");

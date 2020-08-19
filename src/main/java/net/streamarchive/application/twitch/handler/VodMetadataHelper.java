@@ -87,7 +87,7 @@ public class VodMetadataHelper {
             var previewUrl = videoModel.getAnimatedPreviewUrl();
             streamMetadata.setStreamerName(videoModel.getChannel().getName());
             streamMetadata.setBaseUrl(previewUrl.substring(0, previewUrl.lastIndexOf("storyboards")));
-            streamMetadata.setPreviewUrl(videoModel.getThumbnails().getLarge().stream().findFirst().get().getUrl());
+            streamMetadata.setPreviewUrl(videoModel.getSeekPreviewsUrl());
             streamMetadata.setGame(videoModel.getGame());
             streamMetadata.setVodType(VodType.valueOf(videoModel.getBroadcastType().toUpperCase()));
             streamMetadata.setDuration(videoModel.getLength());
