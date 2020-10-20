@@ -83,7 +83,6 @@ public class VodRecorder implements RecordThread {
         streamDataModel = vodMetadataHelper.getVodMetadata(streamDataModel);
         streamFolderPath = format(settingsProperties.getRecordedStreamPath(), streamDataModel.getStreamerName(), stream.getUuid().toString());
         commandLineExecutor = CommandLineExecutor.builder().path(streamFolderPath).build();
-        commandLineExecutor = CommandLineExecutor.builder().path(streamFolderPath).build();
         try {
             Files.createDirectories(Paths.get(streamFolderPath));
         } catch (IOException e) {
@@ -137,9 +136,9 @@ public class VodRecorder implements RecordThread {
             recordStatusList.changeState(uuid, State.COMPLETE);
             log.info("Record complete");
             log.info("Run postprocessing...");
-            var postprocessingParameter = getFirstQuality();
+            var postprocessingParameter = String.join("/", settingsProperties.getRecordedStreamPath(), getFirstQuality());
             log.trace("Postprocessing parameter: {}", postprocessingParameter);
-            commandLineExecutor.execute(settingsProperties.getSettingsPath() + "postprocessing.sh", postprocessingParameter);
+            commandLineExecutor.execute(settingsProperties.getSettingsPath() + "/postprocessing.sh", postprocessingParameter);
             log.info("Postprocessing complete");
         } catch (IOException | StreamerNotFoundException | StreamNotFoundException e) {
             log.error("Vod downloader initialization failed. ", e);
@@ -315,12 +314,7 @@ public class VodRecorder implements RecordThread {
                 downloadPreview(vodMetadataHelper.getVodMetadata(streamDataModel.getVodId()).getPreviewUrl(), streamBasePath);
 
             } catch (StreamNotFoundException | IOException e) {
-                for (String quality : streamDataModel.getQualities().keySet()) {
-                    int streamLength = playlists.get(quality).size() / 2;
-                    commandLineExecutor.execute("ffmpeg", "-i", streamFolderPath + "/" + getFirstQuality() + "/" + streamLength + ".ts", "-s",
-                            "640x360", "-vframes", "1", streamFolderPath + "/" + streamFolderPath + "/preview.jpg", "-y");
-                    break;
-                }
+
             }
 
         }

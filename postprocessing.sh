@@ -3,7 +3,7 @@
 previewNumber=0
 startTime=0
 echo "$1"
-streamPath="/home/shiro/streams/${1}/index-dvr.m3u8"
+streamPath="${1}/index-dvr.m3u8"
 echo "stream path is $streamPath"
 durationFloat=$(ffprobe "$streamPath" -show_format 2>&1 | sed -n 's/duration=//p')
 duration=${durationFloat%.*}
