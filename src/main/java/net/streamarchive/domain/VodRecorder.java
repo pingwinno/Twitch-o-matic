@@ -218,6 +218,7 @@ public class VodRecorder implements RecordThread {
                 if (isPlaylistRefreshed) {
                     runDownloadThreads();
                 }
+                previousDuration = streamDataModel.getDuration();
             } catch (IOException e) {
                 log.error("Vod downloader refresh failed. ", e);
                 recordStatusList.changeState(uuid, State.ERROR);
