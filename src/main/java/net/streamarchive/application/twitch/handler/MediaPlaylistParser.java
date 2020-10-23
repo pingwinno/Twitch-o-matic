@@ -10,11 +10,12 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
 @Slf4j
 public class MediaPlaylistParser {
 
 
-    public static Set<StreamFileModel> getChunks(BufferedReader reader,String baseUrl,String basePath, boolean skipMuted) throws IOException {
+    public static Set<StreamFileModel> getChunks(BufferedReader reader, String baseUrl, String basePath, boolean skipMuted) throws IOException {
         String header;
         String chunk;
         Set<StreamFileModel> chunks = new LinkedHashSet<>();
@@ -26,9 +27,9 @@ public class MediaPlaylistParser {
                 String replace = header.substring(header.lastIndexOf(":") + 1)
                         .replace(",", "");
                 if (skipMuted && !chunk.contains("muted")) {
-                    chunks.add(new StreamFileModel(baseUrl,basePath,chunk, Double.parseDouble(replace)));
+                    chunks.add(new StreamFileModel(baseUrl, basePath, chunk, Double.parseDouble(replace)));
                 } else if (!skipMuted) {
-                    chunks.add(new StreamFileModel(baseUrl,basePath,chunk, Double.parseDouble(replace)));
+                    chunks.add(new StreamFileModel(baseUrl, basePath, chunk.replace("unmuted", "muted"), Double.parseDouble(replace)));
                 }
             }
         }
