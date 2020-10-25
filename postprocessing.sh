@@ -14,7 +14,7 @@ mkdir -p timeline_preview
 while (( duration > startTime ))
 do
 echo "$startTime"
-ffmpeg  -ss $startTime -i "$streamPath" -s 640x360 -vframes 1 timeline_preview/preview$previewNumber.jpg -y
+ffmpeg  -ss $startTime -i "$streamPath" -s 256x144 -vframes 1 timeline_preview/preview$previewNumber.jpg -y
 startTime=$(( startTime + offset ))
 previewNumber=$(( previewNumber+1 ))
 done
@@ -27,7 +27,7 @@ mkdir -p animated_preview
 while (( duration > startTime ))
 do
 echo "$startTime"
-ffmpeg  -ss $startTime -i "$streamPath" -s 256x144 -vframes 1 animated_preview/preview$previewNumber.jpg -y
+ffmpeg  -ss $startTime -i "$streamPath" -s 640x360 -vframes 1 animated_preview/preview$previewNumber.jpg -y
 startTime=$(( startTime+offset ))
 previewNumber=$(( previewNumber+1 ))
 done
