@@ -75,9 +75,20 @@ public class WebhookRecordService {
 
         new Thread(() -> {
             long cycleStartTime = System.currentTimeMillis();
+
             try {
                 Thread.sleep(10 * 1000);
                 StreamDataModel streamMetadata = vodMetadataHelper.getLastVod(userId);
+                if (statusRepository.existsById(streamMetadata.getVodId())) {
+                    log.warn("Stream duplicate. Skip...");
+                    return;
+                }
+
+                streamMetadata.setUuid(dataHandler.getUUID());
+                recordStatusList.addStatus
+                        (new StatusDataModel(streamMetadata.getVodId(), streamMetadata.getUuid(),
+                                StartedBy.WEBHOOK, Date.from(Instant.now()),
+                                State.INITIALIZE, streamMetadata.getStreamerName()));
                 int counter = 0;
                 log.trace(streamMetadata.toString());
                 while (!vodMetadataHelper.isRecording(streamMetadata.getVodId())) {
@@ -93,16 +104,7 @@ public class WebhookRecordService {
                     }
                 }
 
-                if (statusRepository.existsById(streamMetadata.getVodId())) {
-                    log.warn("Stream duplicate. Skip...");
-                    return;
-                }
 
-                streamMetadata.setUuid(dataHandler.getUUID());
-                recordStatusList.addStatus
-                        (new StatusDataModel(streamMetadata.getVodId(), streamMetadata.getUuid(),
-                                StartedBy.WEBHOOK, Date.from(Instant.now()),
-                                State.INITIALIZE, streamMetadata.getStreamerName()));
 
                 log.info("Try to start record");
 

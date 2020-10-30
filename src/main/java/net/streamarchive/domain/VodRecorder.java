@@ -280,13 +280,14 @@ public class VodRecorder implements RecordThread {
                 }
             } catch (StreamNotFoundException e) {
                 log.error("Stream has been deleted. Successful finalization is not guaranteed. ", e);
-                Thread.sleep(120 * 1000);
-                try {
-                    runDownloadThreads();
-                } catch (IOException ioException) {
-                    recordStatusList.changeState(uuid, State.ERROR);
+                for (int i = 0; i < 2; i++) {
+                    Thread.sleep(120 * 1000);
+                    try {
+                        runDownloadThreads();
+                    } catch (IOException ioException) {
+                        recordStatusList.changeState(uuid, State.ERROR);
+                    }
                 }
-
             } finally {
                 finalizeRecord();
             }
