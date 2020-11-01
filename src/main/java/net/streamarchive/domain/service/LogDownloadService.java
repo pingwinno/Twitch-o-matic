@@ -18,7 +18,7 @@ public class LogDownloadService {
     StatusRepository statusRepository;
 
     public Resource getLogFile(UUID uuid) {
-        String filePath = settingsProperties.getRecordedStreamPath() + statusRepository.findByUuid(uuid).get(0).getUser()
+        String filePath = settingsProperties.getRecordedStreamPath() + "/" + statusRepository.findByUuid(uuid).get(0).getUser()
                 + "/" + uuid + "/log.log";
         return new FileSystemResource(Paths.get(filePath));
     }
