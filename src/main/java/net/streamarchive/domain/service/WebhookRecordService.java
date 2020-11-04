@@ -22,6 +22,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 @Slf4j
 @Service
@@ -41,6 +44,8 @@ public class WebhookRecordService {
     @Autowired
     RecordThread recordThread;
     ObjectMapper objectMapper = new ObjectMapper();
+
+    private Set<Integer> startedVods = new ConcurrentSkipListSet<>();
 
 
     public void handleLiveNotification(String user, String notification) throws JsonProcessingException, StreamNotFoundException {
@@ -79,7 +84,7 @@ public class WebhookRecordService {
             try {
                 Thread.sleep(10 * 1000);
                 StreamDataModel streamMetadata = vodMetadataHelper.getLastVod(userId);
-                if (statusRepository.existsById(streamMetadata.getVodId())) {
+                if (statusRepository.existsById(streamMetadata.getVodId()) && startedVods.add(streamMetadata.getVodId())) {
                     log.warn("Stream duplicate. Skip...");
                     return;
                 }
@@ -103,7 +108,6 @@ public class WebhookRecordService {
                         throw new StreamNotFoundException("new vod not found");
                     }
                 }
-
 
 
                 log.info("Try to start record");
