@@ -77,14 +77,17 @@ public class WebhookRecordService {
             log.error("vodId is null. Stream not found");
             return;
         }
-
+        if (startedVods.add(vodMetadataHelper.getLastVod(userId).getVodId())) {
+            log.warn("Stream duplicate. Skip...");
+            return;
+        }
         new Thread(() -> {
             long cycleStartTime = System.currentTimeMillis();
 
             try {
                 Thread.sleep(10 * 1000);
                 StreamDataModel streamMetadata = vodMetadataHelper.getLastVod(userId);
-                if (statusRepository.existsById(streamMetadata.getVodId()) && startedVods.add(streamMetadata.getVodId())) {
+                if (statusRepository.existsById(streamMetadata.getVodId())) {
                     log.warn("Stream duplicate. Skip...");
                     return;
                 }
